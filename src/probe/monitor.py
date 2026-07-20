@@ -106,7 +106,11 @@ def _extract_minimax_periods(payload: dict[str, Any]) -> list[dict[str, Any]]:
     def _used(remaining_pct: Any) -> float:
         if remaining_pct is None:
             return 0.0
-        return max(0.0, 1.0 - float(remaining_pct))
+        pct = float(remaining_pct)
+        # MiniMax returns 0-100 integer, normalize to 0-1
+        if pct > 1.0:
+            pct = pct / 100.0
+        return max(0.0, 1.0 - pct)
 
     # 5h rolling window
     total_5h = float(m.get("current_interval_total_count") or 0)
