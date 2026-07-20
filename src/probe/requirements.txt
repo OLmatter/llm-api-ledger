@@ -1,0 +1,8 @@
+# Runtime
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+httpx==0.28.1
+keyring==25.6.0
+
+# Build only (not required at runtime)
+# pyinstaller==6.13.0

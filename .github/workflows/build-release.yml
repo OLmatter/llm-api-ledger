@@ -1,0 +1,79 @@
+name: Build & Release Probe
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: ledger-probe-linux-x64
+            asset_name: ledger-probe-linux-x64
+          - os: windows-latest
+            artifact: ledger-probe-windows-x64
+            asset_name: ledger-probe-windows-x64.exe
+          - os: macos-latest
+            artifact: ledger-probe-macos-arm64
+            asset_name: ledger-probe-macos-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/probe/requirements.txt
+          pip install pyinstaller==6.13.0
+
+      - name: Build binary
+        run: pyinstaller src/probe/probe.spec --noconfirm
+
+      - name: Smoke-test (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x dist/ledger-probe
+          # Start, wait, hit dashboard, kill
+          ./dist/ledger-probe &
+          PID=$!
+          sleep 5
+          curl -fsS http://127.0.0.1:8080/__ledger__/api/stats | head -c 200
+          kill $PID || true
+
+      - name: Rename for upload
+        shell: bash
+        run: |
+          cd dist
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            mv ledger-probe.exe ${{ matrix.asset_name }}
+          else
+            mv ledger-probe ${{ matrix.asset_name }}
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.asset_name }}
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ matrix.asset_name }}
+          fail_on_unmatched_files: false

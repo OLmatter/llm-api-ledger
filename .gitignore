@@ -1,0 +1,46 @@
+# Build artifacts
+dist/
+build/
+*.spec.bak
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Runtime data (NEVER commit — contains user observations)
+data/ledger.db
+data/ledger.db-journal
+data/ledger.db-wal
+data/ledger.db-shm
+data/config.json
+
+# But keep the directory structure
+!data/plans/.gitkeep
+!data/reports/.gitkeep
+!data/aggregated/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local dev
+.scratch/
+*.log
