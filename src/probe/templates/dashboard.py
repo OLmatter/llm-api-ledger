@@ -72,23 +72,59 @@ _JS_BLOCK = """<script src="__CHART_JS_URL__"></script>
   Chart.defaults.color = "#86868b";
   Chart.defaults.animation.duration = 400;
 
-  var c1 = document.getElementById('hourlyChart');
-  if (c1) new Chart(c1, {
-    type: 'bar',
-    data: { labels: data.hourly_labels, datasets: [
-      { type:'bar', label:'\u8bf7\u6c42\u6570', data: data.hourly_calls,
-        backgroundColor:'rgba(0,113,227,0.6)', borderRadius:3, yAxisID:'y' },
-      { type:'line', label:'TTFT ms', data: data.hourly_ttft,
-        borderColor:'#ff9500', backgroundColor:'rgba(255,149,0,0.1)',
-        borderWidth:2, pointRadius:0, tension:0.35, yAxisID:'y1', fill:false }
-    ]},
-    options: { maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
-      plugins:{ legend:{display:true,position:'top',align:'end',labels:{boxWidth:8,boxHeight:8,padding:12}} },
-      scales:{ x:{grid:{display:false},ticks:{maxRotation:0,autoSkipPadding:16}},
-               y:{position:'left',grid:{color:'#ececf0'},beginAtZero:true},
-               y1:{position:'right',grid:{display:false},beginAtZero:true} } }
-  });
+  // ── 24h chart with unit tabs ──
+  var hourlyCanvas = document.getElementById('hourlyChart');
+  if (hourlyCanvas) {
+    var hourlyMetrics = {
+      calls:  { label:'\u8bf7\u6c42\u6570',   color:'rgba(0,113,227,0.6)',  border:'#0071e3', data: data.hourly_calls,  type:'bar',  yFmt:function(v){return v} },
+      ttft:   { label:'TTFT ms',              color:'rgba(255,149,0,0.6)',  border:'#ff9500', data: data.hourly_ttft,   type:'line', yFmt:function(v){return v>=1000?(v/1000).toFixed(1)+'s':v} },
+      tps:    { label:'TPS',                  color:'rgba(52,199,89,0.6)',  border:'#34c759', data: data.hourly_tps,    type:'line', yFmt:function(v){return v} },
+      lat:    { label:'\u5ef6\u8fdf ms',      color:'rgba(175,82,222,0.6)', border:'#af52de', data: data.hourly_lat,    type:'line', yFmt:function(v){return v>=1000?(v/1000).toFixed(1)+'s':v} },
+      in:     { label:'\u8f93\u5165 tokens',  color:'rgba(88,86,214,0.6)',  border:'#5856d6', data: data.hourly_in,     type:'bar',  yFmt:function(v){return v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v} },
+      out:    { label:'\u8f93\u51fa tokens',  color:'rgba(48,209,88,0.6)',  border:'#30d158', data: data.hourly_out,    type:'bar',  yFmt:function(v){return v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v} },
+      cache:  { label:'\u7f13\u5b58\u547d\u4e2d', color:'rgba(255,55,95,0.6)',border:'#ff375f', data: data.hourly_cache, type:'bar',  yFmt:function(v){return v>=1e3?(v/1e3).toFixed(0)+'K':v} }
+    };
+    var hourlyChart = null;
+    var activeMetric = 'calls';
 
+    function renderHourly() {
+      var m = hourlyMetrics[activeMetric];
+      var ds = {
+        label: m.label, data: m.data,
+        backgroundColor: m.color, borderColor: m.border,
+        borderWidth: m.type === 'line' ? 2 : 0,
+        pointRadius: m.type === 'line' ? 2 : 0,
+        tension: m.type === 'line' ? 0.35 : 0,
+        fill: m.type === 'line',
+        borderRadius: m.type === 'bar' ? 3 : 0
+      };
+      if (hourlyChart) hourlyChart.destroy();
+      hourlyChart = new Chart(hourlyCanvas, {
+        type: m.type,
+        data: { labels: data.hourly_labels, datasets: [ds] },
+        options: { maintainAspectRatio:false,
+          interaction:{mode:'index',intersect:false},
+          plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){return m.label+': '+m.yFmt(ctx.parsed.y)} } } },
+          scales:{ x:{grid:{display:false},ticks:{maxRotation:0,autoSkipPadding:16}},
+                   y:{grid:{color:'#ececf0'},beginAtZero:true,ticks:{callback:function(v){return m.yFmt(v)}}} } }
+      });
+      var sub = document.getElementById('hourlySub');
+      if (sub) sub.textContent = m.label;
+    }
+
+    var tabs = document.querySelectorAll('.metric-tab');
+    for (var i=0; i<tabs.length; i++) {
+      tabs[i].addEventListener('click', function() {
+        for (var j=0; j<tabs.length; j++) tabs[j].classList.remove('active');
+        this.classList.add('active');
+        activeMetric = this.dataset.metric;
+        renderHourly();
+      });
+    }
+    renderHourly();
+  }
+
+  // ── Timeout chart ──
   var c2 = document.getElementById('timeoutChart');
   if (c2) new Chart(c2, {
     type: 'line',
@@ -103,6 +139,7 @@ _JS_BLOCK = """<script src="__CHART_JS_URL__"></script>
                y:{grid:{color:'#ececf0'},beginAtZero:true,ticks:{callback:function(v){return v+'%'}}} } }
   });
 
+  // ── Daily chart ──
   var c3 = document.getElementById('dailyChart');
   if (c3) new Chart(c3, {
     type: 'bar',
@@ -223,6 +260,11 @@ def render(stats, cfg, hourly, daily, keys, selected_key):
         "hourly_labels": [h["hour_label"] for h in hourly],
         "hourly_calls": [h["count"] for h in hourly],
         "hourly_ttft": [h["avg_ttft"] for h in hourly],
+        "hourly_tps": [h["avg_tps"] for h in hourly],
+        "hourly_lat": [h["avg_latency"] for h in hourly],
+        "hourly_in": [h["input_tokens"] for h in hourly],
+        "hourly_out": [h["output_tokens"] for h in hourly],
+        "hourly_cache": [h["cache_read_tokens"] for h in hourly],
         "hourly_timeout": [round(h["timeout_rate"] * 100, 1) for h in hourly],
         "daily_labels": [d["day"][5:] for d in daily],
         "daily_in": [d["input_tokens"] for d in daily],
@@ -260,7 +302,17 @@ def render(stats, cfg, hourly, daily, keys, selected_key):
         '    <div class="section">',
         '      <div class="section-head"><div class="section-title">\u6700\u8fd1 24 \u5c0f\u65f6</div><div class="section-sub">\u6bcf\u5c0f\u65f6\u805a\u5408</div></div>',
         '      <div class="chart-grid">',
-        '        <div class="chart-card"><div class="chart-title">\u8bf7\u6c42\u6570 & TTFT</div><div class="chart-sub">\u67f1=\u8bf7\u6c42\u6570 \xb7 \u7ebf=TTFT ms</div><div class="chart-wrap"><canvas id="hourlyChart"></canvas></div></div>',
+        '        <div class="chart-card"><div class="chart-title">\u7528\u91cf\u8d8b\u52bf</div><div class="chart-sub" id="hourlySub">\u8bf7\u6c42\u6570</div>',
+        '          <div class="metric-tabs" role="tablist">',
+        '            <button class="metric-tab active" data-metric="calls">\u8bf7\u6c42</button>',
+        '            <button class="metric-tab" data-metric="ttft">TTFT</button>',
+        '            <button class="metric-tab" data-metric="tps">TPS</button>',
+        '            <button class="metric-tab" data-metric="lat">\u5ef6\u8fdf</button>',
+        '            <button class="metric-tab" data-metric="in">\u8f93\u5165</button>',
+        '            <button class="metric-tab" data-metric="out">\u8f93\u51fa</button>',
+        '            <button class="metric-tab" data-metric="cache">\u7f13\u5b58</button>',
+        '          </div>',
+        '          <div class="chart-wrap"><canvas id="hourlyChart"></canvas></div></div>',
         '        <div class="chart-card"><div class="chart-title">\u8d85\u65f6\u7387</div><div class="chart-sub">\u7a81\u589e = \u9634\u9669\u9650\u6d41</div><div class="chart-wrap"><canvas id="timeoutChart"></canvas></div></div>',
         '      </div>',
         '    </div>',

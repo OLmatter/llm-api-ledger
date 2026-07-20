@@ -512,7 +512,7 @@ def hourly_series(db_path: Path, hours: int = 24, key_id: int = 0) -> list[dict[
         params = (start, key_id) if key_id else (start,)
         rows = conn.execute(
             f"""SELECT
-                (ts / 3600) * 3600 AS bucket,
+                (CAST(ts AS INTEGER) / 3600) * 3600 AS bucket,
                 COUNT(*) AS cnt,
                 SUM(CASE WHEN status_code >= 200 AND status_code < 300 THEN 1 ELSE 0 END) AS ok,
                 SUM(CASE WHEN timeout_type != '' THEN 1 ELSE 0 END) AS tmo,
