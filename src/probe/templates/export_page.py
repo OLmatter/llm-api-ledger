@@ -1,148 +1,121 @@
 """
-Export page HTML.
+Export page — per-key data bundle export.
 
-Route: /__ledger__/export
-
-Lets the user pick a time window (default: last 7 days) and either:
-  - Download the JSON bundle (for manual PR / TG submission)
-  - Copy a generated Markdown PR description
+CSS: from base.css. JS: standalone <script>.
 """
 
 from __future__ import annotations
 
+import html
 from typing import Any
 
+from ._base import page_shell, topbar
 
-def render(cfg: dict[str, Any]) -> str:
-    vendor = cfg.get("vendor", "")
-    plan = cfg.get("plan", "")
-    return f"""<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>llm-api-ledger · 导出 PR</title>
-<style>
-:root {{
-  --bg:#0d1117; --panel:#161b22; --line:#30363d;
-  --text:#e6edf3; --muted:#7d8590; --accent:#58a6ff; --accent-2:#3fb950;
-}}
-* {{ margin:0; padding:0; box-sizing:border-box; }}
-body {{ background:var(--bg); color:var(--text);
-  font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
-  font-size:13px; padding:24px; line-height:1.5; }}
-h1 {{ font-size:18px; margin-bottom:4px; }}
-.nav {{ display:flex; gap:14px; margin-bottom:20px; font-size:12px; }}
-.nav a {{ color:var(--muted); }}
-.nav a.active {{ color:var(--text); }}
-.meta {{ color:var(--muted); font-size:12px; margin-bottom:20px; }}
-.form {{ background:var(--panel); border:1px solid var(--line);
-  border-radius:6px; padding:18px; max-width:640px; margin-bottom:20px; }}
-.field {{ margin-bottom:14px; }}
-.field label {{ display:block; color:var(--muted); font-size:11px;
-  text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }}
-.field input, .field select {{ background:#0d1117; color:var(--text);
-  border:1px solid var(--line); border-radius:4px; padding:8px 10px;
-  font-family:inherit; font-size:13px; }}
-.field input[type=number] {{ width:120px; }}
-button {{ background:var(--accent); color:#0d1117; border:none; border-radius:4px;
-  padding:8px 16px; font-family:inherit; font-size:13px; font-weight:600;
-  cursor:pointer; margin-right:8px; }}
-button:hover {{ background:#79b8ff; }}
-button.secondary {{ background:transparent; color:var(--accent);
-  border:1px solid var(--accent); }}
-.result {{ background:var(--panel); border:1px solid var(--line);
-  border-radius:6px; padding:14px; max-width:640px; }}
-.result h3 {{ color:var(--muted); font-size:11px;
-  text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }}
-.result textarea {{ width:100%; height:200px; background:#0d1117;
-  color:var(--text); border:1px solid var(--line); border-radius:4px;
-  padding:8px; font-family:inherit; font-size:12px; }}
-.privacy {{ background:rgba(63,185,80,0.06); border:1px solid var(--accent-2);
-  border-radius:4px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:var(--accent-2); }}
-.msg {{ margin-top:10px; font-size:12px; }}
-.ok {{ color:var(--accent-2); }}
-</style>
-</head>
-<body>
-<div class="nav">
-  <a href="/__ledger__">账单</a>
-  <a href="/__ledger__/settings">配置</a>
-  <a href="/__ledger__/export" class="active">导出 PR</a>
-  <a href="/__ledger__/api/stats" target="_blank">JSON</a>
-</div>
-<h1>导出脱敏数据包</h1>
-<div class="meta">厂商: <code>{vendor}</code> · 套餐: <code>{plan}</code></div>
 
-<div class="privacy">
-  <strong>隐私保护</strong><br>
-  导出包含：聚合指标（TTFT/TPS 分布、状态码统计、超时率、缓存命中率、厂商 monitor 快照）。<br>
-  <strong>不</strong>包含：Prompt 内容、代码上下文、API key、完整 token（只留后 4 位）。
-</div>
+def render(keys: list[dict[str, Any]], selected_key: dict[str, Any] | None) -> str:
+    key_options = '<option value="0">\u5168\u90e8 Key\uff08\u805a\u5408\uff09</option>'
+    for k in keys:
+        kid = k["id"]
+        label = html.escape(k.get("label", ""))
+        sel = "selected" if selected_key and selected_key.get("id") == kid else ""
+        key_options += f'<option value="{kid}" {sel}>{label}</option>'
 
-<form class="form" id="exportForm">
-  <div class="field">
-    <label for="days">时间窗（最近多少天）</label>
-    <input id="days" type="number" value="7" min="1" max="90">
+    cur_label = html.escape(selected_key.get("label", "\u5168\u90e8 Key")) if selected_key else "\u5168\u90e8 Key"
+    cur_vendor = html.escape(selected_key.get("vendor", "")) if selected_key else ""
+    cur_plan = html.escape(selected_key.get("plan", "")) if selected_key else ""
+
+    body = f"""
+{topbar("export")}
+<div class="body">
+  <div class="page-title">\u5bfc\u51fa\u8131\u654f\u6570\u636e\u5305</div>
+  <div class="page-sub">\u628a\u672c\u5730\u6838\u8d26\u6570\u636e\u6253\u5305\u6210 PR \u5305\u3002\u53ef\u6309\u5355\u4e2a key \u6216\u5168\u90e8\u805a\u5408\u5bfc\u51fa\u3002</div>
+
+  <div class="privacy">
+    <div class="privacy-title">\u2713 \u9690\u79c1\u4fdd\u62a4</div>
+    <strong>\u5305\u542b</strong>\uff1a\u805a\u5408\u6307\u6807\uff08TTFT/TPS \u5206\u5e03\u3001\u72b6\u6001\u7801\u7edf\u8ba1\u3001\u8d85\u65f6\u7387\u3001\u7f13\u5b58\u547d\u4e2d\u7387\u3001monitor \u5feb\u7167\uff09<br>
+    <strong>\u4e0d\u5305\u542b</strong>\uff1aPrompt \u5185\u5bb9\u3001\u4ee3\u7801\u4e0a\u4e0b\u6587\u3001API key\u3001\u5b8c\u6574 token\uff08\u53ea\u7559\u540e 4 \u4f4d\uff09
   </div>
-  <button type="submit">生成数据包</button>
-</form>
 
-<div class="result" id="result" style="display:none">
-  <h3>JSON 数据包（点击下载或复制）</h3>
-  <textarea id="jsonOut" readonly></textarea>
-  <div style="margin-top:8px">
-    <a id="downloadLink" href="#" download="ledger-export.json">
-      <button type="button" class="secondary">⬇ 下载 JSON</button>
-    </a>
-    <button type="button" class="secondary" id="copyJsonBtn">📋 复制 JSON</button>
+  <div class="meta-row">
+    <span class="meta-key">\u5f53\u524d:</span><span class="meta-val">{cur_label}</span>
+    <span class="meta-key">\xb7 \u5382\u5546:</span><span class="meta-val">{cur_vendor}</span>
+    <span class="meta-key">\xb7 \u5957\u9910:</span><span class="meta-val">{cur_plan}</span>
   </div>
-  <h3 style="margin-top:18px">PR 描述（Markdown）</h3>
-  <textarea id="mdOut" readonly style="height:160px"></textarea>
-  <button type="button" class="secondary" id="copyMdBtn" style="margin-top:8px">📋 复制 Markdown</button>
-  <div id="msg" class="msg"></div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="field">
+      <label class="field-label">\u9009\u62e9 Key</label>
+      <select id="keySelect" class="field-input">{key_options}</select>
+    </div>
+    <div class="field">
+      <label class="field-label">\u65f6\u95f4\u7a97\uff08\u5929\uff09</label>
+      <input id="days" type="number" class="field-input" value="7" min="1" max="90" style="width:140px">
+    </div>
+    <button class="btn btn-primary" id="generateBtn">\u751f\u6210\u6570\u636e\u5305</button>
+  </div>
+
+  <div class="result-card" id="result">
+    <div class="result-title">JSON \u6570\u636e\u5305</div>
+    <textarea id="jsonOut" readonly></textarea>
+    <div class="result-actions">
+      <a id="downloadLink" href="#" download="ledger-export.json"><button class="btn btn-secondary">\v \u4e0b\u8f7d JSON</button></a>
+      <button class="btn btn-secondary" id="copyJsonBtn">Copy \u590d\u5236 JSON</button>
+    </div>
+    <div class="result-title">PR \u63cf\u8ff0\uff08Markdown\uff09</div>
+    <textarea id="mdOut" readonly style="height:140px"></textarea>
+    <button class="btn btn-secondary" id="copyMdBtn" style="margin-top:8px">Copy \u590d\u5236 Markdown</button>
+    <div class="msg" id="msg"></div>
+  </div>
 </div>
 
 <script>
-document.getElementById('exportForm').addEventListener('submit', async (e) => {{
-  e.preventDefault();
-  const days = parseInt(document.getElementById('days').value, 10) || 7;
-  const msg = document.getElementById('msg');
-  msg.className = 'msg';
-  msg.textContent = '生成中...';
-  try {{
-    const resp = await fetch('/__ledger__/api/export?days=' + days);
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || resp.status);
-    const json = JSON.stringify(data.bundle, null, 2);
-    document.getElementById('jsonOut').value = json;
-    document.getElementById('mdOut').value = data.pr_description || '';
-    const blob = new Blob([json], {{type:'application/json'}});
-    const url = URL.createObjectURL(blob);
-    const dl = document.getElementById('downloadLink');
-    dl.href = url;
-    dl.download = data.filename || 'ledger-export.json';
-    document.getElementById('result').style.display = '';
-    msg.className = 'msg ok';
-    msg.textContent = '✓ 生成完毕，文件名: ' + (data.filename || '');
-  }} catch (err) {{
-    msg.className = 'msg';
-    msg.style.color = 'var(--danger)';
-    msg.textContent = '失败: ' + err;
-  }}
-}});
+(function() {{
+  var msgEl = document.getElementById('msg');
 
-document.getElementById('copyJsonBtn').addEventListener('click', () => {{
-  document.getElementById('jsonOut').select();
-  document.execCommand('copy');
-  alert('JSON 已复制');
-}});
-document.getElementById('copyMdBtn').addEventListener('click', () => {{
-  document.getElementById('mdOut').select();
-  document.execCommand('copy');
-  alert('Markdown 已复制');
-}});
-</script>
-</body>
-</html>
-"""
+  function showMsg(text, ok) {{
+    msgEl.textContent = text;
+    msgEl.className = 'msg show ' + (ok ? 'ok' : 'err');
+  }}
+
+  document.getElementById('keySelect').addEventListener('change', function(e) {{
+    var v = e.target.value;
+    window.location.href = '/__ledger__/export' + (v && v !== '0' ? '?key=' + v : '');
+  }});
+
+  document.getElementById('generateBtn').addEventListener('click', function() {{
+    var key = document.getElementById('keySelect').value;
+    var days = document.getElementById('days').value || 7;
+    showMsg('\u751f\u6210\u4e2d...', true);
+
+    fetch('/__ledger__/api/export?key=' + key + '&days=' + days)
+      .then(function(r) {{ return r.json(); }})
+      .then(function(data) {{
+        if (!data.ok) throw new Error(data.error || 'failed');
+        var json = JSON.stringify(data.bundle, null, 2);
+        document.getElementById('jsonOut').value = json;
+        document.getElementById('mdOut').value = data.pr_description || '';
+        var blob = new Blob([json], {{type:'application/json'}});
+        var url = URL.createObjectURL(blob);
+        var dl = document.getElementById('downloadLink');
+        dl.href = url;
+        dl.download = data.filename || 'ledger-export.json';
+        document.getElementById('result').style.display = '';
+        showMsg('\u2713 ' + (data.filename || ''), true);
+      }})
+      .catch(function(err) {{ showMsg('\u5931\u8d25: ' + err.message, false); }});
+  }});
+
+  document.getElementById('copyJsonBtn').addEventListener('click', function() {{
+    document.getElementById('jsonOut').select();
+    document.execCommand('copy');
+    alert('JSON \u5df2\u590d\u5236');
+  }});
+  document.getElementById('copyMdBtn').addEventListener('click', function() {{
+    document.getElementById('mdOut').select();
+    document.execCommand('copy');
+    alert('Markdown \u5df2\u590d\u5236');
+  }});
+}})();
+</script>"""
+
+    return page_shell("Ledger \xb7 \u5bfc\u51fa", body)

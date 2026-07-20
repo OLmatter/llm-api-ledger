@@ -131,14 +131,32 @@ def _aggregate_quota(quotas: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
-def build_export_bundle(db_path, days: int = 7) -> dict[str, Any]:
-    """Build the full de-identified PR-package payload for the last `days` days."""
-    cfg = config_store.load_config()
+def build_export_bundle(db_path, days: int = 7, key_id: int = 0) -> dict[str, Any]:
+    """Build the full de-identified PR-package payload for the last `days` days.
+
+    If key_id > 0, filters to that key's data only; otherwise aggregates
+    across all keys.
+    """
     end_ts = time.time()
     start_ts = end_ts - days * 86400
-    window = db.fetch_window(db_path, start_ts, end_ts)
+    window = db.fetch_window(db_path, start_ts, end_ts, key_id=key_id)
     reqs = window.get("requests", [])
     quotas = window.get("quota_snapshots", [])
+
+    # If filtered to a key, derive vendor/plan/token_last4 from that key
+    vendor = ""
+    plan = ""
+    token_last4 = ""
+    user_hash = ""
+    if key_id:
+        k = db.get_key(db_path, key_id)
+        if k:
+            vendor = k.get("vendor", "")
+            plan = k.get("plan", "")
+            token_last4 = k.get("token_last4", "")
+            salt = config_store.get_salt()
+            tok = config_store.get_token_for_key(k["label"]) or ""
+            user_hash = config_store.compute_user_hash(tok, salt)
 
     bundle = {
         "schema_version": 1,
@@ -150,13 +168,11 @@ def build_export_bundle(db_path, days: int = 7) -> dict[str, Any]:
             "start_text": datetime.fromtimestamp(start_ts).strftime("%Y-%m-%d %H:%M:%S"),
             "end_text": datetime.fromtimestamp(end_ts).strftime("%Y-%m-%d %H:%M:%S"),
         },
-        "vendor": cfg.get("vendor", ""),
-        "plan": cfg.get("plan", ""),
-        # NOTE: user_hash is sha256(token+salt)[:16]; not reversible to token.
-        "user_hash": cfg.get("user_hash", ""),
-        # token_last4 is provenance only — lets a reviewer verify which key
-        # produced the data without exposing the key itself.
-        "token_last4": config_store.token_last4(),
+        "key_id": key_id,
+        "vendor": vendor,
+        "plan": plan,
+        "user_hash": user_hash,
+        "token_last4": token_last4,
         "aggregates": {
             "requests": _aggregate_requests(reqs),
             "quota_by_period": _aggregate_quota(quotas),

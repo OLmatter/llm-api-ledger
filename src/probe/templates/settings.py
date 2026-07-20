@@ -1,307 +1,305 @@
 """
-Settings page HTML.
+Settings page — key list + add/edit modal.
 
-Route: /__ledger__/settings
-
-Form fields:
-  - token (password box — value is read into JS then POSTed; server
-    stores via OS keychain, never echoes back the plaintext on re-render)
-  - vendor (select; cascades plan options + upstream_url + monitor_url)
-  - plan (select; populated by vendor)
-  - listen_port (number; read-only — port change requires restart)
-  - monitor_interval_s (number)
-  - opt_in_upload (checkbox)
-  - relay custom: upstream_url override (only when vendor=relay)
-
-On submit: POST /__ledger__/api/settings with JSON; server updates
-config + keychain; reloads dashboard.
+CSS: from base.css. JS: standalone <script>, no f-string escape.
 """
 
 from __future__ import annotations
 
 import html
 import json
+from datetime import datetime
 from typing import Any
 
+from ._base import page_shell, topbar
 from .. import config_store
 
 
-def render(cfg: dict[str, Any], has_token: bool) -> str:
+def render(keys: list[dict[str, Any]], cfg: dict[str, Any]) -> str:
     vendors_json = json.dumps(
-        {
-            k: {
-                "label": v["label"],
-                "url_prefix": v["url_prefix"],
-                "upstream_default": v.get("upstream_default", ""),
-                "monitor_url_default": v.get("monitor_url_default", ""),
-                "plans": v.get("plans", []),
-            }
-            for k, v in config_store.VENDORS.items()
-        },
+        {k: {"label": v["label"], "url_prefix": v["url_prefix"],
+             "upstream_default": v.get("upstream_default", ""),
+             "monitor_url_default": v.get("monitor_url_default", ""),
+             "plans": v.get("plans", [])}
+         for k, v in config_store.VENDORS.items()},
         ensure_ascii=False,
     )
-    current_vendor = html.escape(cfg.get("vendor", "zhipu"))
-    current_plan = html.escape(cfg.get("plan", ""))
-    current_upstream = html.escape(cfg.get("upstream_url", ""))
-    current_monitor = html.escape(cfg.get("monitor_url", ""))
-    listen_port = cfg.get("listen_port", 8080)
-    monitor_interval = cfg.get("monitor_interval_s", 300)
-    opt_in = "checked" if cfg.get("opt_in_upload", True) else ""
-    user_hash = html.escape(cfg.get("user_hash", ""))
-    relay_plan_label = html.escape(cfg.get("relay_plan_label", ""))
 
-    token_state = (
-        '<span class="ok">✓ Token 已配置（存储在系统 keychain）</span>'
-        if has_token
-        else '<span class="warn">⚠ 未配置 Token</span>'
-    )
+    key_cards = ""
+    if keys:
+        for k in keys:
+            kid = k["id"]
+            label = html.escape(k.get("label", ""))
+            vendor = html.escape(k.get("vendor", ""))
+            plan_id = html.escape(k.get("plan", ""))
+            last4 = html.escape(k.get("token_last4", ""))
+            upstream = html.escape(k.get("upstream_url", ""))
+            active = k.get("is_active", 1)
+            created = k.get("created_at", 0)
+            last_used = k.get("last_used_at", 0)
+            created_str = datetime.fromtimestamp(created).strftime("%Y-%m-%d") if created else "\u2014"
+            last_used_str = datetime.fromtimestamp(last_used).strftime("%m-%d %H:%M") if last_used else "\u672a\u4f7f\u7528"
+            active_dot = '<span class="dot active"></span>' if active else '<span class="dot inactive"></span>'
+            vinfo = config_store.VENDORS.get(vendor, {})
+            plan_label = plan_id
+            for p in vinfo.get("plans", []):
+                if p.get("id") == plan_id:
+                    plan_label = html.escape(p.get("label", plan_id))
+                    break
+            vendor_label = html.escape(vinfo.get("label", vendor))
+            key_data = html.escape(json.dumps(k, ensure_ascii=False))
+            url_hint = f"http://127.0.0.1:{cfg.get('listen_port', 8080)}/{vinfo.get('url_prefix', vendor)}/{k.get('label', '')}"
 
-    return f"""<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>llm-api-ledger · 配置</title>
-<style>
-:root {{
-  --bg:#0d1117; --panel:#161b22; --line:#30363d;
-  --text:#e6edf3; --muted:#7d8590; --accent:#58a6ff;
-  --accent-2:#3fb950; --warn:#d29922; --danger:#f85149;
-}}
-* {{ margin:0; padding:0; box-sizing:border-box; }}
-body {{ background:var(--bg); color:var(--text);
-  font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
-  font-size:13px; padding:24px; line-height:1.5; }}
-h1 {{ font-size:18px; font-weight:600; margin-bottom:4px; }}
-a {{ color:var(--accent); }}
-.nav {{ display:flex; gap:14px; align-items:center; font-size:12px; margin-bottom:20px; }}
-.nav a {{ color:var(--muted); }}
-.nav a.active {{ color:var(--text); }}
-.meta {{ color:var(--muted); font-size:12px; margin-bottom:20px; }}
-.form {{ background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; max-width:640px; }}
-.field {{ margin-bottom:16px; }}
-.field label {{ display:block; color:var(--muted); font-size:11px;
-  text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }}
-.field input, .field select {{ width:100%; background:#0d1117; color:var(--text);
-  border:1px solid var(--line); border-radius:4px; padding:8px 10px;
-  font-family:inherit; font-size:13px; }}
-.field input[type=number] {{ width:140px; }}
-.field .hint {{ font-size:11px; color:var(--muted); margin-top:4px; }}
-.field .hint.danger {{ color:var(--danger); }}
-.checkbox-field {{ display:flex; align-items:center; gap:8px; }}
-.checkbox-field input {{ width:auto; }}
-.checkbox-field label {{ color:var(--text); text-transform:none; letter-spacing:0; font-size:13px; }}
-button.save {{ background:var(--accent); color:#0d1117; border:none; border-radius:4px;
-  padding:10px 20px; font-family:inherit; font-size:13px; font-weight:600;
-  cursor:pointer; margin-right:8px; }}
-button.save:hover {{ background:#79b8ff; }}
-button.danger {{ background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:4px;
-  padding:10px 20px; font-family:inherit; font-size:13px; cursor:pointer; }}
-.ok {{ color:var(--accent-2); }}
-.warn {{ color:var(--warn); }}
-.msg {{ margin-top:12px; padding:8px 12px; border-radius:4px; font-size:12px; display:none; }}
-.msg.ok-show {{ display:block; background:rgba(63,185,80,0.1); color:var(--accent-2); border:1px solid var(--accent-2); }}
-.msg.err-show {{ display:block; background:rgba(248,81,73,0.1); color:var(--danger); border:1px solid var(--danger); }}
-.token-warning {{ background:rgba(210,153,34,0.08); border:1px solid var(--warn);
-  border-radius:4px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:var(--warn); }}
-.token-warning strong {{ color:var(--warn); }}
-</style>
-</head>
-<body>
-<div class="nav">
-  <a href="/__ledger__">账单</a>
-  <a href="/__ledger__/settings" class="active">配置</a>
-  <a href="/__ledger__/export">导出 PR</a>
-  <a href="/__ledger__/api/stats" target="_blank">JSON</a>
-</div>
-<h1>llm-api-ledger · 配置</h1>
-<div class="meta">Token 状态: {token_state} · user_hash: <code>{user_hash or '(未生成)'}</code></div>
+            key_cards += f"""
+            <div class="key-card" data-key-id="{kid}">
+              <div class="key-card-head">
+                <div class="key-card-icon {vendor}">{vendor[0].upper() if vendor else "?"}</div>
+                <div class="key-card-title">
+                  <div class="key-card-label">{active_dot} {label}</div>
+                  <div class="key-card-vendor">{vendor_label}</div>
+                </div>
+                <div class="key-card-actions">
+                  <button class="btn-icon" data-action="edit" data-key="{key_data}">\[edit]</button>
+                  <button class="btn-icon danger" data-action="delete" data-key-id="{kid}" data-key-label="{label}">X</button>
+                </div>
+              </div>
+              <div class="key-card-body">
+                <div class="key-card-row"><span class="row-label">\u5957\u9910</span><span class="row-val">{plan_label}</span></div>
+                <div class="key-card-row"><span class="row-label">Token</span><span class="row-val mono">***{last4}</span></div>
+                <div class="key-card-row"><span class="row-label">\u4e0a\u6e38</span><span class="row-val mono small">{upstream}</span></div>
+                <div class="key-card-row"><span class="row-label">Base URL</span><span class="row-val mono small copyable" data-url="{url_hint}">{url_hint}</span></div>
+                <div class="key-card-row"><span class="row-label">\u521b\u5efa</span><span class="row-val">{created_str}</span></div>
+                <div class="key-card-row"><span class="row-label">\u6700\u540e\u4f7f\u7528</span><span class="row-val">{last_used_str}</span></div>
+              </div>
+            </div>"""
+    else:
+        key_cards = """<div class="empty-state"><div class="empty-icon">Key</div>
+          <div class="empty-title">\u8fd8\u6ca1\u6709 Key</div>
+          <div class="empty-sub">\u70b9\u51fb\u53f3\u4e0a\u89d2\u300c+ \u6dfb\u52a0 Key\u300d\u5f00\u59cb</div></div>"""
 
-<div class="token-warning">
-  <strong>⚠ Token 安全提示</strong><br>
-  Token 存储在系统 keychain（Windows Credential Manager / macOS Keychain / Linux Secret Service），
-  绝不写入磁盘明文、不进日志、不上传。<br>
-  <strong>不要</strong>在任何聊天、截图、GitHub issue、PR 里贴完整 token。
-  如需共享数据，请用「导出 PR」功能（自动脱敏，只保留后 4 位）。
+    body = f"""
+{topbar("settings")}
+<div class="body">
+  <div class="page-head">
+    <div>
+      <div class="page-title">Key \u7ba1\u7406</div>
+      <div class="page-sub">{len(keys)} \u4e2a API Key \xb7 Token \u5b58\u7cfb\u7edf keychain</div>
+    </div>
+    <button class="btn-add" id="addBtn">+ \u6dfb\u52a0 Key</button>
+  </div>
+
+  <div class="notice">
+    <strong>\u26a0 Token \u5b89\u5168</strong> \xb7 \u5b58\u7cfb\u7edf keychain\uff0c\u4e0d\u5199\u660e\u6587/\u4e0d\u8fdb\u65e5\u5fd7/\u4e0d\u4e0a\u4f20\u3002<strong>\u4e0d\u8981</strong>\u5728\u804a\u5929/\u622a\u56fe/issue \u8d34\u5b8c\u6574 token\u3002
+  </div>
+
+  <div class="key-grid">{key_cards}</div>
 </div>
 
-<form class="form" id="settingsForm">
-  <div class="field">
-    <label for="token">API Token（智谱即为 ANTHROPIC_AUTH_TOKEN）</label>
-    <input id="token" name="token" type="password" placeholder="粘贴你的 token（不会显示明文）" autocomplete="off">
-    <div class="hint">留空表示不修改现有 token。首次配置必须填。</div>
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">\u6dfb\u52a0 Key</div>
+      <button class="modal-close" id="modalClose">\u00d7</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editKeyId" value="">
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">\u540d\u79f0</label>
+          <input id="m_label" type="text" class="field-input" placeholder="\u4f8b\uff1a\u667a\u8c31\u4e3b\u529b">
+        </div>
+        <div class="field">
+          <label class="field-label">\u5382\u5546</label>
+          <select id="m_vendor" class="field-input"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">\u5957\u9910</label>
+        <select id="m_plan" class="field-input"></select>
+      </div>
+      <div class="field">
+        <label class="field-label">API Token <span class="hint">\u7f16\u8f91\u65f6\u7559\u7a7a=\u4e0d\u6539</span></label>
+        <input id="m_token" type="password" class="field-input mono" placeholder="\u7c98\u8d34 token" autocomplete="off">
+      </div>
+      <div class="field">
+        <label class="field-label">\u4e0a\u6e38 URL <span class="hint">\u9009\u5382\u5546\u81ea\u52a8\u586b</span></label>
+        <input id="m_upstream" type="text" class="field-input mono">
+      </div>
+      <div class="field">
+        <label class="field-label">Monitor API URL <span class="hint">\u7559\u7a7a=\u8be5\u5382\u5546\u4e0d\u652f\u6301</span></label>
+        <input id="m_monitor" type="text" class="field-input mono">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="modalCancel">\u53d6\u6d88</button>
+      <button class="btn btn-primary" id="modalSave">\u4fdd\u5b58</button>
+    </div>
   </div>
+</div>
 
-  <div class="field">
-    <label for="vendor">厂商</label>
-    <select id="vendor" name="vendor">
-      <!-- options populated by JS based on VENDORS -->
-    </select>
-    <div class="hint">不同厂商对应不同 base_url 前缀。改 IDE 的 base_url 时记得带上前缀。</div>
-  </div>
-
-  <div class="field">
-    <label for="plan">套餐</label>
-    <select id="plan" name="plan"></select>
-  </div>
-
-  <div class="field" id="relayLabelField" style="display:none">
-    <label for="relay_plan_label">中转站套餐名（自定义）</label>
-    <input id="relay_plan_label" name="relay_plan_label" type="text" value="{relay_plan_label}" placeholder="例: 某中转站 9.9 元套餐">
-  </div>
-
-  <div class="field">
-    <label for="upstream_url">上游 URL</label>
-    <input id="upstream_url" name="upstream_url" type="text" value="{current_upstream}">
-    <div class="hint">选厂商时自动填，可手动改。探针会把 IDE 请求转发到这里。</div>
-  </div>
-
-  <div class="field">
-    <label for="monitor_url">Monitor API URL（厂商额度查询）</label>
-    <input id="monitor_url" name="monitor_url" type="text" value="{current_monitor}">
-    <div class="hint">智谱/Z.ai 有此 API；DeepSeek/OpenAI/Anthropic 暂无，留空即可。</div>
-  </div>
-
-  <div class="field">
-    <label for="listen_port">本地监听端口</label>
-    <input id="listen_port" name="listen_port" type="number" value="{listen_port}" readonly>
-    <div class="hint">改端口需重启探针。</div>
-  </div>
-
-  <div class="field">
-    <label for="monitor_interval_s">Monitor 探查间隔（秒）</label>
-    <input id="monitor_interval_s" name="monitor_interval_s" type="number" value="{monitor_interval}" min="60">
-    <div class="hint">默认 300 秒（5 分钟）。低于 60 秒会被强制提到 60 秒。</div>
-  </div>
-
-  <div class="field checkbox-field">
-    <input id="opt_in_upload" name="opt_in_upload" type="checkbox" {opt_in}>
-    <label for="opt_in_upload">志愿上传脱敏数据（未来开放，目前仅本地）</label>
-  </div>
-
-  <button type="submit" class="save">保存配置</button>
-  <button type="button" class="danger" id="clearTokenBtn">清除 Token</button>
-  <div id="msg" class="msg"></div>
-</form>
-
-<script>
-const VENDORS = {vendors_json};
-const CURRENT_VENDOR = "{current_vendor}";
-const CURRENT_PLAN = "{current_plan}";
-
-function populateVendors() {{
-  const sel = document.getElementById('vendor');
-  sel.innerHTML = '';
-  for (const [key, v] of Object.entries(VENDORS)) {{
-    const opt = document.createElement('option');
-    opt.value = key;
-    opt.textContent = v.label + '  (/' + v.url_prefix + '/)';
-    if (key === CURRENT_VENDOR) opt.selected = true;
-    sel.appendChild(opt);
-  }}
-}}
-function populatePlans(vendorKey, selectedPlan) {{
-  const v = VENDORS[vendorKey];
-  const sel = document.getElementById('plan');
-  sel.innerHTML = '';
-  if (!v) return;
-  if (!v.plans || v.plans.length === 0) {{
-    const opt = document.createElement('option');
-    opt.value = 'custom';
-    opt.textContent = '自定义（在下方填中转站套餐名）';
-    sel.appendChild(opt);
-    document.getElementById('relayLabelField').style.display = '';
-  }} else {{
-    document.getElementById('relayLabelField').style.display = 'none';
-    for (const p of v.plans) {{
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.textContent = p.label;
-      if (p.id === selectedPlan) opt.selected = true;
-      sel.appendChild(opt);
-    }}
-  }}
-}}
-function updateUpstreamDefaults(vendorKey) {{
-  const v = VENDORS[vendorKey];
-  if (!v) return;
-  // Only auto-fill if the current value is empty or matches another vendor's default
-  const up = document.getElementById('upstream_url');
-  const mo = document.getElementById('monitor_url');
-  if (!up.value || Object.values(VENDORS).some(x => x.upstream_default === up.value)) {{
-    up.value = v.upstream_default || '';
-  }}
-  if (!mo.value || Object.values(VENDORS).some(x => x.monitor_url_default === mo.value)) {{
-    mo.value = v.monitor_url_default || '';
-  }}
-}}
-
-populateVendors();
-populatePlans(CURRENT_VENDOR, CURRENT_PLAN);
-updateUpstreamDefaults(CURRENT_VENDOR);
-
-document.getElementById('vendor').addEventListener('change', (e) => {{
-  populatePlans(e.target.value, '');
-  updateUpstreamDefaults(e.target.value);
-}});
-
-document.getElementById('settingsForm').addEventListener('submit', async (e) => {{
-  e.preventDefault();
-  const msg = document.getElementById('msg');
-  msg.className = 'msg';
-  const payload = {{
-    vendor: document.getElementById('vendor').value,
-    plan: document.getElementById('plan').value,
-    upstream_url: document.getElementById('upstream_url').value,
-    monitor_url: document.getElementById('monitor_url').value,
-    monitor_interval_s: parseInt(document.getElementById('monitor_interval_s').value, 10),
-    opt_in_upload: document.getElementById('opt_in_upload').checked,
-    relay_plan_label: document.getElementById('relay_plan_label').value,
-  }};
-  const token = document.getElementById('token').value;
-  if (token) payload.token = token;
-  try {{
-    const resp = await fetch('/__ledger__/api/settings', {{
-      method: 'POST',
-      headers: {{'Content-Type': 'application/json'}},
-      body: JSON.stringify(payload),
-    }});
-    const data = await resp.json();
-    if (resp.ok && data.ok) {{
-      msg.className = 'msg ok-show';
-      msg.textContent = '✓ 已保存。Token 已存入 keychain。';
-      document.getElementById('token').value = '';
-      // reload after a moment to refresh user_hash display
-      setTimeout(() => window.location.reload(), 1200);
-    }} else {{
-      msg.className = 'msg err-show';
-      msg.textContent = '保存失败: ' + (data.error || resp.status);
-    }}
-  }} catch (err) {{
-    msg.className = 'msg err-show';
-    msg.textContent = '请求失败: ' + err;
-  }}
-}});
-
-document.getElementById('clearTokenBtn').addEventListener('click', async () => {{
-  if (!confirm('确认清除 keychain 里的 token？清除后探针无法调 monitor API。')) return;
-  try {{
-    const resp = await fetch('/__ledger__/api/token', {{method: 'DELETE'}});
-    const data = await resp.json();
-    if (resp.ok && data.ok) {{
-      document.getElementById('msg').className = 'msg ok-show';
-      document.getElementById('msg').textContent = '✓ Token 已清除';
-      setTimeout(() => window.location.reload(), 1200);
-    }} else {{
-      document.getElementById('msg').className = 'msg err-show';
-      document.getElementById('msg').textContent = '清除失败: ' + (data.error || resp.status);
-    }}
-  }} catch (err) {{
-    document.getElementById('msg').className = 'msg err-show';
-    document.getElementById('msg').textContent = '请求失败: ' + err;
-  }}
-}});
-</script>
-</body>
-</html>
+<div class="toast" id="toast"></div>
 """
+
+    # JS is a plain string — no f-string, no Python brace conflicts
+    js_block = """<script id="vendorsData" type="application/json">__VENDORS_JSON__</script>
+<script>
+(function() {
+  var VENDORS = JSON.parse(document.getElementById('vendorsData').textContent);
+  var overlay = document.getElementById('modalOverlay');
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { toastEl.classList.remove('show'); }, 2500);
+  }
+
+  function populateVendorOptions() {
+    var sel = document.getElementById('m_vendor');
+    sel.innerHTML = '';
+    Object.keys(VENDORS).forEach(function(k) {
+      var o = document.createElement('option');
+      o.value = k; o.textContent = VENDORS[k].label;
+      sel.appendChild(o);
+    });
+  }
+  function populatePlans(vendorKey, selected) {
+    var v = VENDORS[vendorKey];
+    var sel = document.getElementById('m_plan');
+    sel.innerHTML = '';
+    if (!v || !v.plans || v.plans.length === 0) {
+      var o = document.createElement('option');
+      o.value = 'custom'; o.textContent = '\u81ea\u5b9a\u4e49';
+      sel.appendChild(o);
+    } else {
+      v.plans.forEach(function(p) {
+        var o = document.createElement('option');
+        o.value = p.id; o.textContent = p.label;
+        if (p.id === selected) o.selected = true;
+        sel.appendChild(o);
+      });
+    }
+  }
+  function updateDefaults(vendorKey) {
+    var v = VENDORS[vendorKey];
+    if (!v) return;
+    document.getElementById('m_upstream').value = v.upstream_default || '';
+    document.getElementById('m_monitor').value = v.monitor_url_default || '';
+  }
+
+  function openAddModal() {
+    document.getElementById('modalTitle').textContent = '\u6dfb\u52a0 Key';
+    document.getElementById('editKeyId').value = '';
+    document.getElementById('m_label').value = '';
+    document.getElementById('m_token').value = '';
+    document.getElementById('m_token').placeholder = '\u7c98\u8d34 token\uff08\u5fc5\u586b\uff09';
+    document.getElementById('m_upstream').value = '';
+    document.getElementById('m_monitor').value = '';
+    populateVendorOptions();
+    populatePlans(document.getElementById('m_vendor').value, '');
+    updateDefaults(document.getElementById('m_vendor').value);
+    overlay.classList.add('show');
+    setTimeout(function() { document.getElementById('m_label').focus(); }, 100);
+  }
+
+  function openEditModal(keyData) {
+    document.getElementById('modalTitle').textContent = '\u7f16\u8f91 Key';
+    document.getElementById('editKeyId').value = keyData.id;
+    document.getElementById('m_label').value = keyData.label;
+    document.getElementById('m_token').value = '';
+    document.getElementById('m_token').placeholder = '\u7559\u7a7a=\u4e0d\u6539\u73b0\u6709 token';
+    document.getElementById('m_upstream').value = keyData.upstream_url || '';
+    document.getElementById('m_monitor').value = keyData.monitor_url || '';
+    populateVendorOptions();
+    var vsel = document.getElementById('m_vendor');
+    for (var i = 0; i < vsel.options.length; i++) {
+      if (vsel.options[i].value === keyData.vendor) { vsel.selectedIndex = i; break; }
+    }
+    populatePlans(keyData.vendor, keyData.plan);
+    overlay.classList.add('show');
+  }
+
+  function closeModal() { overlay.classList.remove('show'); }
+
+  document.getElementById('addBtn').addEventListener('click', openAddModal);
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+  document.getElementById('m_vendor').addEventListener('change', function(e) {
+    populatePlans(e.target.value, '');
+    updateDefaults(e.target.value);
+  });
+
+  document.getElementById('modalSave').addEventListener('click', function() {
+    var kid = document.getElementById('editKeyId').value;
+    var payload = {
+      label: document.getElementById('m_label').value.trim(),
+      vendor: document.getElementById('m_vendor').value,
+      plan: document.getElementById('m_plan').value,
+      upstream_url: document.getElementById('m_upstream').value,
+      monitor_url: document.getElementById('m_monitor').value,
+    };
+    var token = document.getElementById('m_token').value;
+    if (token) payload.token = token;
+    if (!payload.label) { showToast('\u540d\u79f0\u5fc5\u586b'); return; }
+
+    var url, method;
+    if (kid) {
+      url = '/__ledger__/api/keys/' + kid;
+      method = 'PATCH';
+    } else {
+      if (!token) { showToast('\u65b0 Key \u5fc5\u987b\u586b token'); return; }
+      url = '/__ledger__/api/keys';
+      method = 'POST';
+    }
+
+    fetch(url, { method: method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.ok) {
+          closeModal();
+          showToast('\u2713 \u5df2\u4fdd\u5b58');
+          setTimeout(function() { window.location.reload(); }, 600);
+        } else {
+          showToast('\u5931\u8d25: ' + (data.error || 'unknown'));
+        }
+      })
+      .catch(function(err) { showToast('\u8bf7\u6c42\u5931\u8d25: ' + err); });
+  });
+
+  // Edit / delete buttons (event delegation)
+  document.querySelector('.key-grid').addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    if (btn.dataset.action === 'edit') {
+      openEditModal(JSON.parse(btn.dataset.key));
+    } else if (btn.dataset.action === 'delete') {
+      var kid = btn.dataset.keyId;
+      var label = btn.dataset.keyLabel;
+      if (!confirm('\u786e\u8ba4\u5220\u9664\u300c' + label + '\u300d\uff1f')) return;
+      fetch('/__ledger__/api/keys/' + kid, { method: 'DELETE' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.ok) { showToast('\u2713 \u5df2\u5220\u9664'); setTimeout(function() { window.location.reload(); }, 600); }
+          else { showToast('\u5220\u9664\u5931\u8d25: ' + (data.error || '')); }
+        });
+    }
+  });
+
+  // Copyable base URLs
+  document.querySelector('.key-grid').addEventListener('click', function(e) {
+    var el = e.target.closest('.copyable');
+    if (!el) return;
+    navigator.clipboard.writeText(el.dataset.url).then(function() { showToast('\u2713 \u5df2\u590d\u5236'); });
+  });
+})();
+</script>"""
+
+    js_block = js_block.replace("__VENDORS_JSON__", vendors_json)
+    full_body = body + "\n" + js_block
+    return page_shell("Ledger \xb7 \u914d\u7f6e", full_body)

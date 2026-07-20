@@ -1,9 +1,13 @@
 """
 SQLite storage for the probe.
 
-Two tables:
+Three tables:
+- keys: user-configured API keys (label, vendor, plan, keychain ref)
 - requests: one row per upstream API call (transparent proxy observation)
 - quota_snapshots: one row per monitor-API poll (vendor-claimed usage)
+
+All data is filtered by key_id at write and read time, so the dashboard
+can show one key, several keys, or all keys aggregated.
 
 Schema is migrated in-place via column-add; no destructive migrations.
 All fields use INTEGER/TEXT so the DB is portable across OS.
@@ -25,9 +29,11 @@ _DEFAULT_DB = Path(__file__).resolve().parent.parent.parent / "data" / "ledger.d
 
 
 def get_db_path(override: str | None = None) -> Path:
+    import os
+
     if override:
         return Path(override)
-    env = __import__("os").environ.get("LEDGER_DB")
+    env = os.environ.get("LEDGER_DB")
     if env:
         return Path(env)
     return _DEFAULT_DB
@@ -35,11 +41,30 @@ def get_db_path(override: str | None = None) -> Path:
 
 # ── Schema ────────────────────────────────────────────────────────────────
 
+_KEYS_SCHEMA = """
+CREATE TABLE IF NOT EXISTS keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT NOT NULL UNIQUE,
+    vendor TEXT NOT NULL DEFAULT '',
+    plan TEXT NOT NULL DEFAULT '',
+    upstream_url TEXT NOT NULL DEFAULT '',
+    monitor_url TEXT NOT NULL DEFAULT '',
+    token_last4 TEXT NOT NULL DEFAULT '',
+    keychain_id TEXT NOT NULL DEFAULT '',
+    monitor_interval_s INTEGER NOT NULL DEFAULT 300,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at REAL NOT NULL,
+    last_used_at REAL NOT NULL DEFAULT 0,
+    notes TEXT NOT NULL DEFAULT ''
+)
+"""
+
 _REQUESTS_SCHEMA = """
 CREATE TABLE IF NOT EXISTS requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ts REAL NOT NULL,
     ts_text TEXT NOT NULL,
+    key_id INTEGER NOT NULL DEFAULT 0,
     vendor TEXT NOT NULL DEFAULT '',
     plan TEXT NOT NULL DEFAULT '',
     model TEXT NOT NULL DEFAULT '',
@@ -68,6 +93,7 @@ CREATE TABLE IF NOT EXISTS quota_snapshots (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ts REAL NOT NULL,
     ts_text TEXT NOT NULL,
+    key_id INTEGER NOT NULL DEFAULT 0,
     vendor TEXT NOT NULL DEFAULT '',
     plan TEXT NOT NULL DEFAULT '',
     period_type TEXT NOT NULL,
@@ -82,6 +108,7 @@ CREATE TABLE IF NOT EXISTS quota_snapshots (
 
 _REQUESTS_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_req_ts ON requests(ts)",
+    "CREATE INDEX IF NOT EXISTS idx_req_key ON requests(key_id)",
     "CREATE INDEX IF NOT EXISTS idx_req_vendor ON requests(vendor)",
     "CREATE INDEX IF NOT EXISTS idx_req_model ON requests(model)",
     "CREATE INDEX IF NOT EXISTS idx_req_status ON requests(status_code)",
@@ -89,11 +116,16 @@ _REQUESTS_INDEXES = [
 
 _QUOTA_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_quota_ts ON quota_snapshots(ts)",
+    "CREATE INDEX IF NOT EXISTS idx_quota_key ON quota_snapshots(key_id)",
     "CREATE INDEX IF NOT EXISTS idx_quota_vendor ON quota_snapshots(vendor)",
 ]
 
+_KEYS_INDEXES = [
+    "CREATE INDEX IF NOT EXISTS idx_keys_label ON keys(label)",
+    "CREATE INDEX IF NOT EXISTS idx_keys_active ON keys(is_active)",
+]
+
 # Columns added via ALTER TABLE for forward-compatible migration.
-# Each tuple: (table, column, decl). Idempotent: skipped if column exists.
 _REQUESTS_MIGRATIONS: list[tuple[str, str, str]] = [
     ("requests", "ttft_ms", "INTEGER NOT NULL DEFAULT 0"),
     ("requests", "tps_mean", "REAL NOT NULL DEFAULT 0"),
@@ -105,6 +137,11 @@ _REQUESTS_MIGRATIONS: list[tuple[str, str, str]] = [
     ("requests", "request_did_complete", "INTEGER NOT NULL DEFAULT 0"),
     ("requests", "vendor", "TEXT NOT NULL DEFAULT ''"),
     ("requests", "plan", "TEXT NOT NULL DEFAULT ''"),
+    ("requests", "key_id", "INTEGER NOT NULL DEFAULT 0"),
+]
+
+_QUOTA_MIGRATIONS: list[tuple[str, str, str]] = [
+    ("quota_snapshots", "key_id", "INTEGER NOT NULL DEFAULT 0"),
 ]
 
 
@@ -120,12 +157,12 @@ def init_db(db_path: Path | None = None) -> None:
     path = db_path or get_db_path()
     conn = _connect(path)
     try:
+        conn.executescript(_KEYS_SCHEMA)
         conn.executescript(_REQUESTS_SCHEMA)
         conn.executescript(_QUOTA_SCHEMA)
-        for stmt in _REQUESTS_INDEXES + _QUOTA_INDEXES:
+        for stmt in _REQUESTS_INDEXES + _QUOTA_INDEXES + _KEYS_INDEXES:
             conn.execute(stmt)
-        # Additive migrations: ALTER TABLE ADD COLUMN (skip if present)
-        for table, col, decl in _REQUESTS_MIGRATIONS:
+        for table, col, decl in _REQUESTS_MIGRATIONS + _QUOTA_MIGRATIONS:
             cols = [r[1] for r in conn.execute(f"PRAGMA table_info({table})").fetchall()]
             if col not in cols:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {decl}")
@@ -135,21 +172,146 @@ def init_db(db_path: Path | None = None) -> None:
         conn.close()
 
 
-# ── Writers ───────────────────────────────────────────────────────────────
+# ── Key CRUD ──────────────────────────────────────────────────────────────
+
+
+def list_keys(db_path: Path) -> list[dict[str, Any]]:
+    conn = _connect(db_path)
+    try:
+        rows = conn.execute(
+            """SELECT id, label, vendor, plan, upstream_url, monitor_url,
+                      token_last4, keychain_id, monitor_interval_s,
+                      is_active, created_at, last_used_at, notes
+               FROM keys ORDER BY is_active DESC, id ASC"""
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_key(db_path: Path, key_id: int) -> dict[str, Any] | None:
+    conn = _connect(db_path)
+    try:
+        row = conn.execute(
+            """SELECT id, label, vendor, plan, upstream_url, monitor_url,
+                      token_last4, keychain_id, monitor_interval_s,
+                      is_active, created_at, last_used_at, notes
+               FROM keys WHERE id = ?""",
+            (key_id,),
+        ).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def get_key_by_label(db_path: Path, label: str) -> dict[str, Any] | None:
+    conn = _connect(db_path)
+    try:
+        row = conn.execute(
+            """SELECT id, label, vendor, plan, upstream_url, monitor_url,
+                      token_last4, keychain_id, monitor_interval_s,
+                      is_active, created_at, last_used_at, notes
+               FROM keys WHERE label = ?""",
+            (label,),
+        ).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def insert_key(db_path: Path, k: dict[str, Any]) -> int:
+    conn = _connect(db_path)
+    try:
+        cur = conn.execute(
+            """INSERT INTO keys
+               (label, vendor, plan, upstream_url, monitor_url,
+                token_last4, keychain_id, monitor_interval_s,
+                is_active, created_at, last_used_at, notes)
+               VALUES (:label, :vendor, :plan, :upstream_url, :monitor_url,
+                       :token_last4, :keychain_id, :monitor_interval_s,
+                       :is_active, :created_at, 0, :notes)""",
+            {
+                "label": k["label"],
+                "vendor": k.get("vendor", ""),
+                "plan": k.get("plan", ""),
+                "upstream_url": k.get("upstream_url", ""),
+                "monitor_url": k.get("monitor_url", ""),
+                "token_last4": k.get("token_last4", ""),
+                "keychain_id": k.get("keychain_id", ""),
+                "monitor_interval_s": int(k.get("monitor_interval_s", 300) or 300),
+                "is_active": 1 if k.get("is_active", True) else 0,
+                "created_at": k.get("created_at", time.time()),
+                "notes": k.get("notes", ""),
+            },
+        )
+        conn.commit()
+        return cur.lastrowid or 0
+    finally:
+        conn.close()
+
+
+def update_key(db_path: Path, key_id: int, updates: dict[str, Any]) -> bool:
+    if not updates:
+        return False
+    allowed = {"label", "vendor", "plan", "upstream_url", "monitor_url",
+               "token_last4", "keychain_id", "monitor_interval_s",
+               "is_active", "notes", "last_used_at"}
+    sets = []
+    vals: list[Any] = []
+    for k, v in updates.items():
+        if k not in allowed:
+            continue
+        if k == "is_active":
+            v = 1 if v else 0
+        sets.append(f"{k} = ?")
+        vals.append(v)
+    if not sets:
+        return False
+    vals.append(key_id)
+    conn = _connect(db_path)
+    try:
+        conn.execute(f"UPDATE keys SET {', '.join(sets)} WHERE id = ?", vals)
+        conn.commit()
+        return True
+    finally:
+        conn.close()
+
+
+def delete_key(db_path: Path, key_id: int) -> bool:
+    conn = _connect(db_path)
+    try:
+        cur = conn.execute("DELETE FROM keys WHERE id = ?", (key_id,))
+        conn.commit()
+        return cur.rowcount > 0
+    finally:
+        conn.close()
+
+
+def touch_key_last_used(db_path: Path, key_id: int) -> None:
+    conn = _connect(db_path)
+    try:
+        conn.execute("UPDATE keys SET last_used_at = ? WHERE id = ?", (time.time(), key_id))
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        conn.close()
+
+
+# ── Request writers ───────────────────────────────────────────────────────
 
 
 def save_request(db_path: Path, rec: dict[str, Any]) -> int:
-    """Insert one request observation. Returns the new row id."""
     conn = _connect(db_path)
     try:
         cur = conn.execute(
             """INSERT INTO requests
-               (ts, ts_text, vendor, plan, model, endpoint,
+               (ts, ts_text, key_id, vendor, plan, model, endpoint,
                 input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens,
                 ttft_ms, total_latency_ms, tps_mean, status_code,
                 error_type, error_message_hash, timeout_type, stop_signal,
                 user_hash, request_did_complete, num_messages, effort)
-               VALUES (:ts, :ts_text, :vendor, :plan, :model, :endpoint,
+               VALUES (:ts, :ts_text, :key_id, :vendor, :plan, :model, :endpoint,
                        :input_tokens, :output_tokens, :cache_creation_tokens, :cache_read_tokens,
                        :ttft_ms, :total_latency_ms, :tps_mean, :status_code,
                        :error_type, :error_message_hash, :timeout_type, :stop_signal,
@@ -157,6 +319,7 @@ def save_request(db_path: Path, rec: dict[str, Any]) -> int:
             {
                 "ts": rec.get("ts", time.time()),
                 "ts_text": rec.get("ts_text", datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                "key_id": int(rec.get("key_id", 0) or 0),
                 "vendor": rec.get("vendor", ""),
                 "plan": rec.get("plan", ""),
                 "model": rec.get("model", ""),
@@ -189,18 +352,18 @@ def save_request(db_path: Path, rec: dict[str, Any]) -> int:
 
 
 def save_quota_snapshot(db_path: Path, snap: dict[str, Any]) -> int:
-    """Insert one monitor-API quota snapshot. Returns the new row id."""
     conn = _connect(db_path)
     try:
         cur = conn.execute(
             """INSERT INTO quota_snapshots
-               (ts, ts_text, vendor, plan, period_type, period_unit,
+               (ts, ts_text, key_id, vendor, plan, period_type, period_unit,
                 percentage, current_value, limit_value, raw_json, user_hash)
-               VALUES (:ts, :ts_text, :vendor, :plan, :period_type, :period_unit,
+               VALUES (:ts, :ts_text, :key_id, :vendor, :plan, :period_type, :period_unit,
                        :percentage, :current_value, :limit_value, :raw_json, :user_hash)""",
             {
                 "ts": snap.get("ts", time.time()),
                 "ts_text": snap.get("ts_text", datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                "key_id": int(snap.get("key_id", 0) or 0),
                 "vendor": snap.get("vendor", ""),
                 "plan": snap.get("plan", ""),
                 "period_type": snap.get("period_type", ""),
@@ -221,16 +384,26 @@ def save_quota_snapshot(db_path: Path, snap: dict[str, Any]) -> int:
         conn.close()
 
 
-# ── Readers ───────────────────────────────────────────────────────────────
+# ── Readers (all accept key_id=0 for "aggregate across all keys") ─────────
 
 
-def aggregate_stats(db_path: Path, days: int = 30) -> dict[str, Any]:
-    """Return aggregate stats for the dashboard homepage."""
+def _key_filter(key_id: int, alias: str = "") -> str:
+    """Return a SQL fragment 'AND key = ?' for the given key_id, or '' if 0.
+    `alias` is the column prefix (e.g. 'r' for 'r.key_id')."""
+    col = f"{alias}.key_id" if alias else "key_id"
+    return f"AND {col} = ?" if key_id else ""
+
+
+def aggregate_stats(db_path: Path, key_id: int = 0, days: int = 30) -> dict[str, Any]:
     conn = _connect(db_path)
     try:
         since = time.time() - days * 86400
+        kf = _key_filter(key_id)
+        # SQL fragment is "WHERE ts > ? [AND key_id = ?]" so params order is (since[, key_id])
+        since_params = (since, key_id) if key_id else (since,)
+
         total_row = conn.execute(
-            """SELECT COUNT(*) cnt,
+            f"""SELECT COUNT(*) cnt,
                       COALESCE(SUM(input_tokens),0) si,
                       COALESCE(SUM(output_tokens),0) so,
                       COALESCE(SUM(cache_creation_tokens),0) scc,
@@ -238,66 +411,84 @@ def aggregate_stats(db_path: Path, days: int = 30) -> dict[str, Any]:
                       COALESCE(AVG(total_latency_ms),0) alat,
                       COALESCE(AVG(ttft_ms),0) attft,
                       COALESCE(AVG(tps_mean),0) atps
-               FROM requests WHERE ts > ?""",
-            (since,),
+               FROM requests WHERE ts > ? {kf}""",
+            since_params,
         ).fetchone()
+
         today = datetime.now().strftime("%Y-%m-%d")
+        today_params = (f"{today}%", key_id) if key_id else (f"{today}%",)
         today_row = conn.execute(
-            """SELECT COUNT(*) cnt,
+            f"""SELECT COUNT(*) cnt,
                       COALESCE(SUM(input_tokens),0) si,
                       COALESCE(SUM(output_tokens),0) so,
                       COALESCE(SUM(cache_creation_tokens),0) scc,
                       COALESCE(SUM(cache_read_tokens),0) scr
-               FROM requests WHERE ts_text LIKE ?""",
-            (f"{today}%",),
+               FROM requests WHERE ts_text LIKE ? {kf}""",
+            today_params,
         ).fetchone()
-        # Status-code distribution
+
         status_rows = conn.execute(
-            """SELECT status_code, COUNT(*) cnt
-               FROM requests WHERE ts > ? GROUP BY status_code ORDER BY cnt DESC""",
-            (since,),
+            f"""SELECT status_code, COUNT(*) cnt
+               FROM requests WHERE ts > ? {kf}
+               GROUP BY status_code ORDER BY cnt DESC""",
+            since_params,
         ).fetchall()
-        # Timeout distribution
+
         timeout_rows = conn.execute(
-            """SELECT timeout_type, COUNT(*) cnt
-               FROM requests WHERE ts > ? AND timeout_type != '' GROUP BY timeout_type""",
-            (since,),
+            f"""SELECT timeout_type, COUNT(*) cnt
+               FROM requests WHERE ts > ? {kf} AND timeout_type != ''
+               GROUP BY timeout_type""",
+            since_params,
         ).fetchall()
-        # Per-vendor
-        vendor_rows = conn.execute(
-            """SELECT vendor, COUNT(*) cnt,
-                      COALESCE(SUM(input_tokens),0) si,
-                      COALESCE(SUM(output_tokens),0) so
-               FROM requests WHERE ts > ? GROUP BY vendor ORDER BY cnt DESC""",
-            (since,),
-        ).fetchall()
-        # Recent 50
+
+        # Per-vendor breakdown only meaningful when aggregating across keys
+        if key_id:
+            vendor_rows = []
+        else:
+            vendor_rows = conn.execute(
+                """SELECT vendor, COUNT(*) cnt,
+                          COALESCE(SUM(input_tokens),0) si,
+                          COALESCE(SUM(output_tokens),0) so
+                   FROM requests WHERE ts > ? GROUP BY vendor ORDER BY cnt DESC""",
+                (since,),
+            ).fetchall()
+
+        recent_where = "WHERE key_id = ?" if key_id else ""
+        recent_params: tuple = (key_id,) if key_id else ()
         recent = conn.execute(
-            """SELECT id, ts_text, vendor, model, endpoint,
+            f"""SELECT id, ts_text, key_id, vendor, model, endpoint,
                       input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens,
                       ttft_ms, total_latency_ms, tps_mean, status_code, error_type,
                       timeout_type, stop_signal
-               FROM requests ORDER BY id DESC LIMIT 50"""
+               FROM requests {recent_where} ORDER BY id DESC LIMIT 50""",
+            recent_params,
         ).fetchall()
-        # Daily series (last 30 days)
+
         daily = conn.execute(
-            """SELECT SUBSTR(ts_text,1,10) day, COUNT(*) cnt,
+            f"""SELECT SUBSTR(ts_text,1,10) day, COUNT(*) cnt,
                       COALESCE(SUM(input_tokens),0) si,
                       COALESCE(SUM(output_tokens),0) so,
                       COALESCE(SUM(cache_creation_tokens),0) scc,
                       COALESCE(SUM(cache_read_tokens),0) scr
-               FROM requests WHERE ts > ? GROUP BY day ORDER BY day ASC""",
-            (time.time() - 30 * 86400,),
+               FROM requests WHERE ts > ? {kf}
+               GROUP BY day ORDER BY day ASC""",
+            (time.time() - 30 * 86400, key_id) if key_id else (time.time() - 30 * 86400,),
         ).fetchall()
-        # Latest quota snapshots per vendor/period
+
+        quota_subfilter = "WHERE key_id = ?" if key_id else ""
+        quota_subparams: tuple = (key_id,) if key_id else ()
         quota = conn.execute(
-            """SELECT vendor, plan, period_type, period_unit, percentage,
+            f"""SELECT key_id, vendor, plan, period_type, period_unit, percentage,
                       current_value, limit_value, ts_text
                FROM quota_snapshots
-               WHERE id IN (SELECT MAX(id) FROM quota_snapshots GROUP BY vendor, period_type, period_unit)
-               ORDER BY vendor, period_type"""
+               WHERE id IN (SELECT MAX(id) FROM quota_snapshots {quota_subfilter}
+                            GROUP BY period_type, period_unit)
+               ORDER BY vendor, period_type""",
+            quota_subparams,
         ).fetchall()
+
         return {
+            "key_id": key_id,
             "window_days": days,
             "total": dict(total_row) if total_row else {},
             "today": dict(today_row) if today_row else {},
@@ -312,24 +503,131 @@ def aggregate_stats(db_path: Path, days: int = 30) -> dict[str, Any]:
         conn.close()
 
 
-def fetch_window(db_path: Path, start_ts: float, end_ts: float) -> dict[str, Any]:
+def hourly_series(db_path: Path, hours: int = 24, key_id: int = 0) -> list[dict[str, Any]]:
+    conn = _connect(db_path)
+    try:
+        now = int(time.time())
+        start = now - hours * 3600
+        kf = _key_filter(key_id)
+        params = (start, key_id) if key_id else (start,)
+        rows = conn.execute(
+            f"""SELECT
+                (ts / 3600) * 3600 AS bucket,
+                COUNT(*) AS cnt,
+                SUM(CASE WHEN status_code >= 200 AND status_code < 300 THEN 1 ELSE 0 END) AS ok,
+                SUM(CASE WHEN timeout_type != '' THEN 1 ELSE 0 END) AS tmo,
+                AVG(CASE WHEN ttft_ms > 0 THEN ttft_ms END) AS attft,
+                AVG(CASE WHEN tps_mean > 0 THEN tps_mean END) AS atps,
+                AVG(total_latency_ms) AS alat,
+                SUM(input_tokens) AS si,
+                SUM(output_tokens) AS so,
+                SUM(cache_read_tokens) AS scr
+               FROM requests WHERE ts >= ? {kf}
+               GROUP BY bucket ORDER BY bucket ASC""",
+            params,
+        ).fetchall()
+        out: list[dict[str, Any]] = []
+        by_bucket = {r["bucket"]: r for r in rows}
+        for h in range(hours, 0, -1):
+            b = ((now - h * 3600) // 3600) * 3600
+            r = by_bucket.get(b)
+            if r:
+                cnt = r["cnt"] or 0
+                ok = r["ok"] or 0
+                tmo = r["tmo"] or 0
+                out.append({
+                    "ts": b,
+                    "hour_label": datetime.fromtimestamp(b).strftime("%H:00"),
+                    "count": cnt,
+                    "success_rate": (ok / cnt) if cnt else 0,
+                    "timeout_rate": (tmo / cnt) if cnt else 0,
+                    "avg_ttft": round(r["attft"] or 0),
+                    "avg_tps": round(r["atps"] or 0, 1),
+                    "avg_latency": round(r["alat"] or 0),
+                    "input_tokens": r["si"] or 0,
+                    "output_tokens": r["so"] or 0,
+                    "cache_read_tokens": r["scr"] or 0,
+                })
+            else:
+                out.append({
+                    "ts": b,
+                    "hour_label": datetime.fromtimestamp(b).strftime("%H:00"),
+                    "count": 0, "success_rate": 0, "timeout_rate": 0,
+                    "avg_ttft": 0, "avg_tps": 0, "avg_latency": 0,
+                    "input_tokens": 0, "output_tokens": 0, "cache_read_tokens": 0,
+                })
+        return out
+    finally:
+        conn.close()
+
+
+def daily_series(db_path: Path, days: int = 7, key_id: int = 0) -> list[dict[str, Any]]:
+    conn = _connect(db_path)
+    try:
+        since = time.time() - days * 86400
+        kf = _key_filter(key_id)
+        params = (since, key_id) if key_id else (since,)
+        rows = conn.execute(
+            f"""SELECT
+                SUBSTR(ts_text,1,10) AS day,
+                COUNT(*) AS cnt,
+                SUM(CASE WHEN status_code >= 200 AND status_code < 300 THEN 1 ELSE 0 END) AS ok,
+                SUM(CASE WHEN timeout_type != '' THEN 1 ELSE 0 END) AS tmo,
+                AVG(CASE WHEN ttft_ms > 0 THEN ttft_ms END) AS attft,
+                AVG(total_latency_ms) AS alat,
+                SUM(input_tokens) AS si,
+                SUM(output_tokens) AS so,
+                SUM(cache_read_tokens) AS scr,
+                SUM(cache_creation_tokens) AS scc
+               FROM requests WHERE ts >= ? {kf}
+               GROUP BY day ORDER BY day ASC""",
+            params,
+        ).fetchall()
+        out = []
+        for r in rows:
+            cnt = r["cnt"] or 0
+            cr = r["scr"] or 0
+            cc = r["scc"] or 0
+            si = r["si"] or 0
+            cache_total = si + cr + cc
+            cache_hit = (cr / cache_total) if cache_total else 0
+            out.append({
+                "day": r["day"],
+                "count": cnt,
+                "success_rate": ((r["ok"] or 0) / cnt) if cnt else 0,
+                "timeout_rate": ((r["tmo"] or 0) / cnt) if cnt else 0,
+                "avg_ttft": round(r["attft"] or 0),
+                "avg_latency": round(r["alat"] or 0),
+                "input_tokens": si,
+                "output_tokens": r["so"] or 0,
+                "cache_read_tokens": cr,
+                "cache_hit_rate": round(cache_hit, 3),
+            })
+        return out
+    finally:
+        conn.close()
+
+
+def fetch_window(db_path: Path, start_ts: float, end_ts: float, key_id: int = 0) -> dict[str, Any]:
     """Export all requests + quota in a time window for PR-package generation."""
     conn = _connect(db_path)
     try:
+        kf = _key_filter(key_id)
+        req_params = (start_ts, end_ts, key_id) if key_id else (start_ts, end_ts)
         reqs = conn.execute(
-            """SELECT ts, ts_text, vendor, plan, model, endpoint,
+            f"""SELECT ts, ts_text, key_id, vendor, plan, model, endpoint,
                       input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens,
                       ttft_ms, total_latency_ms, tps_mean, status_code,
                       error_type, timeout_type, stop_signal, request_did_complete,
                       num_messages, effort
-               FROM requests WHERE ts BETWEEN ? AND ? ORDER BY ts ASC""",
-            (start_ts, end_ts),
+               FROM requests WHERE ts BETWEEN ? AND ? {kf} ORDER BY ts ASC""",
+            req_params,
         ).fetchall()
         quotas = conn.execute(
-            """SELECT ts, vendor, plan, period_type, period_unit,
+            f"""SELECT ts, key_id, vendor, plan, period_type, period_unit,
                       percentage, current_value, limit_value
-               FROM quota_snapshots WHERE ts BETWEEN ? AND ? ORDER BY ts ASC""",
-            (start_ts, end_ts),
+               FROM quota_snapshots WHERE ts BETWEEN ? AND ? {kf} ORDER BY ts ASC""",
+            req_params,
         ).fetchall()
         return {
             "requests": [dict(r) for r in reqs],
