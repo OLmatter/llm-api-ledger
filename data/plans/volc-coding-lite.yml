@@ -23,6 +23,17 @@ pricing:
   intro_end_hint: 2026-08-08
   auto_renew_default: true
 
+# 邀请码（同 Pro 档，运营者同一个码可用）
+affiliate:
+  code: NMJG4D6P
+  url: https://volcengine.com/L/ygzc7NoB-Z8/
+  discount: 0.95
+  stackable: true
+  discount_note: 叠加首单 10 元 → 实付约 9.5 元
+  owner: OLmatter
+  added_at: 2026-07-21
+  models_highlight: 同 Pro 档（火山所有档位共用模型池）
+
 # 三周期限额
 # 口径同 volc-coding-pro.yml：
 # - requests_official 来自官方次数公布

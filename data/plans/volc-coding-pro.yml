@@ -23,6 +23,19 @@ pricing:
   auto_renew_default: true
   price_warning: 第 3 个月自动恢复原价 200 元，且自动续费默认开启
 
+# 邀请码（运营者收入入口）
+# 榜单铁律 5：邀请码不影响排序，没码的套餐照常上榜。
+# 邀请码默认归属 OLmatter；特例协商走 ISSUE。
+affiliate:
+  code: NMJG4D6P
+  url: https://volcengine.com/L/ygzc7NoB-Z8/
+  discount: 0.95         # 95折
+  stackable: true         # 可与官方活动叠加
+  discount_note: 叠加首单 49.9 → 实付约 47.4 元
+  owner: OLmatter
+  added_at: 2026-07-21
+  models_highlight: GLM-5.2, Kimi-K2.7, MiniMax-M3, DeepSeek-V4, Doubao-Seed-2.0
+
 # 三周期限额
 # 重要口径（不可混淆）：
 # - requests_official: 火山官方公布的"请求次数"限额。仅参考，厂商可改定义。
