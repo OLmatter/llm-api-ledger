@@ -1,16 +1,12 @@
 # 火山方舟 Coding Plan Pro
-# 档位定义文件（plan definition）。权威：本文件 + 官方活动页快照。
-# 实测样本（measurements）来自探针，可信度逐条标注，不进 limits.tokens_measured。
+# 套餐定义。厂商级信息（品牌 / 邀请码 / 模型池 / 客户端兼容）见
+# data/vendors/volcengine.yml，此处不复制。
 
 plan_id: volc-coding-pro
-vendor: volcengine
-vendor_display: 火山方舟
+vendor: volcengine            # → data/vendors/volcengine.yml
 plan_name: Coding Plan Pro
 plan_tier: pro
 status: active
-source_urls:
-  - https://www.volcengine.com/product/ark
-  - https://www.volcengine.com/docs/82379/1399008
 last_verified: 2026-07-21
 
 pricing:
@@ -23,21 +19,8 @@ pricing:
   auto_renew_default: true
   price_warning: 第 3 个月自动恢复原价 200 元，且自动续费默认开启
 
-# 邀请码（运营者收入入口）
-# 榜单铁律 5：邀请码不影响排序，没码的套餐照常上榜。
-# 邀请码默认归属 OLmatter；特例协商走 ISSUE。
-affiliate:
-  code: NMJG4D6P
-  url: https://volcengine.com/L/ygzc7NoB-Z8/
-  discount: 0.95         # 95折
-  stackable: true         # 可与官方活动叠加
-  discount_note: 叠加首单 49.9 → 实付约 47.4 元
-  owner: OLmatter
-  added_at: 2026-07-21
-  models_highlight: GLM-5.2, Kimi-K2.7, MiniMax-M3, DeepSeek-V4, Doubao-Seed-2.0
-
 # 三周期限额
-# 重要口径（不可混淆）：
+# 口径纪律（不可混淆）：
 # - requests_official: 火山官方公布的"请求次数"限额。仅参考，厂商可改定义。
 # - tokens_measured:   探针实测推算的 token 总额度。来自 measurements 聚合，单点不可信。
 #   tokens_measured 为 null 表示尚无足够样本，榜单展示时不应伪造数字。
@@ -52,7 +35,7 @@ limits:
     requests_official: 90000
     tokens_measured: null
 
-# 比例关系（火山官方公布，基于次数，不是 tokens）
+# 官方公布的次数比例（基于次数，不是 tokens）
 # 月 = 2 × 周
 # 周 = 7.5 × 5h
 ratio_note: 官方公布的次数比例，token 比例需独立实测，不可由次数比例推算
@@ -75,21 +58,3 @@ measurements:
       单用户单月反推，非统计平均。
       真实月度 cap 可能因用户使用强度 / 请求长度分布不同而漂移。
       榜单展示时标"参考值"，不可作为排序硬依据。
-
-# 模型池（火山官方公布）
-models:
-  - Doubao-Seed-2.0-Code
-  - GLM
-  - DeepSeek-V3
-  - Kimi
-  - MiniMax
-  - auto   # 自动调度
-models_note: 所有档位共用模型池，Auto 自动调度，额度跨模型共享
-
-# 兼容客户端（火山官方公布）
-clients:
-  - Cursor
-  - Cline
-  - Claude Code
-  - OpenClaw
-clients_note: 额度跨工具共享

@@ -1,0 +1,43 @@
+# 火山方舟（volcengine）厂商级元数据
+# 同厂商的所有套餐共享此文件中的字段（邀请码、品牌信息、官方链接）。
+# 套餐文件（data/plans/<vendor>-*.yml）只记套餐特有信息，不再复制厂商级字段。
+
+vendor_id: volcengine
+vendor_display: 火山方舟
+vendor_display_en: Volcengine Ark
+brand_color: "#0b8aff"
+homepage: https://www.volcengine.com/product/ark
+docs: https://www.volcengine.com/docs/82379/1399008
+last_verified: 2026-07-21
+
+# 厂商通用邀请码（同厂商所有套餐通用）
+# 榜单铁律 5：邀请码不影响排序，没码的厂商照常上榜。
+# 默认归属 OLmatter；特例协商走 ISSUE。
+affiliate:
+  code: NMJG4D6P
+  url: https://volcengine.com/L/ygzc7NoB-Z8/
+  discount: 0.95            # 95折
+  stackable: true            # 可与官方活动叠加
+  discount_note: 与火山首单活动叠加，Pro 47.4 / Lite 9.5
+  owner: OLmatter
+  added_at: 2026-07-21
+  models_highlight: GLM-5.2, Kimi-K2.7, MiniMax-M3, DeepSeek-V4, Doubao-Seed-2.0
+
+# 厂商公共特性（所有套餐共享）
+shared_features:
+  models:
+    - Doubao-Seed-2.0-Code
+    - GLM
+    - DeepSeek-V3
+    - Kimi
+    - MiniMax
+    - auto
+  models_note: 所有档位共用模型池，Auto 自动调度，额度跨模型共享
+  clients:
+    - Cursor
+    - Cline
+    - Claude Code
+    - OpenClaw
+  clients_note: 额度跨工具共享
+  rate_limit_tiers: [5h, weekly, monthly]
+  rate_limit_note: 三级限流独立判断，月>周>5h 优先级，耗尽等待周期刷新不扣费

@@ -1,17 +1,14 @@
 # 火山方舟 Coding Plan Lite
 # 最小档位（基准 = 1×）。
+# 厂商级信息见 data/vendors/volcengine.yml。
 # 重要：token 总额度目前无任何实测来源，tokens_measured 全部为 null。
 # 火山官方公布的"Pro = Lite × 5"是【次数比例】，不是 token 比例，不可据此反推 token。
 
 plan_id: volc-coding-lite
-vendor: volcengine
-vendor_display: 火山方舟
+vendor: volcengine            # → data/vendors/volcengine.yml
 plan_name: Coding Plan Lite
 plan_tier: lite
 status: active
-source_urls:
-  - https://www.volcengine.com/product/ark
-  - https://www.volcengine.com/docs/82379/1399008
 last_verified: 2026-07-21
 
 pricing:
@@ -23,21 +20,7 @@ pricing:
   intro_end_hint: 2026-08-08
   auto_renew_default: true
 
-# 邀请码（同 Pro 档，运营者同一个码可用）
-affiliate:
-  code: NMJG4D6P
-  url: https://volcengine.com/L/ygzc7NoB-Z8/
-  discount: 0.95
-  stackable: true
-  discount_note: 叠加首单 10 元 → 实付约 9.5 元
-  owner: OLmatter
-  added_at: 2026-07-21
-  models_highlight: 同 Pro 档（火山所有档位共用模型池）
-
 # 三周期限额
-# 口径同 volc-coding-pro.yml：
-# - requests_official 来自官方次数公布
-# - tokens_measured 来自探针实测，null 表示尚无样本
 limits:
   window_5h:
     requests_official: 1200
@@ -56,19 +39,3 @@ ratio_note: |
 
 # 实测样本（暂无）
 measurements: []
-
-models:
-  - Doubao-Seed-2.0-Code
-  - GLM
-  - DeepSeek-V3
-  - Kimi
-  - MiniMax
-  - auto
-models_note: 所有档位共用模型池
-
-clients:
-  - Cursor
-  - Cline
-  - Claude Code
-  - OpenClaw
-clients_note: 额度跨工具共享
