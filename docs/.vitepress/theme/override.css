@@ -32,8 +32,14 @@
 }
 
 :root {
-  --vp-layout-max-width: 1400px;
+  --vp-layout-max-width: 100%;
+  --vp-content-width: 100%;
 }
+
+/* 首页内容区撑满（去掉两侧大量留白） */
+.VPContent { max-width: 100% !important; }
+.vp-doc.container { max-width: 100% !important; padding-left: 24px; padding-right: 24px; }
+.VPHome { max-width: 100%; }
 
 /* table 不要 vitepress 默认样式覆盖 */
 table { display: table; }
