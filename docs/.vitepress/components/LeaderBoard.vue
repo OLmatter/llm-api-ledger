@@ -579,8 +579,9 @@ thead tr:nth-child(2) th {
 .info-tooltip {
   position: absolute;
   left: 50%;
-  background: var(--vp-c-text-1);
-  color: white;
+  /* 固定深色背景 + 白字，不依赖 VitePress 主题变量（暗色主题下 --vp-c-text-1 会变白导致白底白字） */
+  background: #1a1a1a;
+  color: #ffffff;
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 11px;
@@ -594,7 +595,9 @@ thead tr:nth-child(2) th {
   z-index: 100;
   max-width: 320px;
   white-space: normal;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  /* 加边框，亮色主题下也能看清边缘 */
+  border: 1px solid rgba(0, 0, 0, 0.5);
 }
 /* 默认 tooltip 在上方(info-down 修饰符放下方,避开表格横向 overflow 截断) */
 .info-tooltip-wrap:not(.info-down) .info-tooltip {
