@@ -20,6 +20,10 @@ hero:
       link: https://github.com/OLmatter/llm-api-ledger
 ---
 
+# 榜单 {#leaderboard}
+
+<LeaderBoard />
+
 ## 为什么做这个 {#why-this}
 
 **国内 Coding Plan 市场正在变成耍猴大赛。**
@@ -50,10 +54,6 @@ hero:
 **榜单客观铁律：邀请码不影响排序、没邀请码的套餐照样上榜、单点数据标红警示。** 我们不卖货、不返佣、不经手 token、不经手资金——榜单存在的唯一理由，就是让你在掏钱之前看清楚自己买的是什么。
 
 > 📊 **榜单数据仍在补全中，我们刚起步。你用的套餐没上榜？把数据报上来，下一个就是你。**
-
-# 榜单 {#leaderboard}
-
-<LeaderBoard />
 
 ## 项目是什么 {#what}
 
