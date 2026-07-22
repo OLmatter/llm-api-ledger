@@ -34,14 +34,20 @@ const USD_TO_CNY = 7.15
 // 把套餐月费换算成「如果买 DS V4 非高峰期按量，能跑多少 tokens」
 // 用真实编程比例（non-cache input 9.4% / output 1.2% / cache read 89.4%）
 // DS V4 非高峰期定价（元/百万 tokens，来源 GCMP deepseek.json）
-const DS_V4_PRICES = { input: 1.0, output: 2.0, cache_read: 0.02 }
+// 两个版本：Flash（便宜）和 Pro（贵 3 倍）
+const DS_V4_PRICES = {
+  flash: { input: 1.0, output: 2.0, cache_read: 0.02 },
+  pro:   { input: 3.0, output: 6.0, cache_read: 0.025 },
+}
 // 真实编程比例（来源：用户 MiniMax 实际使用数据）
 const CODING_RATIO = { input: 0.094, output: 0.012, cache_read: 0.894 }
-// 每百万混合 tokens 的 DS V4 价格
-const DS_V4_MIXED_PRICE_PER_M =
-  CODING_RATIO.input * DS_V4_PRICES.input +
-  CODING_RATIO.output * DS_V4_PRICES.output +
-  CODING_RATIO.cache_read * DS_V4_PRICES.cache_read  // ≈ 0.137 元/百万
+// 每百万混合 tokens 的 DS V4 价格（两个版本各算一次）
+function dsV4MixedPricePerM(variant) {
+  const p = DS_V4_PRICES[variant]
+  return CODING_RATIO.input * p.input +
+         CODING_RATIO.output * p.output +
+         CODING_RATIO.cache_read * p.cache_read
+}
 
 // 各厂商官方订阅直达链接（用户提供的国内正版页面，affiliate 缺失时兜底）
 const SUBSCRIBE_URLS = {
@@ -384,14 +390,16 @@ const plans = planFiles.map(f => {
     subscribe_url: (aff?.url) || SUBSCRIBE_URLS[p.vendor] || v.homepage || null,
 
     // DeepSeek V4 按量等价换算：月费 → 如果买 DS V4 非高峰期能跑多少 tokens
-    // 月费用月原价（CNY）；USD 套餐用折算价
+    // 两个版本：Flash（便宜）和 Pro（贵 3 倍）
     ds_v4_equivalent: (() => {
       const monthlyCny = pricing.currency === 'USD' && pricing.original_monthly
         ? pricing.original_monthly * USD_TO_CNY
         : pricing.original_monthly
       if (!monthlyCny) return null
-      const tokens = monthlyCny / DS_V4_MIXED_PRICE_PER_M * 1e6
-      return Math.round(tokens)
+      return {
+        flash: Math.round(monthlyCny / dsV4MixedPricePerM('flash') * 1e6),
+        pro:   Math.round(monthlyCny / dsV4MixedPricePerM('pro') * 1e6),
+      }
     })(),
 
     source_urls: v.source_urls || p.source_urls || [],

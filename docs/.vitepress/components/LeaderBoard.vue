@@ -162,6 +162,7 @@ function fmtTokens(n) {
 // cny 模式下，USD 套餐按汇率折算显示 ¥；CNY 套餐保持不变
 const currencyUnit = ref('native')  // 'native' | 'cny'
 const showDSEquiv = ref(false)      // DS V4 按量等价换算开关
+const dsVariant = ref('flash')      // 'flash' | 'pro'
 function fmtTokensMB(n) {
   const abs = Math.abs(n)
   if (abs >= 1e9) return (n / 1e9).toFixed(2) + 'B'
@@ -230,9 +231,14 @@ function fmtTokensYi(n) {
       <span class="divider">|</span>
       <button
         :class="['sort-btn', { active: showDSEquiv }]"
-        @click="showDSEquiv = !showDSEquiv"
-        title="把套餐月费换算成 DeepSeek V4 非高峰期按量的等价 tokens（按真实编程 input/output/cache 比例计算）"
-      >DS等价</button>
+        @click="dsVariant = 'flash'; showDSEquiv = !showDSEquiv"
+        title="DeepSeek V4 Flash 非高峰期按量等价（最便宜）"
+      >DS Flash</button>
+      <button
+        :class="['sort-btn', { active: showDSEquiv && dsVariant === 'pro' }]"
+        @click="dsVariant = 'pro'; showDSEquiv = true"
+        title="DeepSeek V4 Pro 非高峰期按量等价（3 倍价）"
+      >DS Pro</button>
       <span class="count">{{ plans.length }} 个套餐 · {{ plansData.vendors_count }} 个厂商</span>
     </div>
 
@@ -384,8 +390,8 @@ function fmtTokensYi(n) {
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_monthly) }}</span>
               </div>
               <div v-if="showDSEquiv && row.plan.ds_v4_equivalent" class="ds-equiv">
-                <span class="ds-label">DS V4 等价</span>
-                <span class="ds-val">{{ fmtTokens(row.plan.ds_v4_equivalent) }}</span>
+                <span class="ds-label">DS V4 {{ dsVariant === 'pro' ? 'Pro' : 'Flash' }} 等价</span>
+                <span class="ds-val">{{ fmtTokens(row.plan.ds_v4_equivalent[dsVariant]) }}</span>
               </div>
             </td>
           </tr>
