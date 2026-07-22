@@ -1,11 +1,16 @@
 import { defineConfig } from 'vitepress'
 
+// GitHub Pages 部署在 https://ollmatter.github.io/llm-api-ledger/
+// 本地开发用 '/'，生产用 '/llm-api-ledger/'
+const base = process.env.NODE_ENV === 'production' ? '/llm-api-ledger/' : '/'
+
 export default defineConfig({
   title: 'LLM API Ledger',
   description: 'LLM API 领域的可信数据账本 — 集齐主流厂商的真实用量与性能',
   lang: 'zh-CN',
   lastUpdated: true,
   cleanUrls: true,
+  base,
 
   head: [
     ['meta', { name: 'theme-color', content: '#0071e3' }],
