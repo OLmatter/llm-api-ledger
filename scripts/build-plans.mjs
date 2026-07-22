@@ -441,3 +441,14 @@ writeFileSync(
   'utf-8'
 )
 console.log(`✓ built ${plans.length} plans from ${Object.keys(vendors).length} vendors → docs/.vitepress/plans.json`)
+
+// ── build 末尾自动跑 lint（铁律机械化检查）──
+// 详见 .agents/skills/ledger-data-discipline/SKILL.md
+// error 阻塞 build（exit 1），warning 只提示不阻塞
+import { execSync } from 'node:child_process'
+try {
+  execSync('node scripts/lint-plans.mjs', { stdio: 'inherit', cwd: root })
+} catch (e) {
+  console.error('❌ lint 检查失败，build 中止（修复 lint error 后重试）')
+  process.exit(1)
+}

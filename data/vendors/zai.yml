@@ -21,7 +21,10 @@ affiliate:
   code: 287GKUMISJ
   url: https://z.ai/subscribe?ic=287GKUMISJ
   discount: 0.9
-  stackable: true           # 可叠加周期折扣（月-10%/季-20%/年-30%），但仅限首单
+  # expires: null  # Z.AI 官方邀请计划，长期有效（不是限时活动），仅首单可用。
+  # 铁律 11 例外：经确认为永久活动，需在注释里说明，否则 lint 会 warn。
+  expires: null
+  stackable: true           # 可叠加周期定价（月-10%/季-20%/年-30%），但仅限首单
   stackable_scope: first_order_only
   discount_note: |
     邀请码 10% 叠加周期定价，仅限首笔订单。

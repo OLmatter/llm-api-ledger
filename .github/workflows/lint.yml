@@ -1,0 +1,38 @@
+name: Lint Plans Data
+
+# 数据纪律 lint：每次 PR / push 都跑，error 阻塞合并
+# 详见 .agents/skills/ledger-data-discipline/SKILL.md
+# 规则：scripts/lint-plans.mjs
+
+on:
+  pull_request:
+    paths:
+      - 'data/**'
+      - 'scripts/**'
+      - '.github/workflows/lint.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'scripts/**'
+      - '.github/workflows/lint.yml'
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm install
+
+      - name: Build plans.json
+        run: node scripts/build-plans.mjs
+
+      - name: Lint
+        run: node scripts/lint-plans.mjs
