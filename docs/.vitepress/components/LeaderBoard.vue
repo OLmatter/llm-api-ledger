@@ -342,7 +342,10 @@ function fmtTokensYi(n) {
             <!-- 套餐 -->
             <td class="plan-cell">
               <div class="plan-name">{{ row.plan.plan_name }}</div>
-              <div class="plan-tier">tier: {{ row.plan.plan_tier }}</div>
+              <div class="plan-meta">
+                <span v-if="row.plan.tier_multiplier != null" :class="['tier-mult', { 'is-base': row.plan.tier_multiplier === 1 }]" :title="`本档用量 = 同厂商最低档 × ${row.plan.tier_multiplier}（基于厂商官方产品定义）`">{{ row.plan.tier_multiplier === 1 ? '基础档' : '×' + row.plan.tier_multiplier }}</span>
+                <span class="tier-name">{{ row.plan.plan_tier }}</span>
+              </div>
             </td>
 
             <!-- 包月：原价 + 用邀请码子行 -->
@@ -681,7 +684,19 @@ tbody tr:hover td { background: var(--vp-c-bg-soft-up); }
 
 .plan-cell { min-width: 140px; }
 .plan-name { font-weight: 600; font-size: 13px; }
-.plan-tier { font-size: 10px; color: var(--vp-c-text-3); margin-top: 2px; font-family: monospace; }
+.plan-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+/* 用量倍率标签：×1 / ×4 / ×20 / ×60 ——一眼看出档位差距 */
+.tier-mult {
+  font-size: 10px; font-weight: 700;
+  color: var(--vp-c-brand);
+  background: var(--vp-c-brand-soft);
+  padding: 1px 6px; border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  white-space: nowrap;
+}
+/* 最低档（×1）弱化，避免一堆 ×1 抢视觉 */
+.tier-mult.is-base { color: var(--vp-c-text-3); background: var(--vp-c-bg-soft); font-weight: 500; }
+.tier-name { font-size: 10px; color: var(--vp-c-text-3); font-family: monospace; text-transform: uppercase; letter-spacing: .3px; }
 
 .unit { font-size: 10px; color: var(--vp-c-text-3); margin-left: 2px; }
 .intro-aff {

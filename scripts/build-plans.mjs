@@ -262,6 +262,15 @@ const plans = planFiles.map(f => {
     brand_color: v.brand_color || null,
     plan_name: p.plan_name,
     plan_tier: p.plan_tier,
+    // 同厂商不同档位的用量倍率（基于官方产品定义，1 = 最低档）
+    // 例：kimi andante=1, moderato=4, allegretto=20, allegro=60
+    // 前端用作「×N」标签显示，让用户一眼看出档位差距
+    tier_multiplier: (() => {
+      const tr = TIER_RATIOS[p.vendor]
+      const m = tr?.[p.plan_tier]
+      // 整数显示 4，小数显示 11.8（保留 1 位）
+      return m != null ? (Number.isInteger(m) ? m : Math.round(m * 10) / 10) : null
+    })(),
     status: p.status,
     // 主力模型（榜单对比基准；vendor 级共享）
     primary_model: v.shared_features?.primary_model || null,
