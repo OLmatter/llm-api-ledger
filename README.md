@@ -2,7 +2,7 @@
 
 > LLM API 领域的可信数据账本 — 集齐主流厂商的真实用量与性能
 
-**[📊 看完整榜单 →](https://ollmatter.github.io/llm-api-ledger/)** ｜ **[🔧 装探针自用核账 →](https://ollmatter.github.io/llm-api-ledger/probe)**
+**[📊 看完整榜单 →](https://OLmatter.github.io/llm-api-ledger/)** ｜ **[🔧 装探针自用核账 →](https://OLmatter.github.io/llm-api-ledger/probe)**
 
 ---
 

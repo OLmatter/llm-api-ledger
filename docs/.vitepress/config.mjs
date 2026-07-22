@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress'
 
-// GitHub Pages 部署在 https://ollmatter.github.io/llm-api-ledger/
+// GitHub Pages 部署在 https://OLmatter.github.io/llm-api-ledger/
 // 本地开发用 '/'，生产用 '/llm-api-ledger/'
 const base = process.env.NODE_ENV === 'production' ? '/llm-api-ledger/' : '/'
 
