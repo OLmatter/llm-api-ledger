@@ -129,6 +129,21 @@ function checkTierMultiplier(plan) {
   }
 }
 
+// ── 铁律 16：Kimi 官方不公开绝对 token，tokens_official_claimed 必须 null ──
+// 事故：上一个 AI 编造 Kimi 4 档 tokens_official_claimed（50M/200M/1000M/3000M）
+// Kimi 官方只标倍数（1×/4×/20×/60×），从不公开绝对 token 数
+function checkNoFakeOfficialClaimed(plan) {
+  if (plan.vendor !== 'kimi') return
+  // plans.json 里 claimed.weekly 来自 build 的 tokens_official_claimed
+  // build-plans.mjs 第 326 行：isTokenVendor 时 claimed.weekly = lim.window_weekly?.tokens_official_claimed
+  const claimed = plan.claimed || {}
+  for (const win of ['h5', 'weekly', 'monthly']) {
+    if (claimed[win] != null) {
+      err(plan.plan_id, '铁律16', `Kimi 官方不公开绝对 token 数（只标倍数），但 claimed.${win}=${claimed[win]}（疑似编造的「官方标称」）`)
+    }
+  }
+}
+
 // ── 铁律 10：measurements.credibility 值合法 ──
 // 注：build 输出里 measurements_credibility_max 是数字（0/1/2/3），这里检查 plan-level
 function checkCredibility(plan) {
@@ -212,6 +227,7 @@ for (const plan of plans) {
   checkNoZeroMeasured(plan)
   checkUsdHasCnyConversion(plan)   // 铁律 12
   checkTierMultiplier(plan)         // 铁律 13
+  checkNoFakeOfficialClaimed(plan)  // 铁律 16
   checkCredibility(plan)
   checkRequiredFields(plan)
   checkAffiliateSchema(plan)

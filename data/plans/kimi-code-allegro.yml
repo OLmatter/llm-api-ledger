@@ -23,7 +23,9 @@ limits:
     tokens_measured: null
   window_weekly:
     requests_official: null
-    tokens_official_claimed: 3000000000   # 3000M
+    # ⚠ Kimi 官方只标倍数（1×/4×/20×/60×），从不公开绝对 token 数。
+    # 此前 yml 曾写 tokens_official_claimed: 3000000000（3000M），无任何官方依据，已删除（铁律 9）。
+    tokens_official_claimed: null
     tokens_measured: null                 # 实测按 Allegretto 326M×3 反推 = 978M
   window_monthly:
     requests_official: null
@@ -32,7 +34,8 @@ limits:
 
 ratio_note: |
   Allegro = Allegretto × 3（= 60/20）。
-  实测周按 Allegretto 两点 median 508M × 3 = 1.524B（官方标称 3000M，差 49%）。
+  实测周按 Allegretto 两点 median 508M × 3 = 1.524B。
+  ⚠ Kimi 官方只标倍数（1×/4×/20×/60×），不公开绝对 token 数，无法跟"官方标称"对比。
 
 measurements:
   - measurement_id: m_2026_07_allegretto_95pct_user_report
@@ -43,6 +46,6 @@ measurements:
     source_weekly_tokens: 508000000     # 508M（Allegretto 两点 median）
     tier_ratio: 3                          # Allegro = Allegretto × 3
     inferred_weekly_tokens: 1524000000     # 1.524B（基于 508M × 3）
-    credibility: medium
+    credibility: low                      # 二手反推（基于 Allegretto disputed 数据 × 3），双重弱化
     notes: |
-      基于 Allegretto 实测 508M 反推。
+      基于 Allegretto 实测 508M 反推（Allegretto 自身是 2 个 disputed 社区单点的 median）。
