@@ -39,8 +39,15 @@ const sortedPlans = computed(() => {
       return priceFor(a) - priceFor(b)
     })
   } else if (k === 'credibility') {
-    // 跨厂商：按可信度降序，平手按价格升序
-    arr.sort((a, b) => b.measurements_credibility_max - a.measurements_credibility_max
+    // 跨厂商：按可信度降序。
+    // 评分规则：disputed 数据视同甚至低于无数据（cred=0）。
+    // 理由：cred=0 是诚实的「—」无数据；disputed 单点（如 Kimi Allegretto 326M vs 690M 差 2.1×）
+    //       展示出来反而误导用户。所以 disputed → 评分降到 -1（比 cred=0 还低）。
+    const credScore = (p) => {
+      if (p.measurements_disputed) return -1
+      return p.measurements_credibility_max || 0
+    }
+    arr.sort((a, b) => credScore(b) - credScore(a)
       || priceFor(a) - priceFor(b))
   } else if (k === 'price_asc') {
     arr.sort((a, b) => priceFor(a) - priceFor(b))
