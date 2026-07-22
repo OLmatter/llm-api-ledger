@@ -1,0 +1,66 @@
+# MiniMax Token Plan Max
+# 中档（Plus = 1×，Max = 3×，Ultra = 11.8×）
+# 厂商级信息见 data/vendors/minimax.yml。
+# 5h tokens 来自探针实测，月度 tokens 是官方号称（两套口径，榜单并列）。
+
+plan_id: minimax-tp-max
+vendor: minimax
+plan_name: Token Plan Max
+plan_tier: max
+status: active
+last_verified: 2026-07-21
+
+pricing:
+  currency: CNY
+  original_monthly: 119
+  original_yearly: 1490
+  intro_yearly: 1190       # 年付特惠
+  intro_note: 年付特惠 1190 元/年（无永久折扣，到期恢复原价）
+  auto_renew_default: false
+
+# 三级限额（5h + 周 + 月，三者同时生效）
+# 5h = 145M 实测；周 = 5h × 10（官方比）；月 = 18B（官方公布全模态 token 总量）
+limits:
+  window_5h:
+    requests_official: null        # 新版不公布次数
+    tokens_measured: 145000000     # 145M（探针实测，burn 测试 83% 反推）
+  window_weekly:
+    requests_official: null
+    tokens_measured: 1450000000    # 1.45B = 5h × 10（官方比例）
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: 1800000000    # 1.8B（官方公布 18 亿 M3 token）
+    tokens_measured: null
+
+ratio_note: |
+  MiniMax Token Plan 三级限额（5h + 周 + 月，三者独立判断同时生效）：
+  - 5h：硬限额，实测 100% = 145M tokens（纯文字 burn 测试反推）
+  - 周 = 10 × 5h = 1.45B tokens（官方公布比例）
+  - 月 = 1.8B M3 token（官方公布 18 亿，全模态池含视频/图像/语音/文字）
+  注意 1：月度官方数字是全模态池，含视频（3 条/日）。
+  注意 2：运营者账号后台显示「周/月 ∞」是老套餐遗留（无限额版），
+  新版 Token Plan 已经引入三级限额，本数据按新版规则记录。
+  实测 5h=145M 是 burn 测试结果（无论新老套餐，5h 都有硬限额）。
+
+# 实测样本
+measurements:
+  - measurement_id: m_2026_07_burn_max_001
+    source_kind: single_user_probe
+    user_hash: pending
+    period: 2026-07-21
+    method: burn_quota            # 大 input(200K) + 1 output 烧额度测试
+    duration_sec: 866
+    total_requests: 950
+    h5_used_tokens: 120620000     # 烧到 5h remaining 16%
+    h5_used_pct: 83               # 从 99% 起算到 16%
+    inferred_h5_cap_tokens: 145330000  # = used / pct，单次反推
+    credibility: medium           # 单用户但 burn 测试方法可信（不同于日常使用反推）
+    notes: |
+      burn 测试：3 并发，866 秒跑 950 个 200K-input 请求。
+      5h remaining 从 99% 降到 16%（用掉 83%），反推 5h 100% cap = 145M tokens。
+      实测 token 口径是 prompt_tokens（含 cache_read），跟官方 M3 token 计费口径可能不同。
+
+# 套餐特性
+features:
+  video_daily_quota: 3   # 视频日额度 3 条/日
+  concurrent_agents: "4-5"

@@ -21,10 +21,13 @@ affiliate:
   discount_note: 与火山首单活动叠加，Pro 47.4 / Lite 9.5
   owner: OLmatter
   added_at: 2026-07-21
+  expires: 2026-08-08       # 跟火山首单活动一致；过期后前端隐藏邀请码按钮
   models_highlight: GLM-5.2, Kimi-K2.7, MiniMax-M3, DeepSeek-V4, Doubao-Seed-2.0
 
 # 厂商公共特性（所有套餐共享）
 shared_features:
+  # 主力模型（榜单对比基准；火山方舟实际是多模型池 + Auto 调度，GLM-5.2 是主推）
+  primary_model: GLM-5.2
   models:
     - Doubao-Seed-2.0-Code
     - GLM

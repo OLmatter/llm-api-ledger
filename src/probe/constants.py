@@ -4,7 +4,7 @@ Project-wide constants (no magic numbers scattered in code).
 
 # ── HTTP / Proxy timeouts (seconds) ──
 CONNECT_TIMEOUT_S = 5.0      # TCP connect — should never exceed this
-READ_TIMEOUT_S = 30.0        # no bytes at all after connect
+READ_TIMEOUT_S = 120.0       # no bytes at all after connect（大 context 推理慢，120s 安全）
 TTFT_TIMEOUT_S = 15.0        # first token not seen
 STALL_TIMEOUT_S = 5.0        # gap between SSE chunks
 

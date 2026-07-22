@@ -1,0 +1,76 @@
+# Kimi Code Plan Allegretto（热门档 = 20×）
+# 2026-07 数据更新：用户社区反馈 95% 用量 = 3.1 亿，反推周 100% = 326M。
+# 替代早期社区单点 690M（95% 用量反推比单点采样更接近真实 cap）。
+
+plan_id: kimi-code-allegretto
+vendor: kimi
+plan_name: Code Plan Allegretto
+plan_tier: allegretto
+status: active
+last_verified: 2026-07-21
+
+pricing:
+  currency: CNY
+  original_monthly: 199
+  yearly_total: 1908
+  yearly_monthly_equivalent: 159
+  yearly_note: 年付 1908 元，折合 159 元/月
+  auto_renew_default: false
+
+limits:
+  window_5h:
+    requests_official: null
+    tokens_measured: null
+  window_weekly:
+    requests_official: null
+    tokens_official_claimed: 1000000000   # 1000M（官方标称）
+    tokens_measured: 508000000             # 508M（两点 median：326M 95% 用量反推 + 690M 单点）
+  window_monthly:
+    requests_official: null
+    tokens_measured: null
+    is_unlimited: true
+
+ratio_note: |
+  Allegretto 是 Kimi 4 档中唯一有社区实测的。
+  当前采用两点 median 508M/周（326M 95% 用量反推 + 690M 单点 = 中位数）。
+  两个数据点差距 2.1×，说明用户行为差异显著,取 median 比任一单点更稳健。
+  其他 3 档（Andante/Moderato/Allegro）按 Allegretto × 倍率反推。
+  官方标称 1000M/周 vs median 508M = 51%，说明官方标称仍偏高。
+  待 3+ 用户聚合后取中位数,升级到 high credibility。
+
+measurements:
+  - measurement_id: m_2026_07_allegretto_95pct_user_report
+    source_kind: single_user_probe_95pct   # 95% 用量反推（比单点采样更接近 cap）
+    user_hash: pending
+    period: 2026-07
+    used_tokens: 310000000                 # 3.1 亿（用户实际用量）
+    usage_pct: 95                           # 烧到周额度的 95%
+    inferred_weekly_tokens: 326000000     # 100% cap = 3.1 亿 ÷ 95%
+    credibility: medium
+    notes: |
+      2026-07 社区用户反馈：199 档位周额度 95% 用量 = 3.1 亿 tokens。
+      反推 100% 周 cap = 326M（贴近 cap 的高质量数据点）。
+
+  - measurement_id: m_2026_07_community_allegretto_legacy
+    source_kind: community_report
+    user_hash: pending
+    period: 2026-07
+    weekly_tokens_measured: 690000000     # 690M（早期社区单点采样）
+    credibility: low
+    notes: |
+      早期社区单点采样（2026-07 中），未明确用量百分比，可能低利用率导致数据偏低。
+      跟 95% 用量反推 326M 差距 2.1×。
+
+  - measurement_id: m_2026_07_allegretto_median_summary
+    source_kind: aggregate_median          # 多源数据 median 汇总
+    user_hash: pending
+    period: 2026-07
+    sample_size: 2
+    weekly_tokens_measured: 508000000     # 508M（326M & 690M 的 median）
+    credibility: medium
+    disputed: true                         # 数据点差距大（326M vs 690M，差 2.1×），前端加红色警示
+    dispute_note: |
+      2 个样本差距 2.1×（326M vs 690M），可能反映用户使用模式差异。
+      前端展示时应加红色 ⚠ 警示，提示数据存在较大不确定性。
+    notes: |
+      2 个不一致的数据:326M、690M,平均后 508M。

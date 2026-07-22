@@ -1,0 +1,36 @@
+# 智谱 GLM Coding Plan Lite
+# 最小档（基准 = 1×）。
+# 厂商级信息见 data/vendors/zhipu.yml。
+# 基于 Max 普通客户端周实测 1B 反推（ZCode 等效口径 1.5B 不算普通实测）。
+
+plan_id: zhipu-glm-coding-lite
+vendor: zhipu
+plan_name: GLM Coding Plan Lite
+plan_tier: lite
+status: active
+last_verified: 2026-07-22
+
+pricing:
+  currency: CNY
+  original_monthly: 49
+  original_quarterly: 132.3       # 包季 9 折
+  original_yearly: 470.4          # 包年 8 折
+  auto_renew_default: true
+
+limits:
+  window_5h:
+    requests_official: 80
+    tokens_measured: 10000000       # 10M = Max 5h / 20
+  window_weekly:
+    requests_official: 400
+    tokens_measured: 50000000       # 50M = Max 周 / 20
+  window_monthly:
+    requests_official: null
+    tokens_measured: 215000000      # 215M = Max 月 / 20
+    monthly_estimated: true
+
+monthly_cap_note: |
+  智谱官方只有 5h + 周两级限额，无月度硬封顶。
+  月度 = 周额度 × 4.3 预估。
+
+measurements: []

@@ -1,0 +1,84 @@
+# Z.AI（zai）厂商级元数据
+# 智谱海外版：限流数值 / 档位倍率 跟国内智谱完全一致
+# 但走海外线路、用美元结算、两套账号体系互不互通
+# 订阅页：https://z.ai/subscribe
+# 文档：https://docs.z.ai/devpack/
+# 控制台：https://z.ai/dashboard
+
+vendor_id: zai
+vendor_display: Z.AI
+vendor_display_en: Zhipu Z.AI (International)
+brand_color: "#1f6feb"
+homepage: https://z.ai/subscribe
+docs: https://docs.z.ai/devpack/
+last_verified: 2026-07-21
+
+# 邀请码：Z.AI 官方邀请计划
+# 重要：Z.AI 月付/季付/年付标价（-10%/-20%/-30%）是「长期周期定价」，永久有效，续费维持。
+# 邀请码 10% 是「首单专属」，可以叠加周期定价，但仅第一笔订单。
+# 数据来自 Z.AI 官方订阅页邀请弹窗 + 豆包 2026-07-22 整理
+affiliate:
+  code: 287GKUMISJ
+  url: https://z.ai/subscribe?ic=287GKUMISJ
+  discount: 0.9
+  stackable: true           # 可叠加周期折扣（月-10%/季-20%/年-30%），但仅限首单
+  stackable_scope: first_order_only
+  discount_note: |
+    邀请码 10% 叠加周期定价，仅限首笔订单。
+    续费/升级不再享有邀请折扣，只保留周期定价。
+  owner: OLmatter
+  added_at: 2026-07-22
+  models_highlight: GLM-5.2, GLM-4.7
+  inviter_reward: |
+    邀请人奖励：累计 3 位付费好友 → 10% credit；每 30 位 → 再 +10%。
+
+# 厂商公共特性
+shared_features:
+  # 主力模型（榜单对比基准；Z.AI = 智谱海外版,模型同国内智谱）
+  primary_model: GLM-5.2
+  models:
+    - GLM-5.2
+    - GLM-4.7
+  models_note: |
+    Z.AI 是智谱的海外版本（美元订阅 / 海外线路）。
+    限流数值、套餐档位倍率与国内智谱 GLM Coding Plan 完全一致。
+    模型对应国内 GLM 系列，但账号体系、线路、风控完全独立。
+  clients:
+    - Cursor
+    - Cline
+    - Claude Code
+    - OpenClaw
+    - ZCode
+  clients_note: |
+    套餐仅限编码客户端使用（chat 网页不能用套餐额度）。
+    必须用 Coding Plan 专属 Base URL，普通通用 API 地址不消耗套餐额度。
+    海外版对 Claude Code / 海外编码 Agent 支持比国内版稳定。
+    ZCode 在 Z.AI 上同样可用，0.67 折算权益跟国内智谱一致。
+  rate_limit_tiers: [5h, weekly]
+  rate_limit_note: |
+    Z.AI 限流规则与国内智谱完全一致：
+    - 5h 滚动窗口
+    - 周窗口（无官方独立月度硬封顶）
+    - 周 = 5 × 5h（产品定义换算，跟国内智谱 1:5 一致）
+
+# Z.AI 跟国内智谱一样支持 ZCode（0.67 折算，全周期等效额度 1.5 倍）
+rate_multipliers:
+  normal:
+    peak: 3.0
+    off_peak: 1.0
+  zcode:
+    peak: 2.0
+    off_peak: 0.67
+  zcode_note: |
+    ZCode 权益：GLM-5.2 全周期按 0.67 系数折算（等效额度 1.5 倍）。
+    - 高峰期（14:00-18:00 UTC+8）：3x → 2x
+    - 非高峰期（其余 20h）：1x → 0.67x
+    含义：同样跑 100 tokens，ZCode 在非高峰期只扣 67 的额度。
+    如果全程非高峰，可用实际 tokens ≈ 名义额度 × 1.5。
+    ⚠️ 限时活动：2026-07-31 截止（无延期公告则恢复正常计费倍率）。
+
+# Z.AI 专属 Base URL（Coding Plan 专用）
+api:
+  upstream: https://api.z.ai/api/coding/paas/v4
+  note: |
+    必须是 /api/coding/paas/v4，不是通用 paas/v4，否则走按量计费不消耗套餐额度。

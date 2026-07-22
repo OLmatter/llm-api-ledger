@@ -11,8 +11,15 @@ last_verified: 2026-07-21
 
 pricing:
   currency: CNY
+  # 包月
   original_monthly: 200
-  intro_monthly: 49.9
+  intro_monthly: 49.9           # 限时首单特惠（2.5 折不到）
+  # 包季
+  original_quarterly: 600       # ¥200 × 3 刊例价
+  intro_quarterly: 299.80        # 限时特惠,受邀再 9.5 折 = ¥284.81/季
+  # 包年
+  original_yearly: 2400         # ¥200 × 12 刊例价
+  intro_yearly: 2099.80          # 限时特惠 ¥2099.80/年（立省 ¥300.2），受邀再 9.5 折 = ¥1994.81/年
   intro_duration_months: 2
   intro_condition: 新购 / Lite 升级 Pro / 续费均占用特惠资格；同实名主体仅一次
   intro_end_hint: 2026-08-08   # 活动截至日（参考，以官方页为准）
@@ -35,10 +42,12 @@ limits:
     requests_official: 90000
     tokens_measured: null
 
-# 官方公布的次数比例（基于次数，不是 tokens）
+# 官方公布的次数比例
 # 月 = 2 × 周
 # 周 = 7.5 × 5h
-ratio_note: 官方公布的次数比例，token 比例需独立实测，不可由次数比例推算
+# 这个比例是火山产品定义（不是统计估算），token 也遵循同比例。
+# Pro 月度 token 实测反推后，5h/周 按 1/7.5、0.5 分摊。
+# Lite 的 tokens = Pro tokens ÷ 5（同产品定义）。
 
 # 实测样本（每个 user_hash 一条，榜单聚合时按可信度加权）
 # 可信度分级：

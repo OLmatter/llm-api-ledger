@@ -71,6 +71,20 @@ a:hover { text-decoration: underline; }
 .page-title { font-size: 24px; font-weight: 600; letter-spacing: -.4px; }
 .page-sub { font-size: 13px; color: var(--text-3); margin-top: 2px; }
 
+/* ── Refresh meta (page-head right side) ── */
+.page-meta { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-3); }
+.refresh-label { text-transform: uppercase; letter-spacing: .3px; }
+.refresh-time { font-family: var(--mono); font-size: 12px; color: var(--text-2); font-weight: 500; }
+.refresh-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--good); transition: background .2s;
+}
+.refresh-dot.counting { background: var(--text-3); }
+.refresh-dot.active { background: var(--accent); animation: pulse 1s; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,113,227,.4); } 100% { box-shadow: 0 0 0 6px rgba(0,113,227,0); } }
+.auto-refresh { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; }
+.auto-refresh input { margin: 0; cursor: pointer; }
+
 /* ── Cards ── */
 .card {
   background: var(--surface); border: 1px solid var(--line);

@@ -1,0 +1,54 @@
+# Z.AI GLM Coding Plan Max
+# 智谱海外版（USD 订阅）。限流数值 + tokens 口径与国内智谱 Max 完全一致。
+# 厂商级信息见 data/vendors/zai.yml。
+
+plan_id: zai-glm-coding-max
+vendor: zai
+plan_name: GLM Coding Plan Max
+plan_tier: max
+status: active
+last_verified: 2026-07-22
+
+pricing:
+  currency: USD
+  # 基础原价（无任何优惠）
+  base_monthly: 160
+  base_quarterly: 480            # $160 × 3
+  base_yearly: 1920              # $160 × 12
+  # 长期周期定价（月-10% / 季-20% / 年-30%，永久有效，续费维持）
+  original_monthly: 144          # $160 × 0.9
+  original_quarterly: 384        # $480 × 0.8（折月 $128）
+  original_yearly: 1344          # $1920 × 0.7（折月 $112）
+  auto_renew_default: true
+
+# 限额：与国内智谱 Max 完全一致（普通客户端口径）
+limits:
+  window_5h:
+    requests_official: 1600
+    tokens_measured: 200000000     # 200M（普通客户端，跟 zhipu Max 同）
+  window_weekly:
+    requests_official: 8000
+    tokens_measured: 1000000000    # 1B（普通客户端口径）
+  window_monthly:
+    requests_official: null
+    tokens_measured: 4300000000    # 4.3B（按 4.3 周预估）
+    monthly_estimated: true
+
+ratio_note: |
+  Z.AI 是智谱海外版（同一产品），限流规则 + tokens 计费口径与国内智谱完全一致。
+  普通客户端周 = 1B；ZCode 等效 1.5B（限时活动 2026-07-31 截止）。
+
+measurements:
+  - measurement_id: m_2026_07_zai_sibling_zhipu_max
+    source_kind: vendor_sibling_inferred
+    source_vendor: zhipu
+    source_plan: zhipu-glm-coding-max
+    source_weekly_tokens: 1000000000   # 1B（普通客户端口径）
+    period: 2026-07
+    inferred_5h_tokens: 200000000
+    inferred_weekly_tokens: 1000000000
+    inferred_monthly_tokens: 4300000000
+    credibility: medium
+    notes: |
+      同产品海外版推断。基于 2026-07 国内 zhipu Max 普通客户端周实测 1B。
+      海外版沿用同一实测（同产品，口径 100% 一致）。

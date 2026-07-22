@@ -1,0 +1,56 @@
+affiliate:
+  added_at: 2026-07-21
+  code: IKhXTPYbQC
+  discount: 0.9
+  discount_note: 与官方活动叠加，订阅享 9 折 + Builder 身份
+  expires: '2026-07-31'
+  models_highlight: M3 (1M context), M2.7
+  owner: OLmatter
+  stackable: true
+  url: https://platform.minimaxi.com/subscribe/token-plan?code=IKhXTPYbQC&source=link
+brand_color: '#ff6b6b'
+docs: https://platform.minimaxi.com/subscribe/token-plan
+homepage: https://platform.minimaxi.com/subscribe/token-plan
+last_verified: 2026-07-21
+shared_features:
+  api:
+    key_prefix: sk-cp
+    upstream: https://api.minimaxi.com/v1
+  clients:
+  - Cursor
+  - Cline
+  - Claude Code
+  - ZCode
+  - OpenClaw
+  clients_note: '仅限个人开发交互式场景，禁止后端服务批量调用。
+
+    Token 不跨月滚存，每月重置。
+
+    '
+  models:
+  - MiniMax-M3
+  - MiniMax-M2.7
+  models_note: 'M3 长上下文、多模态、大图/视频消耗 Token 远高于普通代码补全。
+
+    旧版按次估算已失效。
+
+    '
+  primary_model: M3
+  rate_limit_note: '三重限制同时生效：
+
+    - 5h 滚动窗口（短时爆发）
+
+    - 周窗口
+
+    - 月度 Token 总量（硬封顶，所有模态共享）
+
+    高峰期（15:00-17:30）动态收紧 RPM，高并发容易 429。
+
+    '
+  rate_limit_tiers:
+  - 5h
+  - weekly
+  - monthly
+vendor_display: MiniMax
+vendor_display_en: MiniMax
+vendor_id: minimax

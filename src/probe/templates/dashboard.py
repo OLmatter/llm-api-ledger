@@ -153,6 +153,41 @@ _JS_BLOCK = """<script src="__CHART_JS_URL__"></script>
                y:{grid:{color:'#ececf0'},stacked:true,beginAtZero:true,
                   ticks:{callback:function(v){return v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v}} } } }
   });
+
+  // ── 自动刷新（30s，带 toggle + 刷新指示灯）──
+  var REFRESH_INTERVAL_SEC = 30;
+  var refreshTimer = null;
+  var countdown = REFRESH_INTERVAL_SEC;
+
+  function tickRefresh() {
+    var dot = document.getElementById('refreshDot');
+    var label = document.querySelector('.auto-refresh span');
+    if (!document.getElementById('autoRefresh').checked) {
+      if (dot) dot.className = 'refresh-dot';
+      if (label) label.textContent = '\u81ea\u52a8 30s';
+      countdown = REFRESH_INTERVAL_SEC;
+      return;
+    }
+    countdown--;
+    if (countdown <= 0) {
+      if (dot) { dot.className = 'refresh-dot active'; }
+      // 保持 key 参数刷新当前视图
+      var url = new URL(window.location.href);
+      window.location.reload();
+      return;
+    }
+    if (dot) dot.className = 'refresh-dot counting';
+    if (label) label.textContent = '\u81ea\u52a8 ' + countdown + 's';
+  }
+
+  var cb = document.getElementById('autoRefresh');
+  if (cb) {
+    cb.addEventListener('change', function() {
+      countdown = REFRESH_INTERVAL_SEC;
+      tickRefresh();
+    });
+  }
+  refreshTimer = setInterval(tickRefresh, 1000);
 })();
 </script>"""
 
@@ -288,7 +323,16 @@ def render(stats, cfg, hourly, daily, keys, selected_key):
         '  </aside>',
         '  <main class="main">',
         tb,
-        f'    <div class="page-head"><div class="view-title">{view_title}</div></div>',
+        f'    <div class="page-head"><div class="view-title">{view_title}</div>',
+        '      <div class="page-meta">',
+        f'        <span class="refresh-label">\u6700\u540e\u5237\u65b0</span>',
+        f'        <span class="refresh-time" id="refreshTime">{datetime.now().strftime("%H:%M:%S")}</span>',
+        '        <span class="refresh-dot" id="refreshDot"></span>',
+        '        <label class="auto-refresh">',
+        '          <input type="checkbox" id="autoRefresh" checked>',
+        '          <span>\u81ea\u52a8 30s</span>',
+        '        </label>',
+        '      </div></div>',
         # Hero cards
         '    <div class="hero-grid">',
         f'      <div class="card"><div class="card-label">\u4eca\u65e5\u8bf7\u6c42</div><div class="card-value">{today_count}<span class="card-unit">\u6b21</span></div><div class="card-sub">\u5165 {_fmt_tokens(today_in)} \xb7 \u51fa {_fmt_tokens(today_out)}</div></div>',

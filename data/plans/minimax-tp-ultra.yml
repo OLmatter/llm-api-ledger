@@ -1,0 +1,42 @@
+# MiniMax Token Plan Ultra
+# 最高档（= Max × 3.93 ≈ Plus × 11.8）。
+# 厂商级信息见 data/vendors/minimax.yml。
+# 无独立实测，按官方倍率 Max × 3.93 反推。
+
+plan_id: minimax-tp-ultra
+vendor: minimax
+plan_name: Token Plan Ultra
+plan_tier: ultra
+status: active
+last_verified: 2026-07-21
+
+pricing:
+  currency: CNY
+  original_monthly: 469
+  original_yearly: 5628
+  intro_yearly: 4690
+  intro_note: 年付特惠 4690 元/年
+  auto_renew_default: false
+
+limits:
+  window_5h:
+    requests_official: null
+    tokens_measured: null       # 按 Max 5h × 3.93 反推
+  window_weekly:
+    requests_official: null
+    tokens_measured: null       # 按 Max 周 × 3.93 反推
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: 7100000000    # 7.1B（官方公布 71 亿 M3 token）
+    tokens_measured: null
+
+ratio_note: |
+  MiniMax Token Plan：5h + 周 + 月三级限额（同火山/智谱，独立判断同时生效）。
+  Ultra ≈ Max × 3.93（= 11.8 / 3）。
+  Ultra 5h = 145M × 3.93 ≈ 570M，周 = 1.45B × 3.93 ≈ 5.7B，月 = 7.1B（官方）。
+
+measurements: []
+
+features:
+  video_daily_quota: 5
+  concurrent_agents: "6-7"

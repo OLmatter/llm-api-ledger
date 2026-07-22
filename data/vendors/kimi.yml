@@ -1,0 +1,48 @@
+# Kimi（月之暗面 Moonshot）原生 Code Plan 厂商元数据
+# ⚠️ 区分：火山方舟内调用 Kimi ≠ Kimi 原生套餐，本档是原生官方线路
+
+vendor_id: kimi
+vendor_display: Kimi
+vendor_display_en: Moonshot
+brand_color: "#000000"
+homepage: https://kimi.moonshot.cn/membership/code
+docs: https://platform.moonshot.cn
+last_verified: 2026-07-21
+
+# 邀请码：Kimi 不提供邀请码（无购买优惠）
+affiliate: null
+
+# 厂商公共特性
+shared_features:
+  # 主力模型（榜单对比基准；Kimi 原生 Code Plan 用 K3 系列）
+  primary_model: K3
+  models:
+    - moonshot-k2.7-code
+    - moonshot-k2.6-code
+  models_note: |
+    支持 256K 超长上下文、多模态截图编码。
+    区分缓存命中/未命中，长代码库、图片输入会大量消耗 Token。
+  clients:
+    - Cursor
+    - Cline
+    - Claude Code
+    - ZCode
+  clients_note: |
+    必须使用 Code 订阅专属 Key；普通按量充值 API Key 不消耗套餐额度。
+    原生 Kimi Code 对第三方编辑器限制比火山/智谱严格，部分客户端容易触发风控。
+  rate_limit_tiers: [5h, weekly]   # 注意：无官方月度封顶
+  rate_limit_note: |
+    Kimi 原生规则和火山/GLM/MiniMax 完全不一样：
+    - 无官方公开固定「请求次数限额」，只对外描述为 Token 额度制
+    - 无公开 5h/周精确数字，不存在固定 `月=n周=n×5h` 换算公式
+    - 刷新周期：按【每周】重置额度（不是自然月）
+    - 剩余 Token 不清零，结转至下周上限
+    - 无官方独立月度硬封顶；长期上限 = 每周额度持续循环使用
+  api:
+    upstream: https://api.moonshot.cn/v1
+
+# Kimi 特有的 5h 窗口（官方不公布精确数字，社区实测浮动）
+community_5h_note: |
+  Andante 实测约 300-1200 次浮动，受上下文长短/缓存命中影响极大。
+  更高档位同步放大，但没有火山那种精确「周=7.5×5h」固定比例。
+  本榜单 5h 列对 Kimi 全部留空（社区数据不可信）。

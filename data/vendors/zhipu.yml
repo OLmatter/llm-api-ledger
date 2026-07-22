@@ -1,0 +1,59 @@
+# 智谱 AI（zhipu）厂商级元数据
+# GLM Coding Plan 套餐订阅页：https://www.bigmodel.cn/glm-coding
+# 开放平台控制台：https://open.bigmodel.cn
+
+vendor_id: zhipu
+vendor_display: 智谱
+vendor_display_en: Zhipu AI
+brand_color: "#1a1a2e"
+homepage: https://www.bigmodel.cn/glm-coding
+docs: https://open.bigmodel.cn/dev/api/normal-model/glm-4
+last_verified: 2026-07-21
+
+# 邀请码：智谱不提供邀请码（活动已取消）
+# 表格邀请码列对智谱套餐显示空（—）
+affiliate: null
+
+# 厂商公共特性
+shared_features:
+  # 主力模型（榜单对比基准；高阶模型如 GLM-5.2 在高峰期有消耗倍率）
+  primary_model: GLM-5.2
+  models:
+    - GLM-5.2
+    - GLM-4.7
+  models_note: |
+    高阶模型（如 GLM-5.2）高峰期有消耗倍率（2~3 倍），
+    名义次数会缩水，实际可用次数低于标称。
+  clients:
+    - Cursor
+    - Cline
+    - Claude Code
+    - OpenClaw
+    - ZCode
+  clients_note: |
+    套餐额度仅限编码客户端，官网网页聊天（chatglm.cn）不能用套餐额度。
+    必须用 /api/coding/paas/v4 接入地址（不是通用 paas/v4，否则走按量计费）。
+  rate_limit_tiers: [5h, weekly]   # 注意：智谱无官方月度封顶
+  rate_limit_note: |
+    智谱只有 5h + 周 两级限额，没有官方月度封顶。
+    月度展示用 4.3 周预估（行业惯例），不是官方硬限制。
+    唯一硬限制：5h 短时上限 + 每周上限。
+
+# 智谱特有的额度折算机制
+# GLM-5.2 在不同客户端 + 时段有不同扣费系数
+rate_multipliers:
+  # 普通客户端（Cursor/Cline/Claude Code/OpenClaw 等）
+  normal:
+    peak: 3.0        # 高峰期 14:00-18:00 ×3 扣
+    off_peak: 1.0    # 非高峰期（其余 20h）×1 扣
+  # ZCode 客户端（专属活动，截止时间以官方公告为准）
+  zcode:
+    peak: 2.0        # 高峰期 ×2 扣（原 3x 降到 2x）
+    off_peak: 0.67   # 非高峰期 ×0.67 扣（原 1x 降到 0.67x）
+  zcode_note: |
+    ZCode 权益：GLM-5.2 全周期按 0.67 系数折算（等效额度 1.5 倍）。
+    - 高峰期（14:00-18:00 UTC+8）：3x → 2x
+    - 非高峰期（其余 20h）：1x → 0.67x
+    含义：同样跑 100 tokens，ZCode 在非高峰期只扣 67 的额度。
+    如果全程非高峰，可用实际 tokens ≈ 名义额度 × 1.5。
+    ⚠️ 限时活动：2026-07-31 截止（无延期公告则恢复正常计费倍率）。

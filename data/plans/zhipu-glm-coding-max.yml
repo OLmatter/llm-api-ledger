@@ -1,0 +1,56 @@
+# 智谱 GLM Coding Plan Max
+# 最高档（基准 = Lite × 20 / Pro × 4）。
+# 厂商级信息（折算规则 / 模型池 / 客户端）见 data/vendors/zhipu.yml。
+
+plan_id: zhipu-glm-coding-max
+vendor: zhipu                # → data/vendors/zhipu.yml
+plan_name: GLM Coding Plan Max
+plan_tier: max
+status: active
+last_verified: 2026-07-22
+
+pricing:
+  currency: CNY
+  original_monthly: 469
+  original_quarterly: 1266.3     # 包季 9 折 ¥422.1/月 × 3
+  original_yearly: 4502.4        # 包年 8 折 ¥375.2/月 × 12
+  auto_renew_default: true
+
+# 三周期限额（智谱只有 5h + 周，无官方月封顶）
+# 实测口径（普通客户端 100%）：周 1B；ZCode 等效 1.5B
+limits:
+  window_5h:
+    requests_official: 1600
+    tokens_measured: 200000000      # 200M（普通客户端口径）
+  window_weekly:
+    requests_official: 8000
+    tokens_measured: 1000000000     # 1B（普通客户端口径）
+  window_monthly:
+    requests_official: null         # 智谱无官方月度封顶
+    tokens_measured: 4300000000     # 4.3B（按 4.3 周预估）
+    monthly_estimated: true
+
+monthly_cap_note: |
+  智谱官方只有 5h + 周两级限额，无月度硬封顶。
+  月度数字 = 周额度 × 4.3（一个月平均 4.3 周），仅为预估。
+
+# 实测样本
+measurements:
+  - measurement_id: m_2026_07_zcode_max_001
+    source_kind: single_user_probe
+    user_hash: pending
+    period: 2026-07
+    client: ZCode                  # ZCode 客户端，限时 0.67 折算（2026-07-31 截止）
+    weekly_used_tokens: 1400000000  # 1.4B（ZCode 实际 token 数，含 0.67 折算）
+    weekly_used_pct: 92             # 占周额度 92%
+    # ZCode 非高峰期 ×0.67 扣费，等效 1.5 倍额度
+    # 名义周额度（普通客户端口径）= 1.4B × 0.67 / 0.92 ≈ 1.02B → 取整 1B
+    inferred_weekly_cap_tokens: 1000000000   # 1B（普通客户端 100% 口径）
+    inferred_weekly_cap_zcode_tokens: 1500000000  # 1.5B（ZCode 等效，1.5×）
+    credibility: low
+    notes: |
+      单用户单周反推，几乎全非高峰期跑（0.67 系数）。
+      ZCode 跑 1.4B 实际 token，按 0.67 折算后占周额度 92%。
+      反推：普通客户端周 cap ≈ 1B，ZCode 等效 ≈ 1.5B。
+      2026-07-22 用户确认：「zcode 里面是 1.52（实测 150% 等效），zcode 之外是 100%」，
+      即 zcode 1.52B = 1B × 1.5，跟本反推数学一致。

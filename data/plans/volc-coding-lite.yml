@@ -13,8 +13,15 @@ last_verified: 2026-07-21
 
 pricing:
   currency: CNY
+  # 包月
   original_monthly: 40
-  intro_monthly: 10       # 活动价常见首两月 2.5 折
+  intro_monthly: 9.9        # 限时 9.9 元起首单（2.5 折不到,前 2 个月特惠）
+  # 包季（官方页面有,3 个月一口价）
+  original_quarterly: 120        # ¥40 × 3 刊例价
+  intro_quarterly: 59.80         # 限时特惠,受邀再 9.5 折 = ¥56.81/季
+  # 包年（官方页面有,12 个月一口价）
+  original_yearly: 480           # ¥40 × 12 刊例价
+  intro_yearly: 419.80           # 限时特惠 ¥419.80/年（立省 ¥60.2），受邀再 9.5 折 = ¥398.81/年
   intro_duration_months: 2
   intro_condition: 新用户特惠；同实名主体仅一次
   intro_end_hint: 2026-08-08
@@ -33,9 +40,9 @@ limits:
     tokens_measured: null
 
 ratio_note: |
-  火山官方：Pro 的【次数】限额 = Lite × 5。
-  但【token 总额度】是否也严格 5×，官方未公布，需独立实测验证。
-  在 Lite 拿到至少 1 个可信探针样本前，禁止用 Pro token ÷ 5 反推 Lite token。
+  火山官方产品定义：Pro 的【所有档位限额】= Lite × 5（次数比例和 token 比例都遵循，因为是产品定义不是统计估算）。
+  当前 Lite 月度 token = Pro 月度实测 (894M) ÷ 5 = 178.8M，按官方比例分摊到 5h/周。
+  如果 Pro 月度实测更新，Lite 自动跟随更新（前端在 build-plans 时反推）。
 
 # 实测样本（暂无）
 measurements: []
