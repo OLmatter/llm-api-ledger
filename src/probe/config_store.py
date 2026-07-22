@@ -90,6 +90,22 @@ VENDORS: dict[str, dict[str, Any]] = {
             {"id": "zai-glm-max", "label": "Z.ai Max"},
         ],
     },
+    "kimi": {
+        "label": "Kimi Code Plan (月之暗面)",
+        "url_prefix": "kimi",
+        # Coding Plan 走 api.kimi.com/coding（Anthropic 兼容层），不是按量 api.moonshot.cn/v1
+        # 数据源：GCMP src/providers/config/moonshot.json
+        "upstream_default": "https://api.kimi.com/coding",
+        "monitor_url_default": "",  # Kimi 无公开 monitor API
+        "auth_header": "Authorization",
+        "auth_scheme": "Bearer",
+        "plans": [
+            {"id": "kimi-code-andante", "label": "Code Plan Andante (¥49/月)"},
+            {"id": "kimi-code-moderato", "label": "Code Plan Moderato (¥99/月)"},
+            {"id": "kimi-code-allegretto", "label": "Code Plan Allegretto (¥199/月)"},
+            {"id": "kimi-code-allegro", "label": "Code Plan Allegro (¥699/月)"},
+        ],
+    },
     "deepseek": {
         "label": "DeepSeek (按量)",
         "url_prefix": "deepseek",
