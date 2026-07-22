@@ -30,6 +30,19 @@ const planFiles = readdirSync(join(root, 'data', 'plans')).filter(f => f.endsWit
 // 榜单里 USD 套餐（Z.AI）会在原价下显示一行 "≈ ¥xxx" 作为对比参考
 const USD_TO_CNY = 7.15
 
+// ── DeepSeek V4 按量等价换算 ──
+// 把套餐月费换算成「如果买 DS V4 非高峰期按量，能跑多少 tokens」
+// 用真实编程比例（non-cache input 9.4% / output 1.2% / cache read 89.4%）
+// DS V4 非高峰期定价（元/百万 tokens，来源 GCMP deepseek.json）
+const DS_V4_PRICES = { input: 1.0, output: 2.0, cache_read: 0.02 }
+// 真实编程比例（来源：用户 MiniMax 实际使用数据）
+const CODING_RATIO = { input: 0.094, output: 0.012, cache_read: 0.894 }
+// 每百万混合 tokens 的 DS V4 价格
+const DS_V4_MIXED_PRICE_PER_M =
+  CODING_RATIO.input * DS_V4_PRICES.input +
+  CODING_RATIO.output * DS_V4_PRICES.output +
+  CODING_RATIO.cache_read * DS_V4_PRICES.cache_read  // ≈ 0.137 元/百万
+
 // 各厂商官方订阅直达链接（用户提供的国内正版页面，affiliate 缺失时兜底）
 const SUBSCRIBE_URLS = {
   volcengine: 'https://www.volcengine.com/activity/codingplan',
@@ -369,6 +382,17 @@ const plans = planFiles.map(f => {
 
     // 厂商名跳转目标：有邀请码用邀请码链接（带 source/折扣参数），否则用各家官方订阅直达页
     subscribe_url: (aff?.url) || SUBSCRIBE_URLS[p.vendor] || v.homepage || null,
+
+    // DeepSeek V4 按量等价换算：月费 → 如果买 DS V4 非高峰期能跑多少 tokens
+    // 月费用月原价（CNY）；USD 套餐用折算价
+    ds_v4_equivalent: (() => {
+      const monthlyCny = pricing.currency === 'USD' && pricing.original_monthly
+        ? pricing.original_monthly * USD_TO_CNY
+        : pricing.original_monthly
+      if (!monthlyCny) return null
+      const tokens = monthlyCny / DS_V4_MIXED_PRICE_PER_M * 1e6
+      return Math.round(tokens)
+    })(),
 
     source_urls: v.source_urls || p.source_urls || [],
     last_verified: p.last_verified || v.last_verified,

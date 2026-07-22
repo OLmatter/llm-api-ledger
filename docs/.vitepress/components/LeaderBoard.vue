@@ -161,6 +161,7 @@ function fmtTokens(n) {
 // 货币单位：'native' 默认（套餐本身货币）| 'cny' 统一折算成人民币
 // cny 模式下，USD 套餐按汇率折算显示 ¥；CNY 套餐保持不变
 const currencyUnit = ref('native')  // 'native' | 'cny'
+const showDSEquiv = ref(false)      // DS V4 按量等价换算开关
 function fmtTokensMB(n) {
   const abs = Math.abs(n)
   if (abs >= 1e9) return (n / 1e9).toFixed(2) + 'B'
@@ -226,6 +227,12 @@ function fmtTokensYi(n) {
         @click="currencyUnit = 'cny'"
         :title="`统一折算成人民币（USD 按 ${plans.plans && plans.length > 0 ? (plans[0].pricing.fx_rate || 7.15) : 7.15} 汇率）`"
       >¥统</button>
+      <span class="divider">|</span>
+      <button
+        :class="['sort-btn', { active: showDSEquiv }]"
+        @click="showDSEquiv = !showDSEquiv"
+        title="把套餐月费换算成 DeepSeek V4 非高峰期按量的等价 tokens（按真实编程 input/output/cache 比例计算）"
+      >DS等价</button>
       <span class="count">{{ plans.length }} 个套餐 · {{ plansData.vendors_count }} 个厂商</span>
     </div>
 
@@ -375,6 +382,10 @@ function fmtTokensYi(n) {
               <div v-if="row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_monthly" class="zcode-aff">
                 <span class="zcode-label">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_monthly) }}</span>
+              </div>
+              <div v-if="showDSEquiv && row.plan.ds_v4_equivalent" class="ds-equiv">
+                <span class="ds-label">DS V4 等价</span>
+                <span class="ds-val">{{ fmtTokens(row.plan.ds_v4_equivalent) }}</span>
               </div>
             </td>
           </tr>
@@ -574,6 +585,23 @@ thead tr:nth-child(2) th {
   padding: 2px 6px; border-radius: 4px;
   text-transform: uppercase; letter-spacing: .3px;
   white-space: nowrap;
+}
+
+/* DS V4 等价换算子行 */
+.ds-equiv {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 4px; justify-content: flex-end;
+}
+.ds-label {
+  font-size: 9px; font-weight: 600;
+  color: #1a73e8;
+  background: rgba(26, 115, 232, 0.08);
+  padding: 2px 6px; border-radius: 4px;
+  white-space: nowrap;
+}
+.ds-val {
+  font-size: 11px; font-weight: 700;
+  color: #1a73e8;
 }
 .zcode-val {
   font-size: 11px; font-weight: 700;
