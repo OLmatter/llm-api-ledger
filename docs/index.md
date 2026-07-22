@@ -13,6 +13,9 @@ hero:
       text: 装探针
       link: /probe
     - theme: alt
+      text: TG 群交流
+      link: https://t.me/+s1flX6cpUZ1kM2M1
+    - theme: alt
       text: GitHub
       link: https://github.com/OLmatter/llm-api-ledger
 ---
@@ -46,3 +49,10 @@ hero:
 4. 提 GitHub PR，绿标认证等社区 reviewer 审核
 
 详见 [贡献指南](/contributing) 和 [数据口径](/methodology)。
+
+## 反馈与交流 {#contact}
+
+- 🐛 **数据有误 / 缺失厂商？** [提 GitHub Issue](https://github.com/OLmatter/llm-api-ledger/issues)（标 `data-correction` 或 `vendor-request`）
+- 💬 **交流大模型套餐 / 上报使用量：** [Telegram 群](https://t.me/+s1flX6cpUZ1kM2M1)（也是 glm-coding-helper 用户群，欢迎来聊大模型套餐选型、把自己的真实使用量报上来帮助更多人）
+
+> 我们刚起步，榜单数据仍在补全中。**你用的厂商/套餐没上榜？把数据报上来，下一个就是你。**

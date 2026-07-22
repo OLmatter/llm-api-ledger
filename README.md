@@ -2,7 +2,14 @@
 
 > LLM API 领域的可信数据账本 — 集齐主流厂商的真实用量与性能
 
-**[📊 看完整榜单 →](https://OLmatter.github.io/llm-api-ledger/)** ｜ **[🔧 装探针自用核账 →](https://OLmatter.github.io/llm-api-ledger/probe)**
+**[📊 看完整榜单 →](https://OLmatter.github.io/llm-api-ledger/)** ｜ **[🔧 装探针自用核账 →](https://OLmatter.github.io/llm-api-ledger/probe)** ｜ **[💬 TG 群交流 →](https://t.me/+s1flX6cpUZ1kM2M1)**
+
+---
+
+## 反馈与交流
+
+- **数据有误 / 想加厂商或套餐？** [提 Issue](https://github.com/OLmatter/llm-api-ledger/issues)（标 `data-correction` 或 `vendor-request`）
+- **交流大模型套餐 / 上报自己的真实使用量：** [Telegram 群](https://t.me/+s1flX6cpUZ1kM2M1) — 我们刚起步，数据仍在补全。**你用的套餐没上榜？把数据报上来，下一个就是你。**
 
 ---
 
