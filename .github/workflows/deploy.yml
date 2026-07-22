@@ -33,6 +33,8 @@ jobs:
         run: npm run build
 
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true   # 自动启用 Pages（如果仓库还没开）
 
       - uses: actions/upload-pages-artifact@v3
         with:
