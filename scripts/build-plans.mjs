@@ -39,8 +39,8 @@ const DS_V4_PRICES = {
   flash: { input: 1.0, output: 2.0, cache_read: 0.02 },
   pro:   { input: 3.0, output: 6.0, cache_read: 0.025 },
 }
-// 真实编程比例（来源：用户 MiniMax 实际使用数据）
-const CODING_RATIO = { input: 0.094, output: 0.012, cache_read: 0.894 }
+// 真实编程比例（缓存命中按实测偏高场景 95%；input/output 按原比例分剩余 5%）
+const CODING_RATIO = { input: 0.044, output: 0.006, cache_read: 0.95 }
 // 每百万混合 tokens 的 DS V4 价格（两个版本各算一次）
 function dsV4MixedPricePerM(variant) {
   const p = DS_V4_PRICES[variant]
@@ -389,8 +389,9 @@ const plans = planFiles.map(f => {
     // 厂商名跳转目标：有邀请码用邀请码链接（带 source/折扣参数），否则用各家官方订阅直达页
     subscribe_url: (aff?.url) || SUBSCRIBE_URLS[p.vendor] || v.homepage || null,
 
-    // DeepSeek V4 按量等价换算：月费 → 如果买 DS V4 非高峰期能跑多少 tokens
-    // 两个版本：Flash（便宜）和 Pro（贵 3 倍）
+    // DeepSeek V4 按量等价换算：月费 → 如果买 DS V4 官网原价能跑多少 tokens
+    // 注意：此处按缓存命中 95% 写死，仅作兜底/快照。
+    // 前端 LeaderBoard.vue 会按用户选择的 dsCacheRate 动态重算（默认 95%）。
     ds_v4_equivalent: (() => {
       const monthlyCny = pricing.currency === 'USD' && pricing.original_monthly
         ? pricing.original_monthly * USD_TO_CNY

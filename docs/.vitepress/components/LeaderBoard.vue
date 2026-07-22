@@ -163,6 +163,31 @@ function fmtTokens(n) {
 const currencyUnit = ref('native')  // 'native' | 'cny'
 const showDSEquiv = ref(false)      // DS V4 按量等价换算开关
 const dsVariant = ref('flash')      // 'flash' | 'pro'
+const dsCacheRate = ref(0.95)       // DS V4 等价换算的缓存命中率（默认 95%）
+// DS V4 官网原价（元/百万 tokens）
+const DS_V4_PRICES = {
+  flash: { input: 1.0, output: 2.0, cache_read: 0.02 },
+  pro:   { input: 3.0, output: 6.0, cache_read: 0.025 },
+}
+// 剩余非缓存部分按 input:output = 8.8:1.2 分（来自 MiniMax 实测分布）
+function dsV4MixedPricePerM(variant, cacheRate) {
+  const p = DS_V4_PRICES[variant]
+  const nonCache = 1 - cacheRate
+  const inRatio = nonCache * 0.88
+  const outRatio = nonCache * 0.12
+  return inRatio * p.input + outRatio * p.output + cacheRate * p.cache_read
+}
+// 前端动态计算某套餐的 DS V4 等价 tokens（按当前 dsCacheRate）
+function dsEquivForPlan(plan) {
+  const monthlyCny = plan.pricing.original_monthly_in_cny
+    ?? (plan.pricing.currency === 'USD' && plan.pricing.original_monthly
+        ? plan.pricing.original_monthly * (plan.pricing.fx_rate || 7.15)
+        : plan.pricing.original_monthly)
+  if (!monthlyCny) return null
+  const price = dsV4MixedPricePerM(dsVariant.value, dsCacheRate.value)
+  return Math.round(monthlyCny / price * 1e6)
+}
+const dsCacheOptions = [0.5, 0.7, 0.85, 0.95, 0.99]
 function fmtTokensMB(n) {
   const abs = Math.abs(n)
   if (abs >= 1e9) return (n / 1e9).toFixed(2) + 'B'
@@ -239,6 +264,17 @@ function fmtTokensYi(n) {
         @click="dsVariant = 'pro'; showDSEquiv = true"
         title="DeepSeek V4 Pro 非高峰期按量等价（3 倍价）"
       >DS Pro</button>
+      <span v-if="showDSEquiv" class="bar-divider">·</span>
+      <span v-if="showDSEquiv" class="sort-label">缓存命中：</span>
+      <template v-if="showDSEquiv">
+        <button
+          v-for="opt in dsCacheOptions"
+          :key="opt"
+          :class="['sort-btn', { active: Math.abs(dsCacheRate - opt) < 0.001 }]"
+          @click="dsCacheRate = opt"
+          :title="`缓存命中率 ${Math.round(opt*100)}%：越高 DS 等价越大（缓存 ¥0.02/M 几乎免费）`"
+        >{{ Math.round(opt*100) }}%</button>
+      </template>
       <span class="count">{{ plans.length }} 个套餐 · {{ plansData.vendors_count }} 个厂商</span>
     </div>
 
@@ -389,9 +425,9 @@ function fmtTokensYi(n) {
                 <span class="zcode-label">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_monthly) }}</span>
               </div>
-              <div v-if="showDSEquiv && row.plan.ds_v4_equivalent" class="ds-equiv">
+              <div v-if="showDSEquiv" class="ds-equiv">
                 <span class="ds-label">DS V4 {{ dsVariant === 'pro' ? 'Pro' : 'Flash' }} 等价</span>
-                <span class="ds-val">{{ fmtTokens(row.plan.ds_v4_equivalent[dsVariant]) }}</span>
+                <span class="ds-val">{{ dsEquivForPlan(row.plan) != null ? fmtTokens(dsEquivForPlan(row.plan)) : '—' }}</span>
               </div>
             </td>
           </tr>
