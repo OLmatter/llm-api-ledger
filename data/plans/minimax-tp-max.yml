@@ -19,28 +19,28 @@ pricing:
   auto_renew_default: false
 
 # 三级限额（5h + 周 + 月，三者同时生效）
-# 5h = 145M 实测；周 = 5h × 10（官方比）；月 = 18B（官方公布全模态 token 总量）
+# 5h / 周 是 burn 测试 145M 纯 input 数据，按真实编程比例折算（input:output ≈ 7.5:1，output 4x 计费）
+# 折算系数 = 8.5 / 11.5 ≈ 0.74（比纯 input 少 26%）
 limits:
   window_5h:
-    requests_official: null        # 新版不公布次数
-    tokens_measured: 145000000     # 145M（探针实测，burn 测试 83% 反推）
+    requests_official: null
+    tokens_measured: 107000000      # 107M（真实编程混合 tokens，= burn 145M × 0.74）
   window_weekly:
     requests_official: null
-    tokens_measured: 1450000000    # 1.45B = 5h × 10（官方比例）
+    tokens_measured: 1070000000     # 1.07B = 5h × 10
   window_monthly:
     requests_official: null
-    tokens_official_claimed: 1800000000    # 1.8B（官方公布 18 亿 M3 token）
+    tokens_official_claimed: 1800000000   # 1.8B（官方 18 亿 M3 token）
     tokens_measured: null
 
 ratio_note: |
   MiniMax Token Plan 三级限额（5h + 周 + 月，三者独立判断同时生效）：
-  - 5h：硬限额，实测 100% = 145M tokens（纯文字 burn 测试反推）
-  - 周 = 10 × 5h = 1.45B tokens（官方公布比例）
-  - 月 = 1.8B M3 token（官方公布 18 亿，全模态池含视频/图像/语音/文字）
-  注意 1：月度官方数字是全模态池，含视频（3 条/日）。
-  注意 2：运营者账号后台显示「周/月 ∞」是老套餐遗留（无限额版），
-  新版 Token Plan 已经引入三级限额，本数据按新版规则记录。
-  实测 5h=145M 是 burn 测试结果（无论新老套餐，5h 都有硬限额）。
+  - 5h：burn 测试纯 input 反推 145M，按真实编程比例折算（input:output=7.5:1，output 4x 计费）≈ 107M 混合 tokens
+  - 周 = 10 × 5h = 1.07B
+  - 月 = 1.8B M3 token（官方公布 18 亿，全模态池）
+  计费逻辑：按 token 单价消耗额度（output ≈ 4× input 价，cache read ≈ 0.2× input 价）。
+  burn 测试全 input，真实编程有 output（贵 4 倍），所以实际能跑的混合 tokens 比纯 input 少 26%。
+  折算依据：用户真实编程数据 input:output(non-cache) = 745M:99M ≈ 7.5:1。
 
 # 实测样本
 measurements:
@@ -57,8 +57,10 @@ measurements:
     credibility: medium           # 单用户但 burn 测试方法可信（不同于日常使用反推）
     notes: |
       burn 测试：3 并发，866 秒跑 950 个 200K-input 请求。
-      5h remaining 从 99% 降到 16%（用掉 83%），反推 5h 100% cap = 145M tokens。
-      实测 token 口径是 prompt_tokens（含 cache_read），跟官方 M3 token 计费口径可能不同。
+      5h remaining 从 99% 降到 16%（用掉 83%），反推 5h 纯 input cap = 145M tokens。
+      但 burn 全是 input，真实编程有 output（output ≈ 4× input 计费价），按 input:output=7.5:1 折算：
+      真实 5h 混合 cap ≈ 107M（比纯 input 少 26%）。
+      折算依据：用户真实编程数据 non-cache input:output = 745M:99M。
 
 # 套餐特性
 features:
