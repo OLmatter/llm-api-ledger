@@ -52,6 +52,20 @@ def get_config_path() -> Path:
 # ── Vendor registry ───────────────────────────────────────────────────────
 
 VENDORS: dict[str, dict[str, Any]] = {
+    "volcengine": {
+        "label": "火山方舟 Coding Plan",
+        "url_prefix": "volcengine",
+        # Coding Plan 走 /api/coding 路径（Anthropic 兼容层），不是通用 /api/v3
+        # 数据源：GCMP 仓库 src/providers/config/volcengine.json
+        "upstream_default": "https://ark.cn-beijing.volces.com/api/coding",
+        "monitor_url_default": "",  # 火山无公开 monitor API
+        "auth_header": "Authorization",
+        "auth_scheme": "Bearer",
+        "plans": [
+            {"id": "volc-coding-lite", "label": "Coding Plan Lite (¥40/月)"},
+            {"id": "volc-coding-pro", "label": "Coding Plan Pro (¥200/月)"},
+        ],
+    },
     "zhipu": {
         "label": "智谱 GLM Coding Plan (国内)",
         "url_prefix": "zhipu",
