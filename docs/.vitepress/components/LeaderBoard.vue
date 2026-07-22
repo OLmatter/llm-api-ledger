@@ -5,30 +5,53 @@ import plansData from '../plans.json'
 const plans = ref(plansData.plans)
 
 // 排序选项
-const sortKey = ref('vendor') // vendor（默认，厂商分组） | credibility | price_asc | price_desc
+// vendor（默认，厂商分组）/ credibility / price_asc / price_desc / tokens / value
+// 除 vendor 外，其他都是跨厂商排（不保留厂商分组）
+const sortKey = ref('vendor')
 function setSort(k) { sortKey.value = k }
+
+// 排序用的"用量"：优先 monthly（无限流量如 Kimi 月度算 Infinity 排最后）
+function tokensFor(plan) {
+  const m = plan.tokens?.monthly
+  if (m == null) return -1  // 没数据排到有数据的后面
+  return m
+}
+// 性价比 = 周用量 / 月费（CNY 口径）。值越大越划算
+// 用 weekly 不用 monthly：Kimi 月度无限，用 weekly 才有可比性
+function valueFor(plan) {
+  const w = plan.tokens?.weekly
+  const price = priceFor(plan)
+  if (w == null || !isFinite(price) || price === 0) return -1
+  return w / price
+}
 
 const sortedPlans = computed(() => {
   const arr = [...plans.value]
   const k = sortKey.value
   if (k === 'vendor') {
-    // 厂商分组 + tier 升序（跟 build-plans 默认顺序一致）
-    const tierRank = { lite: 1, 'team-lite': 1, pro: 2, 'team-pro': 2, max: 3 }
+    // 厂商分组 + tier_multiplier 升序（用数字字段，不准用 tierRank 字典——
+    // 历史 bug：tierRank 只认 lite/pro/max，kimi/minimax 档位全乱）
     arr.sort((a, b) => {
       if (a.vendor !== b.vendor) return a.vendor.localeCompare(b.vendor)
-      const ta = tierRank[a.plan_tier] || 99
-      const tb = tierRank[b.plan_tier] || 99
-      if (ta !== tb) return ta - tb
-      // 同 tier 内按 CNY 口径价格升序（USD 套餐用折算价）
+      const ma = a.tier_multiplier ?? 99
+      const mb = b.tier_multiplier ?? 99
+      if (ma !== mb) return ma - mb
       return priceFor(a) - priceFor(b)
     })
   } else if (k === 'credibility') {
+    // 跨厂商：按可信度降序，平手按价格升序
     arr.sort((a, b) => b.measurements_credibility_max - a.measurements_credibility_max
       || priceFor(a) - priceFor(b))
   } else if (k === 'price_asc') {
     arr.sort((a, b) => priceFor(a) - priceFor(b))
   } else if (k === 'price_desc') {
     arr.sort((a, b) => priceFor(b) - priceFor(a))
+  } else if (k === 'tokens') {
+    // 跨厂商：按月度用量降序，没数据排后面
+    arr.sort((a, b) => tokensFor(b) - tokensFor(a))
+  } else if (k === 'value') {
+    // 跨厂商：按性价比（周用量/月费）降序，没数据排后面
+    arr.sort((a, b) => valueFor(b) - valueFor(a))
   }
   return arr
 })
@@ -221,13 +244,16 @@ function fmtTokensYi(n) {
       <span class="sort-label">排序：</span>
       <button
         v-for="opt in [
-          { k: 'vendor', label: '厂商分组' },
-          { k: 'credibility', label: '可信度优先' },
-          { k: 'price_asc', label: '价格升序' },
-          { k: 'price_desc', label: '价格降序' },
+          { k: 'vendor', label: '厂商分组', title: '按厂商字母序 + tier 倍率升序（默认，保留厂商分组视觉）' },
+          { k: 'price_asc', label: '价格↑', title: '按月费升序，跨厂商（USD 已折算 ¥）' },
+          { k: 'price_desc', label: '价格↓', title: '按月费降序，跨厂商（USD 已折算 ¥）' },
+          { k: 'tokens', label: '用量', title: '按实测月度用量降序，跨厂商（没数据的排最后）' },
+          { k: 'value', label: '性价比', title: '按「周用量 ÷ 月费」降序，跨厂商（数值越大越划算）' },
+          { k: 'credibility', label: '可信度', title: '按实测可信度降序（high > medium > low > none），跨厂商' },
         ]"
         :key="opt.k"
         :class="['sort-btn', { active: sortKey === opt.k }]"
+        :title="opt.title"
         @click="setSort(opt.k)"
       >{{ opt.label }}</button>
       <span class="bar-divider">·</span>

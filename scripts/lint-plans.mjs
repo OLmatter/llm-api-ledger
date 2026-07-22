@@ -100,6 +100,35 @@ function checkNoZeroMeasured(plan) {
   }
 }
 
+// ── 铁律 12：USD 套餐必须有 CNY 折算（防 USD/CNY 混淆历史 bug 回归）──
+// 历史 bug：早期排序直接拿 original_monthly 比较，USD 72 跟 CNY 99 比，跨厂商排序全错
+// 现在 priceFor() 用 original_monthly_cny 兜底，lint 必须保证 USD 套餐该字段存在
+function checkUsdHasCnyConversion(plan) {
+  const p = plan.pricing || {}
+  if (p.currency !== 'USD') return
+  if (p.original_monthly != null && p.original_monthly_in_cny == null) {
+    err(plan.plan_id, '铁律12', `USD 套餐 original_monthly=${p.original_monthly} 但缺 original_monthly_in_cny（USD 必须有 CNY 折算，否则跨厂商价格排序错）`)
+  }
+  // is_usd 标志必须跟 currency 一致
+  if (p.is_usd !== true) {
+    err(plan.plan_id, '铁律12', `currency=USD 但 is_usd=${p.is_usd}（必须 is_usd=true）`)
+  }
+}
+
+// ── 铁律 13：tier_multiplier 必须存在 ──
+// 历史 bug：tierRank 字典只认 lite/pro/max，kimi/minimax 档位全乱
+// 改用 tier_multiplier 数字字段后，每个套餐都必须有这个字段（除非新增厂商没配 TIER_RATIOS）
+function checkTierMultiplier(plan) {
+  const m = plan.tier_multiplier
+  if (m == null) {
+    err(plan.plan_id, '铁律13', `缺 tier_multiplier 字段（vendor 没配 TIER_RATIOS？vendor=${plan.vendor} tier=${plan.plan_tier}）`)
+    return
+  }
+  if (typeof m !== 'number' || m <= 0) {
+    err(plan.plan_id, '铁律13', `tier_multiplier=${m} 不合法（应是 > 0 的数字，最低档=1）`)
+  }
+}
+
 // ── 铁律 10：measurements.credibility 值合法 ──
 // 注：build 输出里 measurements_credibility_max 是数字（0/1/2/3），这里检查 plan-level
 function checkCredibility(plan) {
@@ -181,6 +210,8 @@ for (const plan of plans) {
   checkTokenVendorsNoRequests(plan)
   checkMonthlyWeeklyRatio(plan)
   checkNoZeroMeasured(plan)
+  checkUsdHasCnyConversion(plan)   // 铁律 12
+  checkTierMultiplier(plan)         // 铁律 13
   checkCredibility(plan)
   checkRequiredFields(plan)
   checkAffiliateSchema(plan)

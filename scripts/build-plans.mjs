@@ -419,18 +419,21 @@ const plans = planFiles.map(f => {
 
 const credLabel = { 3: 'high', 2: 'medium', 1: 'low', 0: 'none' }
 
-// 排序：默认按厂商分组（同厂商连续）+ tier 倍率升序（Lite < Pro < Max）
-// 前端可重新按 credibility / price 排序，但默认保持厂商分组不拆散
-const tierRank = { lite: 1, 'team-lite': 1, pro: 2, 'team-pro': 2, max: 3 }
+// 排序：默认按厂商分组（同厂商连续）+ tier_multiplier 升序（1 < 4 < 20 < 60）
+// 前端可重新按 credibility / price / tokens / value 排序，但默认保持厂商分组不拆散
+// ⚠ 排序纪律铁律（见 SKILL.md 铁律 12）：
+//   - 任何价格比较必须用 priceFor()（统一 CNY 口径），不准直接拿 original_monthly
+//   - tier 排序必须用 tier_multiplier（数字），不准用 tierRank 字典（历史 bug：只认 lite/pro/max，
+//     导致 kimi andante/moderato/allegretto/allegro 和 minimax plus/ultra 全部落到 || 99 乱序）
 // 排序用价格：USD 套餐用折算价（CNY），统一口径对比
 const priceFor = (p) => p.pricing.original_monthly_cny ?? p.pricing.original_monthly ?? 0
 plans.sort((a, b) => {
   // 1. 厂商分组（按 vendor 字母序，保证同厂商连续）
   if (a.vendor !== b.vendor) return a.vendor.localeCompare(b.vendor)
-  // 2. 同厂商内按 tier 升序（Lite → Pro → Max）
-  const ta = tierRank[a.plan_tier] || 99
-  const tb = tierRank[b.plan_tier] || 99
-  if (ta !== tb) return ta - tb
+  // 2. 同厂商内按 tier_multiplier 升序（基础档 < 高档）
+  const ma = a.tier_multiplier ?? 99
+  const mb = b.tier_multiplier ?? 99
+  if (ma !== mb) return ma - mb
   // 3. 同 tier 按 CNY 口径价格升序（USD 套餐走折算价）
   return priceFor(a) - priceFor(b)
 })
