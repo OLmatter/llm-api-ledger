@@ -235,7 +235,7 @@ const plans = planFiles.map(f => {
   // - intro_yearly: MiniMax 历史命名(¥1190 = 用户付的标价,字段语义错位但保留)
   // - yearly_total: Kimi 字段名(¥468/年)
   // 标准年付价(榜单年付列显示用),按字段优先级:
-  // - original_yearly 刊例价（Kimi/Z.AI/火山 Lite/Pro 用 ¥151.2/$604.8 等）
+  // - original_yearly 定价（Kimi/Z.AI/火山 Lite/Pro 用 ¥151.2/$604.8 等）
   // - intro_yearly MiniMax 历史命名（¥1190 = 用户付的标价,字段语义错位但保留）
   // - yearly_total Kimi 字段名（¥468/年）
   const standard_yearly = pricing.original_yearly || pricing.intro_yearly || pricing.yearly_total || null

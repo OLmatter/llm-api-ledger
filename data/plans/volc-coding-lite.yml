@@ -17,10 +17,10 @@ pricing:
   original_monthly: 40
   intro_monthly: 9.9        # 限时 9.9 元起首单（2.5 折不到,前 2 个月特惠）
   # 包季（官方页面有,3 个月一口价）
-  original_quarterly: 120        # ¥40 × 3 刊例价
+  original_quarterly: 120        # ¥40 × 3 季付定价
   intro_quarterly: 59.80         # 限时特惠,受邀再 9.5 折 = ¥56.81/季
   # 包年（官方页面有,12 个月一口价）
-  original_yearly: 480           # ¥40 × 12 刊例价
+  original_yearly: 480           # ¥40 × 12 年付定价
   intro_yearly: 419.80           # 限时特惠 ¥419.80/年（立省 ¥60.2），受邀再 9.5 折 = ¥398.81/年
   intro_duration_months: 2
   intro_condition: 新用户特惠；同实名主体仅一次

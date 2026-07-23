@@ -15,10 +15,10 @@ pricing:
   original_monthly: 200
   intro_monthly: 49.9           # 限时首单特惠（2.5 折不到）
   # 包季
-  original_quarterly: 600       # ¥200 × 3 刊例价
+  original_quarterly: 600       # ¥200 × 3 季付定价
   intro_quarterly: 299.80        # 限时特惠,受邀再 9.5 折 = ¥284.81/季
   # 包年
-  original_yearly: 2400         # ¥200 × 12 刊例价
+  original_yearly: 2400         # ¥200 × 12 年付定价
   intro_yearly: 2099.80          # 限时特惠 ¥2099.80/年（立省 ¥300.2），受邀再 9.5 折 = ¥1994.81/年
   intro_duration_months: 2
   intro_condition: 新购 / Lite 升级 Pro / 续费均占用特惠资格；同实名主体仅一次
