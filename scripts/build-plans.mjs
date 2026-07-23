@@ -301,6 +301,12 @@ const plans = planFiles.map(f => {
       original_monthly_in_cny: pricing.currency === 'USD' && pricing.original_monthly != null
         ? Math.round(pricing.original_monthly * USD_TO_CNY * 10) / 10
         : pricing.original_monthly,
+      original_quarterly_in_cny: (pricing.currency === 'USD' && pricing.original_quarterly != null)
+        ? Math.round(pricing.original_quarterly * USD_TO_CNY * 10) / 10
+        : pricing.original_quarterly,
+      original_yearly_in_cny: (pricing.currency === 'USD' && standard_yearly != null)
+        ? Math.round(standard_yearly * USD_TO_CNY * 10) / 10
+        : standard_yearly,
       intro_with_affiliate_in_cny: (pricing.currency === 'USD' && intro_with_aff != null)
         ? Math.round(intro_with_aff * USD_TO_CNY * 10) / 10
         : intro_with_aff,

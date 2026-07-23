@@ -395,6 +395,7 @@ function fmtTokensYi(n) {
             <td class="num">
               <template v-if="pickPrice(row.plan, 'original_quarterly') != null">
                 {{ sym(row.plan) }}{{ pickPrice(row.plan, 'original_quarterly') }}<span class="unit">/季</span>
+                <div v-if="currencyUnit === 'native' && row.plan.pricing.is_usd && row.plan.pricing.original_quarterly_in_cny != null" class="cny-equiv">≈ ¥{{ row.plan.pricing.original_quarterly_in_cny }}</div>
                 <div v-if="pickPrice(row.plan, 'intro_quarterly_with_affiliate') != null" class="intro-aff">
                   <span class="intro-aff-label">{{ row.plan.pricing.intro_tag }}</span>
                   <span class="intro">{{ sym(row.plan) }}{{ pickPrice(row.plan, 'intro_quarterly_with_affiliate') }}</span>
@@ -407,6 +408,7 @@ function fmtTokensYi(n) {
             <td class="num">
               <template v-if="pickPrice(row.plan, 'original_yearly') != null">
                 {{ sym(row.plan) }}{{ pickPrice(row.plan, 'original_yearly') }}<span class="unit">/年</span>
+                <div v-if="currencyUnit === 'native' && row.plan.pricing.is_usd && row.plan.pricing.original_yearly_in_cny != null" class="cny-equiv">≈ ¥{{ row.plan.pricing.original_yearly_in_cny }}</div>
                 <div v-if="pickPrice(row.plan, 'yearly_monthly_equivalent') != null" class="year-equiv">≈ {{ sym(row.plan) }}{{ pickPrice(row.plan, 'yearly_monthly_equivalent') }}/月</div>
                 <div v-if="pickPrice(row.plan, 'yearly_with_affiliate') != null" class="intro-aff">
                   <span class="intro-aff-label">{{ row.plan.pricing.intro_tag }}</span>
