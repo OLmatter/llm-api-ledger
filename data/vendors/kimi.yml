@@ -46,3 +46,20 @@ community_5h_note: |
   Andante 实测约 300-1200 次浮动，受上下文长短/缓存命中影响极大。
   更高档位同步放大，但没有火山那种精确「周=7.5×5h」固定比例。
   本榜单 5h 列对 Kimi 全部留空（社区数据不可信）。
+
+# K3 旗舰模型定价（官方公布，2026-07-23 核实自 kimi.moonshot.cn 官网）
+# 关键：三档价差极大——输出是缓存命中的 50 倍，深度思考拉满 = 吞金兽
+# 这解释了榜单上 Allegretto 2 个社区样本差距 2.1×（326M vs 690M）的根因：
+# 不同使用模式（缓存命中率 / 输出占比）下，同样额度实测 token 数差数倍
+k3_pricing:
+  model: kimi-k3
+  unit: 1M tokens
+  context_window: 1048576
+  input_cache_hit: 2.00        # ¥/M，缓存命中（KV 复用）—— 几乎白送
+  input_cache_miss: 20.00      # ¥/M，缓存未命中（全新 prefill）—— 10× 缓存命中
+  output: 100.00               # ¥/M，输出（decode 生成）—— 50× 缓存命中，吞金兽
+  note: |
+    输出是缓存命中的 50 倍。深度思考（reasoning）开到最大档位时，
+    输出 token 暴涨，额度瞬间被吃光——这就是吞金兽。
+    不同用户实测 token 数差 2 倍以上是计费结构决定的，不是测量误差。
+  source: https://kimi.moonshot.cn （官网「模型推理定价」页，2026-07-23 复制核实）
