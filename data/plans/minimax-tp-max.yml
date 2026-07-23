@@ -13,9 +13,7 @@ last_verified: 2026-07-21
 pricing:
   currency: CNY
   original_monthly: 119
-  original_yearly: 1490
-  intro_yearly: 1190       # 年付特惠
-  intro_note: 年付特惠 1190 元/年（无永久折扣，到期恢复原价）
+  original_yearly: 1190          # 年付真实价（永久，非限时特惠）。月付×12=¥1428 只是反推原价，不是真实年付价。
   auto_renew_default: false
 
 # 三级限额（5h + 周 + 月，三者同时生效）

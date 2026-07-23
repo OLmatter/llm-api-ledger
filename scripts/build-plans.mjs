@@ -234,10 +234,18 @@ const plans = planFiles.map(f => {
   // - original_yearly: 字段名直观,Kimi/Z.AI/火山 Lite/Pro 用(¥151.2/$604.8 等)
   // - intro_yearly: MiniMax 历史命名(¥1190 = 用户付的标价,字段语义错位但保留)
   // - yearly_total: Kimi 字段名(¥468/年)
+  // 标准年付价(榜单年付列显示用),按字段优先级:
+  // - original_yearly 刊例价（Kimi/Z.AI/火山 Lite/Pro 用 ¥151.2/$604.8 等）
+  // - intro_yearly MiniMax 历史命名（¥1190 = 用户付的标价,字段语义错位但保留）
+  // - yearly_total Kimi 字段名（¥468/年）
   const standard_yearly = pricing.original_yearly || pricing.intro_yearly || pricing.yearly_total || null
-  // 年付邀请码叠加：standard_yearly × discount
-  const yearly_with_aff = (affActive?.stackable && affActive.discount && standard_yearly)
-    ? Math.round(standard_yearly * affActive.discount * 100) / 100
+  // 年付邀请码叠加基价：用户实际付的年付价（限时特惠优先于原价）
+  // ⚠ 邀请码叠加必须基于「用户实际付的钱」，不是原价（否则折扣算错）
+  // 例：MiniMax Ultra intro_yearly=¥4690（用户付的），邀请码 9 折 = ¥4221（不是原价 ¥5628 × 0.9 = ¥5065）
+  // 例：火山 Pro intro_yearly=¥2099.80（限时），邀请码 9.5 折 = ¥1994.81（不是原价 ¥2400 × 0.95）
+  const yearly_aff_base = pricing.intro_yearly || pricing.original_yearly || pricing.yearly_total || null
+  const yearly_with_aff = (affActive?.stackable && affActive.discount && yearly_aff_base)
+    ? Math.round(yearly_aff_base * affActive.discount * 100) / 100
     : null
   // 年付折月价：优先用 yml 显式字段；没有就从 original_yearly / 12 反推
   const explicit_yearly_monthly = pricing.yearly_monthly_equivalent || null
