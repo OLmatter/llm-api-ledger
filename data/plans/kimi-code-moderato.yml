@@ -48,9 +48,6 @@ measurements:
     inferred_weekly_tokens: 101600000     # 101.6M（基于 508M × 4/20）
     credibility: low                      # 二手反推（基于 Allegretto disputed 数据），双重弱化
     disputed: true                        # 源头 Allegretto disputed，反推数据自动继承 disputed
-    dispute_note: |
-      基于 Allegretto disputed 数据（326M vs 690M 差 2.1×）反推，可信度极低。
-      差距根因：K3 计费结构对使用模式极敏感（缓存命中 vs 输出价差数十倍），
-      不是测量误差。详见 Allegretto dispute_note。
+    dispute_note: 基于 Allegretto disputed 数据反推。猜想差距来自 K3 计费结构 + 深度思考拉满=吞金兽。
     notes: |
       基于 Allegretto 实测 508M 反推（Allegretto 自身是 2 个 disputed 社区单点的 median）。
