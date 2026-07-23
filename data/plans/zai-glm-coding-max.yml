@@ -11,14 +11,10 @@ last_verified: 2026-07-22
 
 pricing:
   currency: USD
-  # 基础原价（无任何优惠）
-  base_monthly: 160
-  base_quarterly: 480            # $160 × 3
-  base_yearly: 1920              # $160 × 12
-  # 长期周期定价（月-10% / 季-20% / 年-30%，永久有效，续费维持）
-  original_monthly: 144          # $160 × 0.9
-  original_quarterly: 384        # $480 × 0.8（折月 $128）
-  original_yearly: 1344          # $1920 × 0.7（折月 $112）
+  # 周期定价（永久有效，续费维持）：月 / 季 / 年 三档周期折扣
+  original_monthly: 144          # 月付定价
+  original_quarterly: 384        # 季付定价（折月 $128）
+  original_yearly: 1344          # 年付定价（折月 $112）
   auto_renew_default: true
 
 # 限额：与国内智谱 Max 完全一致（普通客户端口径）

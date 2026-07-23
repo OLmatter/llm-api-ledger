@@ -12,7 +12,7 @@
 //
 // 退出码：0 = 全过，1 = 有 error，2 = 有 warning 但无 error
 
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -22,6 +22,14 @@ const root = join(__dirname, '..')
 const plansPath = join(root, 'docs', '.vitepress', 'plans.json')
 const raw = JSON.parse(readFileSync(plansPath, 'utf-8'))
 const plans = raw.plans || []
+
+// 读 yml 源文件原文（用于检查 plans.json 里看不到的字段，如 base_* 吊牌价）
+const plansDir = join(root, 'data', 'plans')
+const ymlFiles = readdirSync(plansDir).filter(f => f.endsWith('.yml'))
+const ymlTexts = {}
+for (const f of ymlFiles) {
+  ymlTexts[f] = readFileSync(join(plansDir, f), 'utf-8')
+}
 
 const errors = []
 const warnings = []
@@ -219,6 +227,22 @@ function checkOriginalVsIntro(plan) {
   }
 }
 
+// ── 铁律 17：禁用吊牌价（base_* 字段）──
+// 在 yml 源文件里搜 base_ 开头的定价字段（base_monthly/base_quarterly/base_yearly）
+// 吊牌价没人在乎，定价用 original_*，优惠用 intro_*
+function checkNoBasePrice() {
+  for (const [fname, text] of Object.entries(ymlTexts)) {
+    // 匹配 yml 里的 base_monthly: / base_quarterly: / base_yearly: （带可选空格）
+    const matches = text.match(/^\s*base_(monthly|quarterly|yearly)\s*:/gm)
+    if (matches) {
+      for (const m of matches) {
+        const field = m.trim().replace(':', '').replace(/^\s*/, '')
+        err(fname, '铁律17', `出现吊牌价字段 ${field}（禁用 base_*。定价用 original_*，优惠用 intro_*。没人在乎所谓原价）`)
+      }
+    }
+  }
+}
+
 // ── 跑全部检查 ──
 for (const plan of plans) {
   checkUnitSanity(plan)
@@ -233,6 +257,7 @@ for (const plan of plans) {
   checkAffiliateSchema(plan)
   checkOriginalVsIntro(plan)
 }
+checkNoBasePrice()  // 铁律 17：检查 yml 源文件里的 base_*
 
 // ── 输出 ──
 console.log('')

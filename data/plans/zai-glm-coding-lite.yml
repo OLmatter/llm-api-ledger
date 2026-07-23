@@ -11,14 +11,10 @@ last_verified: 2026-07-22
 
 pricing:
   currency: USD
-  # 基础原价（无任何优惠）
-  base_monthly: 18
-  base_quarterly: 54            # $18 × 3
-  base_yearly: 216              # $18 × 12
-  # 长期周期定价（月-10% / 季-20% / 年-30%，永久有效，续费维持）
-  original_monthly: 16.2        # $18 × 0.9
-  original_quarterly: 43.2      # $54 × 0.8（折月 $14.4）
-  original_yearly: 151.2        # $216 × 0.7（折月 $12.6）
+  # 周期定价（永久有效，续费维持）：月 / 季 / 年 三档周期折扣
+  original_monthly: 16.2        # 月付定价
+  original_quarterly: 43.2      # 季付定价（折月 $14.4）
+  original_yearly: 151.2        # 年付定价（折月 $12.6）
   auto_renew_default: true
 
 # 限额：与国内智谱 Lite 完全一致（普通客户端口径）
