@@ -450,7 +450,7 @@ function fmtTokensYi(n) {
               </div>
             </td>
             <td class="num tok" :class="{ disputed: row.plan.tokens.weekly_disputed }">
-              {{ fmtTokens(row.plan.tokens.weekly) }}<span v-if="row.plan.primary_model && row.plan.tokens.weekly != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-if="row.plan.tokens.weekly_disputed" class="dispute-warn" :title="row.plan.tokens.dispute_note || '数据存在较大不确定性'">⚠</span><span v-if="row.plan.tokens.weekly_aggregate_note" class="info-tooltip-wrap info-down"><span class="info-icon info-warn" aria-hidden="true">!</span><span class="info-tooltip">{{ row.plan.tokens.weekly_aggregate_note }}</span></span>
+              {{ fmtTokens(row.plan.tokens.weekly) }}<span v-if="row.plan.primary_model && row.plan.tokens.weekly != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-if="row.plan.tokens.weekly_disputed" class="dispute-warn" :title="row.plan.tokens.dispute_note || '数据存在较大不确定性'">⚠</span><span v-if="row.plan.tokens.weekly_aggregate_note && !row.plan.tokens.weekly_disputed" class="info-tooltip-wrap info-down"><span class="info-icon info-warn" aria-hidden="true">!</span><span class="info-tooltip">{{ row.plan.tokens.weekly_aggregate_note }}</span></span>
               <div v-if="row.plan.tokens.weekly_disputed" class="dispute-text">数据有争议</div>
               <div v-if="row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_weekly" class="zcode-aff">
                 <span class="zcode-label" title="ZCode 客户端限时活动，全周期 0.67 折算（等效 1.5x 额度）。跟邀请码独立，可同时享受。活动截止 2026-07-31。">ZCode×1.5</span>
