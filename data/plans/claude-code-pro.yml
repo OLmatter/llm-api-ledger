@@ -1,127 +1,299 @@
 # Claude Code Pro Plan
 # Claude Code 入门档 = 1× Claude Code 基准
-# 2026-07-30:基于用户实测的 Claude Code 5h 限流(44k tokens),Anthropic 不公开周/月 token cap
+# 2026-07-31 更新:
+#   - 5h tokens: awesome-coding-plan 实测 39.66M(88% 吃满率)
+#   - 5h 翻倍 2026-05-06 起永久(SpaceX Colossus 1 算力),实测已含
+#   - 周 +50% 临时促销 2026-05-14 ~ 2026-07-19 已结束,weekly/monthly 已剥离
+#   - cost_limit_usd 字段基于 Maciek plans.py 标 disputed(community local_estimate)
+#   - Max 5×/20× 套餐数据未独立核实,本 yml 不写(铁律 18)
 
 plan_id: claude-code-pro
 vendor: anthropic
 plan_name: Claude Code Pro
 plan_tier: pro
 status: active
-last_verified: 2026-07-30
+last_verified: 2026-07-31
 
 # Claude Code 倍率:Pro 1× 基准
-# Max 5× = Pro × 5
-# Max 20× = Pro × 20
-codex_multiplier: 1            # 用 OpenAI 同样字段名(Codex 配额倍率),Anthropic 没独立命名
+codex_multiplier: 1
 
-# 重置卡:Anthropic 也提供"额外用量"购买(类似 ChatGPT 重置卡)
-# 几美元买额外用量,可继续跑直到月度账单封顶
+# 额外用量(usage credits):Anthropic 官方「撞 limit 后按 API 价继续跑」机制
+# 标 true 是因为开启后实际用量可超过 tokens_measured,前端需明示
 reset_card_available: true
 reset_card_note: |
-  几美元可购买额外用量(extra usage),继续跑直到月度账单封顶。
-  以下所有 tokens_measured 是「标准情况」基础 cap,购买额外用量后可超过此 cap。
+  Anthropic 提供 usage credits(额外用量):撞 limit 后按标准 API 价继续跑。
+  开启后实际用量可超过下方 tokens_measured 基础 cap,直到月度账单封顶。
+  以下 tokens_measured 是「标准情况」,未开启 usage credits。
 
 pricing:
   currency: USD
   original_monthly: 20
-  yearly_total: 204              # 年付 $17/月 × 12
-  yearly_monthly_equivalent: 17  # 年付折月价
-  yearly_note: Anthropic 提供年付选项($17/月,比月付便宜 15%)
+  yearly_total: 200              # 年付 $200 一次性
+  yearly_monthly_equivalent: 17  # 年付折月价(anthropic.com/pricing 2026-07-31 确认)
+  yearly_note: Anthropic 提供年付选项($200 一次性 ≈ $17/月,比月付便宜 15%)
   auto_renew_default: true
 
-# 限额：5h(实测) + 周 + 月(用户没测,留 null)
+# 限额：5h(实测) + 周 + 月(已剥离 2026-07-19 结束的 +50% 临时促销)
 limits:
   window_5h:
     requests_official: null
-    tokens_measured: 44000        # 44k tokens(用户 2026-07-30 实测)
+    tokens_measured: 39660000        # 39.66M tokens(awesome-coding-plan 实测)
     tokens_official_claimed: null
+    cost_limit_usd: 36.00            # 5h cost limit(5-6 翻倍永久后)
+    cost_limit_disputed: true        # Maciek community local_estimate
+    cost_limit_credibility: medium
     note: |
-      用户实测(2026-07-30):Claude Code Pro 5h 约 44,000 tokens。
-      Anthropic 官方不公布具体 token 数字,本数字来自用户实际跑代码的消耗反推。
-      注：标准情况，购买额外用量可绕过此 cap。
+      39.66M tokens = awesome-coding-plan 主表 Claude Pro 行实测:
+      「5h 359 请求 / 3966万 tokens / $31.84 价值 / 88% 吃满率」。
+      5h 翻倍 2026-05-06 起永久(SpaceX Colossus 1 算力),实测已含。
+      cost limit = $36/5h(基于 Maciek plans.py,标 disputed)。
+      Anthropic 官方不公布 5h token 数字。
+      注:标准情况,开启 usage credits 可绕过此 cap。
   window_weekly:
     requests_official: null
-    tokens_measured: null          # 用户未实测,Anthropic 不公开
+    tokens_measured: 264670000       # 264.67M(实测 397M ÷ 1.5,剥离 +50%)
     tokens_official_claimed: null
+    cost_limit_usd: 240.00           # $36 × 6.67(Pro 5h/周 比例)
+    cost_limit_disputed: true
+    cost_limit_credibility: medium
     note: |
+      397M 来自 awesome-coding-plan Pro 周实测(含 5-14 ~ 7-19 +50% 促销),
+      剥离后 = 264.67M。
       Anthropic 官方不公开周 cap 数字。
-      用户未提供周用量实测。
-      留 null(显示 —)。
+      周 +50% 临时促销已 2026-07-19 结束,未再次延期。
   window_monthly:
     requests_official: null
     tokens_official_claimed: null
-    tokens_measured: null          # 用户未实测,Anthropic 不公开
+    tokens_measured: 1058700000      # 1058.67M(实测 1588M ÷ 1.5)
+    cost_limit_usd: 960.00           # $240 × 4(Pro 周/月 比例)
+    cost_limit_disputed: true
+    cost_limit_credibility: medium
     note: |
+      1588M 来自 awesome-coding-plan Pro 月实测(含 +50%),剥离后 = 1058.67M。
       Anthropic 官方不公开月 cap 数字。
-      用户未提供月用量实测。
-      留 null(显示 —)。
 
 ratio_note: |
   Pro ($20/月) = Claude Code 1× 基准。
-  Max 5× = Pro × 5 = $100/月,5h 88k tokens。
-  Max 20× = Pro × 20 = $200/月,5h 220k tokens。
+  ⚠️ 以下 5h/周/月数字是**标准情况**(未开启 usage credits),开启后实际用量可超过此 cap。
 
-  ⚠️ 以下 5h 数字是**标准情况**(未购买额外用量),用户购买额外用量后实际用量可超过此 cap。
+  ## 实测基础(awesome-coding-plan 2026-Q2)
+  - 5h: 359 请求 / 3966万 tokens / $31.84 / 88% 吃满率
+  - effective $/M = 0.91(实测,反映 Opus+Sonnet+Haiku 混合 + 缓存命中)
+  - 周/月比例 1 : 6.67 : 26.7(实测验证)
 
-  5h 44,000 tokens 是用户 2026-07-30 实测(单源,medium credibility)。
-  Anthropic 5h 窗口是主要瓶颈,撞上限后需等重置或购买额外用量。
-  支持 Claude Code CLI / VS Code 插件 / Claude.ai Web 全场景。
-  主力模型:Opus 4.7 + Sonnet 4.6 + Haiku 4.5 三档可选。
+  ## 政策时间线
+  - 2026-05-06:5h 限额永久翻倍(SpaceX Colossus 1 算力),实测已含
+  - 2026-05-14:周 +50% 临时促销(对冲 Codex 拉新),本 yml weekly/monthly 已剥离
+  - 2026-07-19:周 +50% 第二次延期到期,未再次延期,周/月回到基础 cap
+
+  ## 主力模型(anthropic.com/pricing 2026-07-31)
+  - **Opus 5**(2026-07-24):Claude Max 默认,Pro 可用,$5/$25
+  - **Sonnet 5**(2026-06-30):Pro/Free 默认,$2/$10 限时到 2026-08-31,之后 $3/$15
+  - **Fable 5**:Pro 仅走 usage credits(不占 $20 套餐额度)
+  - Opus 4.8/4.7/4.6/4.5、Opus 4.1、Sonnet 4.6/4.5、Haiku 4.5 均可订阅使用
+
+  ## ⚠️ Max 5× ($100) / Max 20× ($200) 套餐数据未独立核实,本 yml 不写
+  anthropic.com/pricing FAQ 明示「5×/20× more usage per 5-hour session than Pro」,
+  但 weekly/monthly caps 由 Anthropic 酌定,不保证按 5×/20× 等比缩放。
+  等独立实测后再补 Max 5×/20× 套餐 yml。
 
 measurements:
-  - measurement_id: m_2026_07_claude_code_pro_5h_probe
-    source_kind: community_single_user
-    user_hash: pending
-    period: 2026-07
-    window_5h_tokens: 44000
-    credibility: medium
-    disputed: true
-    dispute_note: |
-      单源数据(用户 1 人实测),铁律 10 要求标 disputed=true。
-      待多用户 burn 测试后取 median 升级 high credibility 并取消 disputed。
-      Anthropic 官方不公开 5h cap 数字,本数字是用户实际跑代码触发 throttle 反推。
+  # ── 1. 实测层：awesome-coding-plan 主表 Pro 行（最硬证据） ──
+  - measurement_id: m_2026_07_awesome_coding_plan_pro_5h
+    source_kind: community_consensus
+    period: 2026-Q2
+    user_hash: n/a
+    window_5h_tokens: 39660000
+    window_weekly_tokens: 397000000    # 含 +50%,已在 limits 字段剥离
+    window_monthly_tokens: 1588000000  # 含 +50%,已在 limits 字段剥离
+    requests_5h: 359
+    effective_cost_per_million: 0.91
+    consumption_rate_percent: 88
+    credibility: high
+    disputed: false
     notes: |
-      用户 2026-07-30 实测:Claude Code Pro 5h 约 44,000 tokens 撞限流。
-      单源数据,中等 credibility(同 ChatGPT Plus @Personuo 175M 同等性质)。
+      awesome-coding-plan 主表 Claude Pro 行(Claude Opus 4.8,$20/mo):
+      「5h 359 请求 / 3966万 tokens / $31.84 / 88% 吃满;w 3590/3.97亿;mo 14360/15.88亿」。
+      Cross-validated:Maciek plans.py 同款 cost_limit $18/$35/$140(翻倍后 $36/$70/$280)。
+      本 yml weekly/monthly 已剥离 2026-07-19 结束的 +50% 临时促销(÷1.5)。
 
-  # ── Per-model 用量拆分 ──
-  # 同 5h 44k cap,不同 model 因为 $/M 价格不同,实际能跑 token 数差 5×
-  # 用 Gemini 92/7.3/0.7 比例 + 各 model $/M 反推
-  # Per-model 拆分(用户没实测具体 model 的 5h 数字,本表为 $/M 反推占位)
-  # 实际 Per-model 拆分需要用户跑特定 model 实测,本数据为占位(无 window_5h_tokens 字段,前端显示 —)
+  # ── 2. 政策层：5h 翻倍永久 ──
+  - measurement_id: m_2026_05_5h_doubling_permanent
+    source_kind: anthropic_official
+    period: 2026-05-06 ~
+    cost_limit_5h_usd_before: 18.00
+    cost_limit_5h_usd_after: 36.00
+    credibility: high
+    notes: |
+      2026-05-06 Code with Claude SF 大会公告:
+      5h 限额永久翻倍(SpaceX Colossus 1 算力合作,22万张 NVIDIA GPU)。
+      Pro 翻倍前 $18/5h → 翻倍后 $36/5h。
+
+  # ── 3. 政策层：周 +50% 临时促销已结束 ──
+  - measurement_id: m_2026_07_weekly_promo_50pct_expired
+    source_kind: anthropic_official
+    period: 2026-05-14 ~ 2026-07-19
+    weekly_bonus_percent: 50
+    status: expired
+    credibility: high
+    notes: |
+      周 +50% 临时促销原定 2026-07-13 截止,延期至 2026-07-19 终止,
+      未再次延期。本 yml weekly/monthly 已剥离(实测 ÷1.5)。
+
+  # ── 4. 编程场景默认 token 分布(Gemini 调查 + vLLM + SWE-bench) ──
+  - measurement_id: m_2026_07_programming_scenario_default
+    source_kind: community_survey
+    period: 2026-07
+    cache_hit_rate: 92
+    new_input_rate: 7.3
+    output_rate: 0.7
+    input_output_ratio: 130-140
+    credibility: medium
+    disputed: false
+    notes: |
+      Gemini 调查(2026-07)基于 vLLM 社区 + SWE-bench Agent 编程场景测试。
+      Anthropic prompt cache 命中场景下 cache_read 占比与 OpenAI/Gemini 类似。
+      用于 per-model 拆分反推 cost_per_million。
+      注:Anthropic prompt cache 5min 写价 ×1.25(实测用户行为下大部分 cache 走 5min)。
+
+  # ── 5. Per-model 拆分(基于 Gemini 92/7.3/0.7 + cost_limit $36/5h) ──
+  # 公式:cost_limit × (0.92×cached + 0.073×input + 0.007×output) → effective $/M → 5h tokens
+  # 注意:Fable 5 在 Pro 仅走 usage credits(不占 $20 套餐额度),不列入 per-model 拆分
+
+  - measurement_id: m_2026_07_pro_model_opus_5
+    source_kind: per_model_breakdown
+    model_id: claude-opus-5
+    window_5h_tokens: 36000000
+    window_weekly_tokens: 240120000
+    window_monthly_tokens: 960480000
+    cost_per_million: 1.0000
+    cost_limit_5h_usd: 36
+    input_per_million: 5.00
+    cached_per_million: 0.50
+    output_per_million: 25.00
+    credibility: medium
+    notes: |
+      Opus 5(anthropic.com/news/claude-opus-5,2026-07-24):Claude Max 默认。
+      effective $/M = 1.00 = 0.92×$0.50 + 0.073×$5 + 0.007×$25
+      $36 cost_limit ÷ $1.00 = 36M tokens/5h。
+
   - measurement_id: m_2026_07_pro_model_opus_4_8
     source_kind: per_model_breakdown
     model_id: claude-opus-4-8
-    cost_per_million: 10.00
-    credibility: low
+    window_5h_tokens: 36000000
+    window_weekly_tokens: 240120000
+    window_monthly_tokens: 960480000
+    cost_per_million: 1.0000
+    cost_limit_5h_usd: 36
+    input_per_million: 5.00
+    cached_per_million: 0.50
+    output_per_million: 25.00
+    credibility: medium
     notes: |
-      Opus 4.8 ($10/$50,2026-05-28 发布):最新旗舰,价格最贵。
-      Pro 44k tokens 拆到 Opus 4.8 同 cap 跑得最少。
-      无用户实测 window_5h_tokens,占位条目。
+      Opus 4.8(anthropic 2026-05-28):Opus 5 让位前的 Pro 最强,$5/$25。
+      effective $/M = 1.00,36M tokens/5h。
+      注:Opus 5 公告明示「priced at the same as Opus 4.8」。
 
-  - measurement_id: m_2026_07_pro_model_opus_4_7
+  - measurement_id: m_2026_07_pro_model_opus_4_5
     source_kind: per_model_breakdown
-    model_id: claude-opus-4-7
-    cost_per_million: 5.00
-    credibility: low
+    model_id: claude-opus-4-5
+    window_5h_tokens: 36000000
+    window_weekly_tokens: 240120000
+    window_monthly_tokens: 960480000
+    cost_per_million: 1.0000
+    cost_limit_5h_usd: 36
+    input_per_million: 5.00
+    cached_per_million: 0.50
+    output_per_million: 25.00
+    credibility: medium
     notes: |
-      Opus 4.7 ($5/$25):Pro 44k tokens 拆到 Opus 4.7 价格最贵,同 cap 跑得最少。
-      无用户实测 window_5h_tokens,占位条目。
+      Opus 4.5(anthropic.com/pricing legacy models,$5/$25):legacy 旗舰,仍可订阅使用。
+      effective $/M = 1.00,36M tokens/5h。
+      注:之前 yml 误标 $1.25/$6.25,那是 Sonnet 3.x 时代定价残留,本次修正。
+
+  - measurement_id: m_2026_07_pro_model_opus_4_1
+    source_kind: per_model_breakdown
+    model_id: claude-opus-4-1
+    window_5h_tokens: 12000000
+    window_weekly_tokens: 80040000
+    window_monthly_tokens: 320160000
+    cost_per_million: 3.0000
+    cost_limit_5h_usd: 36
+    input_per_million: 15.00
+    cached_per_million: 1.50
+    output_per_million: 75.00
+    credibility: medium
+    notes: |
+      Opus 4.1(anthropic 2025-08,legacy):$15/$75,价格 3× Opus 4.x。
+      effective $/M = 3.00 = 0.92×$1.50 + 0.073×$15 + 0.007×$75
+      $36 ÷ $3.00 = 12M tokens/5h。
+
+  - measurement_id: m_2026_07_pro_model_sonnet_5
+    source_kind: per_model_breakdown
+    model_id: claude-sonnet-5
+    window_5h_tokens: 60000000
+    window_weekly_tokens: 400200000
+    window_monthly_tokens: 1600800000
+    cost_per_million: 0.6000
+    cost_limit_5h_usd: 36
+    input_per_million: 3.00
+    cached_per_million: 0.30
+    output_per_million: 15.00
+    credibility: high
+    notes: |
+      Sonnet 5(anthropic 2026-06-30):Pro/Free 默认。
+      标准价 $3/$15(2026-09-01 起,anthropic.com/pricing 确认)。
+      限时优惠 $2/$10 到 2026-08-31:
+      限时 effective $/M = 0.40 → 90M/5h(更划算,过期失效)。
+      本字段用标准价(铁律 17 双层定价,标准价为底)。
+      effective $/M = 0.60 = 0.92×$0.30 + 0.073×$3 + 0.007×$15
+      $36 ÷ $0.60 = 60M tokens/5h。
 
   - measurement_id: m_2026_07_pro_model_sonnet_4_6
     source_kind: per_model_breakdown
     model_id: claude-sonnet-4-6
-    cost_per_million: 3.00
-    credibility: low
+    window_5h_tokens: 60000000
+    window_weekly_tokens: 400200000
+    window_monthly_tokens: 1600800000
+    cost_per_million: 0.6000
+    cost_limit_5h_usd: 36
+    input_per_million: 3.00
+    cached_per_million: 0.30
+    output_per_million: 15.00
+    credibility: medium
     notes: |
-      Sonnet 4.6 ($3/$15):主力中端,Claude Code 默认。
-      无用户实测 window_5h_tokens,占位条目。
+      Sonnet 4.6(anthropic 2026-02-17):Sonnet 5 让位前的 Pro 默认,$3/$15。
+      effective $/M = 0.60,60M tokens/5h。
+
+  - measurement_id: m_2026_07_pro_model_sonnet_4_5
+    source_kind: per_model_breakdown
+    model_id: claude-sonnet-4-5
+    window_5h_tokens: 60000000
+    window_weekly_tokens: 400200000
+    window_monthly_tokens: 1600800000
+    cost_per_million: 0.6000
+    cost_limit_5h_usd: 36
+    input_per_million: 3.00
+    cached_per_million: 0.30
+    output_per_million: 15.00
+    credibility: medium
+    notes: |
+      Sonnet 4.5(anthropic 2025-09,legacy):$3/$15,价同 Sonnet 4.6。
+      effective $/M = 0.60,60M tokens/5h。
 
   - measurement_id: m_2026_07_pro_model_haiku_4_5
     source_kind: per_model_breakdown
     model_id: claude-haiku-4-5
-    cost_per_million: 1.00
-    credibility: low
+    window_5h_tokens: 180000000
+    window_weekly_tokens: 1200600000
+    window_monthly_tokens: 4802400000
+    cost_per_million: 0.2000
+    cost_limit_5h_usd: 36
+    input_per_million: 1.00
+    cached_per_million: 0.10
+    output_per_million: 5.00
+    credibility: high
     notes: |
-      Haiku 4.5 ($1/$5):经济之选,大批量自动化任务首选。
-      无用户实测 window_5h_tokens,占位条目。
+      Haiku 4.5(anthropic 2025-10-15):经济版,Pro 用户最划算选项,$1/$5。
+      effective $/M = 0.20 = 0.92×$0.10 + 0.073×$1 + 0.007×$5
+      $36 ÷ $0.20 = 180M tokens/5h。
