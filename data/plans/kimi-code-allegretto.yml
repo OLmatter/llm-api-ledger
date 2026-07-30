@@ -41,14 +41,6 @@ ratio_note: |
   数据来源:@Golden白 7-23 推文 891 view(高 credibility,多源印证)
   其他 3 档(Andante/Moderato/Allegro)按 Allegretto × 倍率反推 7 天 + 月 cap
 
-ratio_note: |
-  Allegretto 是 Kimi 4 档中唯一有社区实测的。
-  当前采用两点 median 508M/周（326M 95% 用量反推 + 690M 单点 = 中位数）。
-  两个数据点差距 2.1×，说明用户行为差异显著,取 median 比任一单点更稳健。
-  其他 3 档（Andante/Moderato/Allegro）按 Allegretto × 倍率反推。
-  ⚠ Kimi 官方不公开绝对 token 数（只标 1×/4×/20×/60× 倍数），所以无法跟"官方标称"对比。
-  待 3+ 用户聚合后取中位数,升级到 high credibility。
-
 measurements:
   - measurement_id: m_2026_07_allegretto_95pct_user_report
     source_kind: single_user_probe_95pct   # 95% 用量反推（比单点采样更接近 cap）
