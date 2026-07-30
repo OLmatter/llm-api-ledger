@@ -1,5 +1,5 @@
 # Kimi Code Plan Allegro（重度档 = 60×）
-# 2026-07-30 三层限额 (@Golden白 月 30亿 + 7天 9.8亿×3 = 29.4亿,与 @Nero 月 30亿 双向验证)
+# 2026-07 月 cap 30亿(@Golden白 + @Nero 双向验证)；周额度无独立实测，从 Allegretto(508M) × 3 反推
 
 plan_id: kimi-code-allegro
 vendor: kimi
@@ -23,7 +23,7 @@ limits:
   window_weekly:
     requests_official: null
     tokens_official_claimed: null
-    tokens_measured: 2940000000            # 29.4亿(Allegretto 9.8亿 × 3,@Golden白 + @Nero 双向验证)
+    tokens_measured: null                  # 留 null，构建脚本自动从 Allegretto(508M) × tier_ratio(3) 反推
   window_monthly:
     requests_official: null
     tokens_official_claimed: null
@@ -31,11 +31,11 @@ limits:
     is_unlimited: false
 
 ratio_note: |
-  Allegro (60×) 三层限额(双源验证):
+  Allegro (60×) 三层限额:
   - 5h cap: 未测
-  - 7 天 cap: 29.4亿(Allegretto 9.8亿 × 3)
+  - 7 天 cap: 从 Allegretto(508M 两数平均) × 3 反推（无独立周实测）
   - 月 cap: 30亿(@Golden白 推文"699 套餐 30 亿" + @Nero 推文"699 大概 30 亿" 双向验证,1468 view)
   倍率:Allegro=60× = Allegretto × 3
-  数据状态:7 天 + 月 cap 都有双源实测,前端展示;5h 未实测展示 —
+  数据状态:月 cap 双源实测,前端展示;周 cap 反推(标注 estimated);5h 未测展示 —
 
 measurements: []  # 反推不算数(铁律:用户没给 = null),留空数组
