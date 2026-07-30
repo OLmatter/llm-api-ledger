@@ -543,6 +543,96 @@ pricing:
 
 ---
 
+### 铁律 19：价格字段「月 / 季 / 年」单位歧义陷阱（2026-07-31 教训）
+
+**事故**：v3 yml 提交 (commit 8047fe1) 时，智谱 Lite 写成：
+```yaml
+original_quarterly: 1132.8      # ← 这是年付折月 × 12 = 1132.8（错！）
+original_yearly: 1132.8         # ← 同上（错！）
+```
+两个字段相等且 = 月价 × 12，用户一眼看出问题——「月季年价格好像有问题」。
+
+**根因**：字段名「original_quarterly / original_yearly」字面是「季 / 年原价」，但具体是：
+- **「季付总价」**（1 个季度 = 3 个月实际付款总额）
+- **「年付总价」**（1 年 = 12 个月实际付款总额）
+- 还是「季折月价 / 年折月价」？
+
+build-plans.mjs 用 `original_quarterly` 当**季付总价**用（line 236-238）；`original_yearly` 当**年付总价**用（line 248）。两个字段都是「**总价**」，不是「折月价」。
+
+**公式**（铁律级）：
+```
+original_quarterly = original_monthly × 3 × 季付折扣
+original_yearly   = original_monthly × 12 × 年付折扣
+yearly_monthly_equivalent = original_yearly ÷ 12  # 显式字段,build 优先读
+```
+
+**正确示例**（智谱 Lite v3,8 折季付/年付）：
+```yaml
+original_monthly: 118            # 月付原价
+original_quarterly: 283.2        # = 118 × 3 × 0.8  ← 季付总价
+original_yearly: 1132.8         # = 118 × 12 × 0.8 ← 年付总价
+yearly_monthly_equivalent: 94.4  # = 1132.8 ÷ 12     ← 年付折月价
+```
+
+**常见错法**：
+```yaml
+# ❌ 错 1:把「折月价」塞进 quarterly（季付总价语义）
+original_quarterly: 94.4         # 这是 1132.8 ÷ 12,不是季付总额
+
+# ❌ 错 2:把 monthly × 12 直接当 yearly（忽略年付折扣）
+original_yearly: 1416            # = 118 × 12,但没应用年付 8 折
+```
+
+**自检三问**（写 commit 前）：
+1. `original_quarterly` 是不是 ≥ `original_monthly × 3 × 折扣率`？小于 = 错
+2. `original_yearly` 是不是 ≥ `original_monthly × 12 × 年付折扣率`？小于 = 错
+3. `original_yearly` 是不是 = `original_quarterly × 4`（如果季/年折扣率相同）？不等 = 折扣率没区分清楚
+
+**build-plans.mjs 校验**（line 248）：
+```js
+const standard_yearly = pricing.original_yearly || pricing.intro_yearly || pricing.yearly_total || null
+```
+注意：这里 `original_yearly` 必须是**总价**，build 才认。
+
+**和什么有关**：
+- m1_0076 v3 yml 价格字段修正
+- 铁律 17 (定价 vs 优惠) — original_* 是定价字段，单位歧义是新陷阱
+- m1_0064 SOP 重写 — 本条作为子规则补充
+
+### 铁律 20：claimed-only 数据状态必须明示（2026-07-31 教训）
+
+**事故**：v3 yml 提交 (commit 8047fe1) 时只填了 `credits_weekly: 10000`（智谱 Lite 官方宣称），但：
+- `tokens_measured: <null>`（无实测）
+- `tokens_official_claimed: <null>`（官方未以 tokens 单位公布）
+- `requests_official: <null>`（无 5h prompt 公布）
+
+用户问：「v3 只有宣称量，没有实测量」。**应该有明示标签**让用户/前端一眼看出「这条数据来自官方宣称，无实测」。
+
+**核心规则**：
+1. **单位错位要明示**：智谱/z.ai 官方用「积分/Credits」为单位（不是 tokens），yml 不能假装是 tokens
+   - ❌ 错：`tokens_measured: 10000000`（强把积分当 tokens，反推没根据）
+   - ✅ 对：`tokens_measured: null` + 新字段 `credits_weekly: 10000` + note 说明单位
+2. **claimed-only 必须显式标注**：用 `source_kind: data_status_declaration` 加一条 measurement
+   ```yaml
+   - measurement_id: m_2026_07_<plan>_v3_no_measured_data
+     source_kind: data_status_declaration
+     has_measured_data: false
+     has_official_claimed_data: true
+     credibility: high
+     notes: |
+       v3 yml 只有官方宣称(credits_weekly=10000),无实测数据。
+       等用户实测后补充 tokens_measured 字段。
+   ```
+3. **build 输出端**：`tokens_measured: null` 时前端展示「—」（空数据），不要反推填充
+
+**和什么有关**：
+- 铁律 9 (实测 vs 宣称分栏) — 强化版：没实测也要说
+- 铁律 18 (零未授权修改) — 不准凭印象填 tokens
+- m1_0076 v3 yml 修复 + 加 measurement
+- memory feedback_independent_vs_derived_data
+
+---
+
 ## 2. YAML Schema 模板
 
 ### vendor.yml 完整字段
