@@ -1,6 +1,7 @@
 # Z.AI GLM Coding Plan Pro (v3)
-# 2026-07-31 官方页面 Chrome dump-dom
-# 价格:$80/月,Yearly $56/月,Quarterly $64/月(8 折)
+# 2026-07-31 官方 Chrome dump-dom
+# 价格:$80/月,$192/季 (-20%),$672/年 (-30%)
+# ⚠ v3 只有宣称量,无实测量
 
 plan_id: zai-glm-coding-pro-v3
 vendor: zai
@@ -11,41 +12,59 @@ last_verified: 2026-07-31
 
 pricing:
   currency: USD
-  original_monthly: 80            # 官方 Monthly 原价
-  original_quarterly: 64          # Quarterly -20% = 80 × 0.8 = 64 (折月)
-  original_quarterly_total: 192   # 64 × 3 = 192
-  original_yearly: 672           # Yearly -30% = 80 × 12 × 0.7 = 672
+  original_monthly: 80
+  original_quarterly: 192          # 80 × 3 × 0.8
+  original_yearly: 672            # 80 × 12 × 0.7
+  yearly_monthly_equivalent: 56   # 672 ÷ 12
   auto_renew_default: true
 
 limits:
-  window_weekly:
-    credits_weekly: 60000          # 6× Lite = 60,000 Credits/周
+  window_5h:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    credits_weekly: 60000
     note: |
-      官方页面原话:Pro (Popular)「6× Lite usage | All Lite benefits」
-      「Built for day-to-day development on mid-sized repo」
-      「Priority access to the latest flagship models and features」
-      「Includes a curated selection of MCP tools」「Faster generation speeds」
+      官方页面原话:Pro「6× Lite usage」「All Lite benefits」。
+      6 × 10,000 = 60,000 Credits/周。⚠ 只有宣称,无实测。
+  window_weekly:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    credits_weekly: 60000
   window_monthly:
-    credits_monthly: 240000        # 60,000 × 4 ≈ 240,000 Credits/月
-    monthly_estimated: true
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    credits_monthly: 240000
+    credits_monthly_estimated: true
 
 ratio_note: |
   v3 (2026-07-31 官方):
-  - **Pro $80/月**(Monthly 原价)
-  - **$64/月**(Quarterly -20%)
-  - **$56/月**(Yearly -30%)
-  - 用量:**6× Lite = 60,000 Credits/周**
-  - 「Popular」标签,优先级访问新旗舰模型
+  - **Pro $80/月**
+  - **$192/季**(Quarterly -20%)
+  - **$672/年**(Yearly -30%,折月 $56)
+  - 用量:**60,000 Credits/周**(6× Lite,官方宣称)
+  - 「Popular」标签
+
+  ## ⚠ 数据状态
+  - 宣称(claimed):60,000 Credits/周
+  - 实测(measured):**无数据**
 
 measurements:
   - measurement_id: m_2026_07_zai_pro_v3_official_pricing
     source_kind: anthropic_official
     period: 2026-07-31
     pricing_monthly_usd: 80
+    pricing_quarterly_usd: 192
+    pricing_yearly_usd: 672
     pricing_quarterly_discount_percent: 20
     pricing_yearly_discount_percent: 30
     credits_weekly: 60000
     credibility: high
+    disputed: false
     notes: |
       来源:z.ai/subscribe Chrome dump-dom。
       原文:Pro「$56 /month $80/month Subscribe | 6× Lite usage」。
+      「Built for day-to-day development on mid-sized repo」。
+      ⚠ claimed only,无 measured。
