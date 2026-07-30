@@ -1,6 +1,6 @@
 # 智谱 GLM Coding Plan Max (v3)
 # 2026-07-31 官方 Chrome dump-dom
-# 价格:¥1078/月,¥2587.2/季 (8 折),¥10348.8/年 (8 折)
+# 价格:¥1078/月,¥2587.2/季 (8 折),¥9055.2/年 (7 折)
 # ⚠ v3 只有宣称量,无实测量
 
 plan_id: zhipu-glm-coding-max-v3
@@ -14,8 +14,8 @@ pricing:
   currency: CNY
   original_monthly: 1078
   original_quarterly: 2587.2       # 1078 × 3 × 0.8
-  original_yearly: 10348.8        # 1078 × 12 × 0.8
-  yearly_monthly_equivalent: 862.4 # 10348.8 ÷ 12
+  original_yearly: 9055.2         # 1078 × 12 × 0.7
+  yearly_monthly_equivalent: 754.6 # 9055.2 ÷ 12
   auto_renew_default: true
 
 limits:
@@ -40,10 +40,13 @@ limits:
     credits_monthly_estimated: true
 
 ratio_note: |
+  ## v2/v3 状态(2026-07-30 起)
+  新用户只能购买 v3;v2 老用户可继续使用 v2(不强制迁移,自动续费已禁用)。
+
   v3 (2026-07-31 官方):
   - **Max ¥1078/月**
   - **¥2587.2/季**(8 折)
-  - **¥10348.8/年**(8 折,折月 ¥862.4)
+  - **¥9055.2/年**(7 折,折月 ¥754.6)
   - 套餐用量:**140,000 积分/周**(14× Lite,官方宣称)
   - 高峰期专属资源优先保障
 
@@ -56,7 +59,7 @@ ratio_note: |
   | --- | --- | --- | --- |
   | 月价 | ¥469 | ¥1078 | **+130%** |
   | 季付总价 | ¥1266.3 (9 折?) | ¥2587.2 (8 折) | +104% |
-  | 年付总价 | ¥4502.4 (8 折) | ¥10348.8 (8 折) | +130% |
+  | 年付总价 | ¥4502.4 (8 折) | ¥9055.2 (7 折) | +101% |
 
 measurements:
   - measurement_id: m_2026_07_zhipu_max_v3_official_pricing
@@ -64,8 +67,7 @@ measurements:
     period: 2026-07-31
     pricing_monthly_cny: 1078
     pricing_quarterly_cny: 2587.2
-    pricing_yearly_cny: 10348.8
-    pricing_yearly_discount_percent: 20
+    pricing_yearly_cny: 9055.2
     credits_weekly: 140000
     credibility: high
     disputed: false

@@ -1,7 +1,7 @@
 # 智谱 GLM Coding Plan Lite (v3)
 # 2026-07-31 官方页面 Chrome dump-dom 抓取(https://www.bigmodel.cn/glm-coding)
 # v2 数据保留(zhipu-glm-coding-lite.yml),v3 独立 yml
-# 价格:¥118/月,¥283.2/季 (8 折),¥1132.8/年 (8 折)
+# 价格:¥118/月,¥283.2/季 (8 折),¥991.2/年 (7 折)
 # ⚠ v3 只有「宣称量」(credits_weekly,官方公布),无「实测量」
 
 plan_id: zhipu-glm-coding-lite-v3
@@ -15,8 +15,8 @@ pricing:
   currency: CNY
   original_monthly: 118           # 官方连续包月原价
   original_quarterly: 283.2       # 连续包季 8 折后总价 = 118 × 3 × 0.8
-  original_yearly: 1132.8         # 连续包年 8 折后总价 = 118 × 12 × 0.8
-  yearly_monthly_equivalent: 94.4  # 年付折月价 = 1132.8 ÷ 12
+  original_yearly: 991.2          # 连续包年 7 折后总价 = 118 × 12 × 0.7
+  yearly_monthly_equivalent: 82.6  # 年付折月价 = 991.2 ÷ 12
   auto_renew_default: true
 
 # 限额：v3 只有官方宣称,无实测
@@ -45,10 +45,13 @@ limits:
     credits_monthly_estimated: true
 
 ratio_note: |
+  ## v2/v3 状态(2026-07-30 起)
+  新用户只能购买 v3;v2 老用户可继续使用 v2(不强制迁移,自动续费已禁用)。
+
   v3 (2026-07-31 官方 Chrome dump-dom):
   - **Lite ¥118/月**(连续包月原价)
   - **¥283.2/季**(连续包季 8 折后总价)
-  - **¥1132.8/年**(连续包年 8 折后总价,折月 ¥94.4)
+  - **¥991.2/年**(连续包年 7 折后总价,折月 ¥82.6)
   - 套餐用量:**10,000 积分/周**(官方宣称,Pro 6×, Max 14×)
   - 模型池:GLM-5.2 / GLM-5-Turbo / GLM-4.7(1M 上下文)
   - 工具支持:Claude Code / Cline / OpenClaw / Cursor 等 20+
@@ -63,7 +66,7 @@ ratio_note: |
   | --- | --- | --- | --- |
   | 月价 | ¥49 | ¥118 | **+141%** |
   | 季付总价 | ¥132.3 (9 折?) | ¥283.2 (8 折) | +114% |
-  | 年付总价 | ¥470.4 (8 折) | ¥1132.8 (8 折) | +141% |
+  | 年付总价 | ¥470.4 (8 折) | ¥991.2 (7 折) | +111% |
 
   注:v2 ¥49 可能是首月优惠价/历史快照/特殊渠道价。
   v2 季付标 9 折 (¥132.3 = 49×3×0.9),官方 v3 季付是 8 折 (¥283.2 = 118×3×0.8)。
@@ -75,8 +78,7 @@ measurements:
     user_hash: n/a
     pricing_monthly_cny: 118
     pricing_quarterly_cny: 283.2
-    pricing_yearly_cny: 1132.8
-    pricing_yearly_discount_percent: 20
+    pricing_yearly_cny: 991.2
     credits_weekly: 10000
     credibility: high
     disputed: false

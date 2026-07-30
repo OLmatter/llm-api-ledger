@@ -40,6 +40,9 @@ limits:
     credits_monthly_estimated: true
 
 ratio_note: |
+  ## v2/v3 状态(2026-07-30 起)
+  新用户只能购买 v3;v2 老用户可继续使用 v2(不强制迁移,自动续费已禁用)。
+
   v3 (2026-07-31 官方):
   - **Lite $18/月**
   - **$43.2/季**(Quarterly -20%)
@@ -67,8 +70,6 @@ measurements:
     pricing_monthly_usd: 18
     pricing_quarterly_usd: 43.2
     pricing_yearly_usd: 151.2
-    pricing_quarterly_discount_percent: 20
-    pricing_yearly_discount_percent: 30
     credits_weekly: 10000
     credibility: high
     disputed: false
