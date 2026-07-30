@@ -267,7 +267,13 @@ const plans = planFiles.map(f => {
   let tokens = getDirectTokens(p)
   if (tokens.weekly == null) {
     const inferred = inferTokensFromSibling(p, allPlans)
-    if (inferred) tokens = inferred
+    // 反推只补 null 字段，不覆盖已有真实值（如 yml 里写的 monthly）
+    // 之前的 bug：直接 tokens = inferred 会把 Allegro 的 monthly(30亿) 丢成 null
+    if (inferred) {
+      for (const k of ['h5','weekly','monthly','monthly_estimated','monthly_source']) {
+        if (tokens[k] == null && inferred[k] != null) tokens[k] = inferred[k]
+      }
+    }
   }
 
   return {

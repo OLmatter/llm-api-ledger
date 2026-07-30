@@ -1,5 +1,5 @@
 # Kimi Code Plan Andante（入门档 = 1× 基准）
-# 2026-07-30 三层限额 (基于 Allegretto 反推: 7天 9.8亿 / 月 10亿 × 1/20)
+# 2026-07 三层限额无独立实测，构建脚本从 Allegretto(508M/10亿) × 1/20 反推
 
 plan_id: kimi-code-andante
 vendor: kimi
@@ -34,7 +34,7 @@ limits:
 ratio_note: |
   Andante (1×) 三层限额:
   - 5h cap: 未测(@COTTIWWWW 没测 5h)
-  - 7 天 cap: 未实测(Allegretto 9.8亿 × 1/20 = 反推 49M,但反推不展示)
+  - 7 天 cap: 未实测(Allegretto 508M × 1/20 = 反推 25M,但反推不展示)
   - 月 cap: 未实测(Allegretto 10亿 × 1/20 = 反推 50M,但反推不展示)
   倍率:Andante=1×,Moderato=4×,Allegretto=20×,Allegro=60×
   数据状态:全部 3 层限额用户未实测,前端展示 — (铁律:反推 ≠ 用户给)

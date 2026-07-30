@@ -1,5 +1,5 @@
 # Kimi Code Plan Moderato（中档 = 4×）
-# 2026-07-30 三层限额 (基于 Allegretto 反推: 7天 9.8亿 / 月 10亿 × 4/20)
+# 2026-07 三层限额无独立实测，构建脚本从 Allegretto(508M/10亿) × 4/20 反推
 
 plan_id: kimi-code-moderato
 vendor: kimi
@@ -33,7 +33,7 @@ limits:
 ratio_note: |
   Moderato (4×) 三层限额:
   - 5h cap: 未测
-  - 7 天 cap: 未实测(Allegretto 9.8亿 × 4/20 = 反推 196M,但反推不展示)
+  - 7 天 cap: 未实测(Allegretto 508M × 4/20 = 反推 102M,但反推不展示)
   - 月 cap: 未实测(Allegretto 10亿 × 4/20 = 反推 200M,但反推不展示)
   倍率:Moderato=4× = Allegretto / 5
   数据状态:全部 3 层限额用户未实测,前端展示 —
