@@ -1,0 +1,121 @@
+# Anthropic Claude Code Plan 厂商元数据
+# 2026-07-30:基于用户实测的 Claude Code 5h token 限额 + API 价多源印证
+# Anthropic 不公开 5h/周/月任何具体 token 限额数字(跟 Kimi 一样只标倍数),本档只列 API 价 + 用户实测 5h
+
+vendor_id: anthropic
+vendor_display: Anthropic
+vendor_display_en: Anthropic
+brand_color: "#D97757"
+homepage: https://claude.com
+docs: https://docs.claude.com
+last_verified: 2026-07-30
+
+# 邀请码：Anthropic 不提供邀请码(无购买优惠)
+affiliate: null
+
+# 厂商公共特性
+shared_features:
+  # 主力模型（榜单对比基准；Claude Code 主力 Opus 4.7 + Sonnet 4.6 双轨）
+  primary_model: claude-opus-4-7
+  models:
+    - claude-opus-4-7
+    - claude-opus-4-6
+    - claude-opus-4-5
+    - claude-sonnet-4-6
+    - claude-haiku-4-5
+  models_note: |
+    Claude Code Pro / Max 套餐支持 Opus 4.7 + Sonnet 4.6 + Haiku 4.5 三档模型。
+    Opus 4.7(2026-04-16 发布):旗舰,1M 上下文,新增 xhigh 推理档。
+    Sonnet 4.6(2026-02-18 发布):中端主力,价格约 Opus 的 60%。
+    Haiku 4.5(2025-10-15 发布):经济版,约 Opus 1/5 价格。
+    Anthropic prompt cache: 5min cache 写价 ×1.25(input 价),1h cache 写价 ×2.0;读价均 = input × 0.1 (即 10× 折扣)。
+  clients:
+    - Claude Code (CLI)
+    - Claude Code (VS Code 插件)
+    - Claude.ai Web
+    - Claude Desktop
+    - Cursor (via API key)
+  clients_note: |
+    Claude Code 套餐(Pro/Max)绑定 Claude 账号,通过 OAuth 登录 Claude Code CLI / VS Code 插件用套餐额度。
+    直接走 API key 是 Platform API(独立按量计费,不受套餐额度约束)。
+  rate_limit_tiers: [5h]
+  rate_limit_note: |
+    Claude Code 套餐采用 5h 滚动窗口限流(主要瓶颈,撞上限后等重置或购买额外用量)。
+    - Pro ($20/月,1×): 5h 约 44,000 tokens(用户 7-30 实测)
+    - Max 5× ($100/月): 5h 约 88,000 tokens(Pro × 5,Codex 倍率同 ChatGPT)
+    - Max 20× ($200/月): 5h 约 220,000 tokens(Pro × 20)
+    Anthropic 官方不公开具体 token 数字,本榜单 5h 列填用户实测数;
+    周/月限额无用户实测数据,留 null(显示 —)。
+  api:
+    upstream: https://api.anthropic.com
+
+# 编程场景默认 token 分布(同 OpenAI,Gemini 调查,vLLM 社区 + SWE-bench)
+# input:output ≈ 130-140:1(input 99%+, output <1%)
+programming_ratios_default:
+  cache_hit_rate: 92          # 92% cache (90-94% range)
+  new_input_rate: 7.3         # 7.3% non-cache input (5-9% range)
+  output_rate: 0.7            # 0.7% output
+  source: |
+    Gemini 调查(2026-07-30)基于 vLLM 社区 + SWE-bench Agent 编程场景测试。
+    Anthropic prompt cache 命中场景下 cache_read 占比与 OpenAI/Gemini 类似,默认 92%。
+    注:Anthropic prompt cache 5min 写价 ×1.25,实测用户行为下大部分 cache 走 5min 短缓存。
+
+# Claude 4.x 系列 API 定价(per million tokens, 2026-07-30 多源印证)
+# 来源:CSDN + html5.qq.com 2026-07 多篇技术博客交叉印证
+# 注意:Anthropic 模型版本号是 4.5/4.6/4.7(不是 5.x),Opus 4.5/4.6/4.7 是不同代际
+# cached input = 5min cache 读价 = input × 0.1 (10× 折扣);1h cache 读价同 5min
+model_pricing:
+  claude-opus-4-7:
+    input: 5.00
+    cached_input: 0.50
+    output: 25.00
+    source: 多源印证(CSDN 2026-07 + html5.qq.com 2026-07-30)
+    credibility: medium
+    note: |
+      2026-04-16 发布(旗舰)。1M 上下文,新增 xhigh 推理档。
+      价同 Opus 4.6($5/$25),"加量不加价"。
+      新 tokenizer:同内容消耗 token 比 4.6 多 1.0-1.35×,实际账单可能升 10-35%。
+
+  claude-opus-4-6:
+    input: 5.00
+    cached_input: 0.50
+    output: 25.00
+    source: 多源印证(CSDN 2026-02 + html5.qq.com 2026-02)
+    credibility: medium
+    note: |
+      2026-02-05 发布(首个 Opus 1M 上下文)。
+      Agent Teams / Adaptive Thinking / 128K output。
+      价同 4.7。
+
+  claude-opus-4-5:
+    input: 1.25
+    cached_input: 0.125
+    output: 6.25
+    source: Anthropic 官方公告(2025) + 多源印证
+    credibility: high
+    note: |
+      Opus 4.5 是 4.x 系列的小杯版(价格 1/4 旗舰)。
+      Sonnet 4.5 同价($1.25/$6.25),Opus 4.5 = Sonnet 4.5 同价不同模型。
+      编程能力仍可圈可点,作为 Opus 旗舰的便宜替代。
+
+  claude-sonnet-4-6:
+    input: 3.00
+    cached_input: 0.30
+    output: 15.00
+    source: 多源印证(CSDN 2026-02 + html5.qq.com 2026-02)
+    credibility: medium
+    note: |
+      2026-02-18 发布(Sonnet 4.x 系列继 4.5 之后)。
+      "低成本实现 Opus 级推理能力"——价格约 Opus 60%,能力接近旗舰。
+      主力中端模型,Claude Code 默认用 Sonnet。
+
+  claude-haiku-4-5:
+    input: 1.00
+    cached_input: 0.10
+    output: 5.00
+    source: Anthropic 官方公告(2025-10-15) + 多源印证
+    credibility: high
+    note: |
+      2025-10-15 发布。价格约 Opus 1/5。
+      "三分之一成本实现前沿模型性能"——Anthropic 官方定位。
+      Agentic coding 超过 gpt-5(官方原话),适合大批量自动化任务。

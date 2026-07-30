@@ -71,6 +71,8 @@ const VENDOR_RATIOS = {
   kimi:       { weekly_to_5h: null, monthly_to_weekly: null, monthly_is_estimate: false, monthly_unlimited: true },
   zai:        { weekly_to_5h: 1 / 5.0, monthly_to_weekly: 4.3, monthly_is_estimate: true },
   openai:     { weekly_to_5h: null, monthly_to_weekly: 4.0, monthly_is_estimate: true },
+  // Anthropic:5h 是主要瓶颈,周/月 Anthropic 不公开 cap 数字(留 null,前端显示 —)
+  anthropic:  { weekly_to_5h: null, monthly_to_weekly: null, monthly_is_estimate: false },
 }
 
 // 各厂商不同 tier 的倍率（基于官方产品定义）
@@ -79,6 +81,8 @@ const VENDOR_RATIOS = {
 // minimax: Plus:Max:Ultra = 1:3:11.8
 // kimi: Andante:Moderato:Allegretto:Allegro = 1:4:20:60
 // zai: Lite:Pro:Max = 1:5:20（跟国内智谱完全对齐）
+// openai: Plus:Pro-5x:Pro-20x = 1:5:20
+// anthropic: Pro:Max-5x:Max-20x = 1:5:20 (Claude Code 倍率,跟 OpenAI ChatGPT Codex 同档)
 const TIER_RATIOS = {
   volcengine: { lite: 1, pro: 5 },
   zhipu:      { lite: 1, pro: 5, max: 20 },
@@ -86,6 +90,7 @@ const TIER_RATIOS = {
   kimi:       { andante: 1, moderato: 4, allegretto: 20, allegro: 60 },
   zai:        { lite: 1, pro: 5, max: 20 },
   openai:     { plus: 1, 'pro-5x': 5, 'pro-20x': 20 },
+  anthropic:  { pro: 1, 'max-5x': 5, 'max-20x': 20 },
 }
 
 function getTierRatio(vendor, fromTier, toTier) {
@@ -345,7 +350,7 @@ const plans = planFiles.map(f => {
     // MiniMax/Kimi：tokens（官方公布 token 总量）
     claimed: (() => {
       const lim = p.limits || {}
-      const isTokenVendor = p.vendor === 'minimax' || p.vendor === 'kimi'
+      const isTokenVendor = p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic'
       if (isTokenVendor) {
         return {
           unit: 'tokens',
@@ -362,7 +367,7 @@ const plans = planFiles.map(f => {
         monthly: lim.window_monthly?.requests_official ?? null,
       }
     })(),
-    claimed_unit: (p.vendor === 'minimax' || p.vendor === 'kimi') ? 'tokens' : '次',
+    claimed_unit: (p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic') ? 'tokens' : '次',
 
     // 实测 tokens（反推到 100% 满额）
     tokens: {
@@ -463,7 +468,7 @@ const credLabel = { 3: 'high', 2: 'medium', 1: 'low', 0: 'none' }
 // 排序用价格：USD 套餐用折算价（CNY），统一口径对比
 const priceFor = (p) => p.pricing.original_monthly_cny ?? p.pricing.original_monthly ?? 0
 // 厂商排序优先级：openai 排最底（国外厂商），其他按字母序
-const VENDOR_SORT_ORDER = { openai: 99 }
+const VENDOR_SORT_ORDER = { openai: 99, anthropic: 98 }
 plans.sort((a, b) => {
   // 1. 厂商分组：openai 排最底，其他按字母序
   const aOrder = VENDOR_SORT_ORDER[a.vendor] ?? 0

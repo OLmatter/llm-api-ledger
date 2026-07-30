@@ -1,0 +1,102 @@
+# Claude Code Max 20× Plan
+# Claude Code 高档 = Pro × 20
+# 2026-07-30:基于用户实测的 Pro 5h=44k tokens × 20 = Max 20× 5h 220k
+
+plan_id: claude-code-max-20x
+vendor: anthropic
+plan_name: Claude Code Max 20x
+plan_tier: max-20x
+status: active
+last_verified: 2026-07-30
+
+# Claude Code 倍率:Max 20× = Pro × 20
+codex_multiplier: 20
+
+reset_card_available: true
+reset_card_note: |
+  几美元可购买额外用量(extra usage),继续跑直到月度账单封顶。
+  以下所有 tokens_measured 是「标准情况」基础 cap,购买额外用量后可超过此 cap。
+
+pricing:
+  currency: USD
+  original_monthly: 200
+  yearly_total: null             # Anthropic Max 系列无年付选项
+  yearly_monthly_equivalent: null
+  yearly_note: Anthropic Max 系列仅月付,无年付折扣
+  auto_renew_default: true
+
+limits:
+  window_5h:
+    requests_official: null
+    tokens_measured: 220000       # 220k tokens(Pro 44k × 20)
+    tokens_official_claimed: null
+    note: |
+      按 Codex 倍率反推(Pro 44k × 20 = 220k tokens)。
+      用户未提供 Max 20× 独立实测。
+      注：标准情况，购买额外用量可绕过此 cap。
+  window_weekly:
+    requests_official: null
+    tokens_measured: null          # 用户未实测
+    tokens_official_claimed: null
+    note: |
+      Anthropic 官方不公开周 cap 数字。
+      留 null(显示 —)。
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null          # 用户未实测
+    note: |
+      Anthropic 官方不公开月 cap 数字。
+      留 null(显示 —)。
+
+ratio_note: |
+  Max 20× ($200/月) = Pro × 20 = Claude Code 20× 基准。
+  Max 5× = Pro × 5 = $100/月,5h 88k tokens。
+
+  ⚠️ 以下 5h 数字是**标准情况**(未购买额外用量),购买额外用量后可超过此 cap。
+
+  5h 220,000 tokens = Pro 44k × 20(Codex 倍率反推)。
+  用户未提供 Max 20× 独立 5h 实测,数字来自 Pro 实测 + 倍率换算。
+  适合大规模项目批量分析、多并行 Claude Code Agent。
+  Opus 4.7 / Sonnet 4.6 主力 + Haiku 4.5 大量并行。
+
+measurements:
+  - measurement_id: m_2026_07_max_20x_token_cap_inferred
+    source_kind: codex_multiplier_inference
+    user_hash: n/a
+    period: 2026-07
+    window_5h_tokens: 220000
+    inference_method: |
+      Pro 44,000 tokens/5h × 20 (Codex 倍率) = 220,000 tokens/5h
+    credibility: medium
+    notes: |
+      Codex 倍率直接套用,没有独立测 Max 20× 5h token 数字。
+      待 Max 20× 用户实测 dashboard 数据后填入独立 measurement。
+
+  # Per-model 拆分(无用户实测 window_5h_tokens,占位)
+  - measurement_id: m_2026_07_max_20x_model_opus_4_7
+    source_kind: per_model_breakdown
+    model_id: claude-opus-4-7
+    cost_per_million: 5.00
+    credibility: low
+    notes: |
+      Opus 4.7 ($5/$25):Max 20× 220k tokens 拆到 Opus 4.7,跑 Opus 4.7 也扛得住大型项目。
+      无用户实测 window_5h_tokens,占位条目。
+
+  - measurement_id: m_2026_07_max_20x_model_sonnet_4_6
+    source_kind: per_model_breakdown
+    model_id: claude-sonnet-4-6
+    cost_per_million: 3.00
+    credibility: low
+    notes: |
+      Sonnet 4.6 主力。
+      无用户实测 window_5h_tokens,占位条目。
+
+  - measurement_id: m_2026_07_max_20x_model_haiku_4_5
+    source_kind: per_model_breakdown
+    model_id: claude-haiku-4-5
+    cost_per_million: 1.00
+    credibility: low
+    notes: |
+      Haiku 4.5 ($1/$5):Max 20× 跑 Haiku 可扛 20× Opus 等效算力,大批量任务首选。
+      无用户实测 window_5h_tokens,占位条目。

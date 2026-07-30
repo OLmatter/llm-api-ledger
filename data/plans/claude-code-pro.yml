@@ -1,0 +1,117 @@
+# Claude Code Pro Plan
+# Claude Code 入门档 = 1× Claude Code 基准
+# 2026-07-30:基于用户实测的 Claude Code 5h 限流(44k tokens),Anthropic 不公开周/月 token cap
+
+plan_id: claude-code-pro
+vendor: anthropic
+plan_name: Claude Code Pro
+plan_tier: pro
+status: active
+last_verified: 2026-07-30
+
+# Claude Code 倍率:Pro 1× 基准
+# Max 5× = Pro × 5
+# Max 20× = Pro × 20
+codex_multiplier: 1            # 用 OpenAI 同样字段名(Codex 配额倍率),Anthropic 没独立命名
+
+# 重置卡:Anthropic 也提供"额外用量"购买(类似 ChatGPT 重置卡)
+# 几美元买额外用量,可继续跑直到月度账单封顶
+reset_card_available: true
+reset_card_note: |
+  几美元可购买额外用量(extra usage),继续跑直到月度账单封顶。
+  以下所有 tokens_measured 是「标准情况」基础 cap,购买额外用量后可超过此 cap。
+
+pricing:
+  currency: USD
+  original_monthly: 20
+  yearly_total: 204              # 年付 $17/月 × 12
+  yearly_monthly_equivalent: 17  # 年付折月价
+  yearly_note: Anthropic 提供年付选项($17/月,比月付便宜 15%)
+  auto_renew_default: true
+
+# 限额：5h(实测) + 周 + 月(用户没测,留 null)
+limits:
+  window_5h:
+    requests_official: null
+    tokens_measured: 44000        # 44k tokens(用户 2026-07-30 实测)
+    tokens_official_claimed: null
+    note: |
+      用户实测(2026-07-30):Claude Code Pro 5h 约 44,000 tokens。
+      Anthropic 官方不公布具体 token 数字,本数字来自用户实际跑代码的消耗反推。
+      注：标准情况，购买额外用量可绕过此 cap。
+  window_weekly:
+    requests_official: null
+    tokens_measured: null          # 用户未实测,Anthropic 不公开
+    tokens_official_claimed: null
+    note: |
+      Anthropic 官方不公开周 cap 数字。
+      用户未提供周用量实测。
+      留 null(显示 —)。
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null          # 用户未实测,Anthropic 不公开
+    note: |
+      Anthropic 官方不公开月 cap 数字。
+      用户未提供月用量实测。
+      留 null(显示 —)。
+
+ratio_note: |
+  Pro ($20/月) = Claude Code 1× 基准。
+  Max 5× = Pro × 5 = $100/月,5h 88k tokens。
+  Max 20× = Pro × 20 = $200/月,5h 220k tokens。
+
+  ⚠️ 以下 5h 数字是**标准情况**(未购买额外用量),用户购买额外用量后实际用量可超过此 cap。
+
+  5h 44,000 tokens 是用户 2026-07-30 实测(单源,medium credibility)。
+  Anthropic 5h 窗口是主要瓶颈,撞上限后需等重置或购买额外用量。
+  支持 Claude Code CLI / VS Code 插件 / Claude.ai Web 全场景。
+  主力模型:Opus 4.7 + Sonnet 4.6 + Haiku 4.5 三档可选。
+
+measurements:
+  - measurement_id: m_2026_07_claude_code_pro_5h_probe
+    source_kind: community_single_user
+    user_hash: pending
+    period: 2026-07
+    window_5h_tokens: 44000
+    credibility: medium
+    disputed: true
+    dispute_note: |
+      单源数据(用户 1 人实测),铁律 10 要求标 disputed=true。
+      待多用户 burn 测试后取 median 升级 high credibility 并取消 disputed。
+      Anthropic 官方不公开 5h cap 数字,本数字是用户实际跑代码触发 throttle 反推。
+    notes: |
+      用户 2026-07-30 实测:Claude Code Pro 5h 约 44,000 tokens 撞限流。
+      单源数据,中等 credibility(同 ChatGPT Plus @Personuo 175M 同等性质)。
+
+  # ── Per-model 用量拆分 ──
+  # 同 5h 44k cap,不同 model 因为 $/M 价格不同,实际能跑 token 数差 5×
+  # 用 Gemini 92/7.3/0.7 比例 + 各 model $/M 反推
+  # Per-model 拆分(用户没实测具体 model 的 5h 数字,本表为 $/M 反推占位)
+  # 实际 Per-model 拆分需要用户跑特定 model 实测,本数据为占位(无 window_5h_tokens 字段,前端显示 —)
+  - measurement_id: m_2026_07_pro_model_opus_4_7
+    source_kind: per_model_breakdown
+    model_id: claude-opus-4-7
+    cost_per_million: 5.00
+    credibility: low
+    notes: |
+      Opus 4.7 ($5/$25):Pro 44k tokens 拆到 Opus 4.7 价格最贵,同 cap 跑得最少。
+      无用户实测 window_5h_tokens,占位条目。
+
+  - measurement_id: m_2026_07_pro_model_sonnet_4_6
+    source_kind: per_model_breakdown
+    model_id: claude-sonnet-4-6
+    cost_per_million: 3.00
+    credibility: low
+    notes: |
+      Sonnet 4.6 ($3/$15):主力中端,Claude Code 默认。
+      无用户实测 window_5h_tokens,占位条目。
+
+  - measurement_id: m_2026_07_pro_model_haiku_4_5
+    source_kind: per_model_breakdown
+    model_id: claude-haiku-4-5
+    cost_per_million: 1.00
+    credibility: low
+    notes: |
+      Haiku 4.5 ($1/$5):经济之选,大批量自动化任务首选。
+      无用户实测 window_5h_tokens,占位条目。
