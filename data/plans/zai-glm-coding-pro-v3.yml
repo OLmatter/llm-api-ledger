@@ -1,0 +1,51 @@
+# Z.AI GLM Coding Plan Pro (v3)
+# 2026-07-31 官方页面 Chrome dump-dom
+# 价格:$80/月,Yearly $56/月,Quarterly $64/月(8 折)
+
+plan_id: zai-glm-coding-pro-v3
+vendor: zai
+plan_name: GLM Coding Plan Pro (v3)
+plan_tier: pro
+status: active
+last_verified: 2026-07-31
+
+pricing:
+  currency: USD
+  original_monthly: 80            # 官方 Monthly 原价
+  original_quarterly: 64          # Quarterly -20% = 80 × 0.8 = 64 (折月)
+  original_quarterly_total: 192   # 64 × 3 = 192
+  original_yearly: 672           # Yearly -30% = 80 × 12 × 0.7 = 672
+  auto_renew_default: true
+
+limits:
+  window_weekly:
+    credits_weekly: 60000          # 6× Lite = 60,000 Credits/周
+    note: |
+      官方页面原话:Pro (Popular)「6× Lite usage | All Lite benefits」
+      「Built for day-to-day development on mid-sized repo」
+      「Priority access to the latest flagship models and features」
+      「Includes a curated selection of MCP tools」「Faster generation speeds」
+  window_monthly:
+    credits_monthly: 240000        # 60,000 × 4 ≈ 240,000 Credits/月
+    monthly_estimated: true
+
+ratio_note: |
+  v3 (2026-07-31 官方):
+  - **Pro $80/月**(Monthly 原价)
+  - **$64/月**(Quarterly -20%)
+  - **$56/月**(Yearly -30%)
+  - 用量:**6× Lite = 60,000 Credits/周**
+  - 「Popular」标签,优先级访问新旗舰模型
+
+measurements:
+  - measurement_id: m_2026_07_zai_pro_v3_official_pricing
+    source_kind: anthropic_official
+    period: 2026-07-31
+    pricing_monthly_usd: 80
+    pricing_quarterly_discount_percent: 20
+    pricing_yearly_discount_percent: 30
+    credits_weekly: 60000
+    credibility: high
+    notes: |
+      来源:z.ai/subscribe Chrome dump-dom。
+      原文:Pro「$56 /month $80/month Subscribe | 6× Lite usage」。

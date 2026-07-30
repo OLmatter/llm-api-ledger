@@ -1,0 +1,52 @@
+# Z.AI GLM Coding Plan Max (v3)
+# 2026-07-31 官方页面 Chrome dump-dom
+# 价格:$168/月,Yearly $117.6/月,Quarterly $134.4/月(8 折)
+
+plan_id: zai-glm-coding-max-v3
+vendor: zai
+plan_name: GLM Coding Plan Max (v3)
+plan_tier: max
+status: active
+last_verified: 2026-07-31
+
+pricing:
+  currency: USD
+  original_monthly: 168           # 官方 Monthly 原价
+  original_quarterly: 134.4       # Quarterly -20% = 168 × 0.8 = 134.4 (折月)
+  original_quarterly_total: 403.2  # 134.4 × 3 = 403.2
+  original_yearly: 1411.2        # Yearly -30% = 168 × 12 × 0.7 = 1411.2
+  auto_renew_default: true
+
+limits:
+  window_weekly:
+    credits_weekly: 140000         # 14× Lite = 140,000 Credits/周
+    note: |
+      官方页面原话:Max「14× Lite usage | All Pro benefits」
+      「Built for advanced users working on mid-to-large repo」
+      「First access to the latest flagship models and features」
+      「Dedicated resources during peak times」
+  window_monthly:
+    credits_monthly: 560000        # 140,000 × 4 ≈ 560,000 Credits/月
+    monthly_estimated: true
+
+ratio_note: |
+  v3 (2026-07-31 官方):
+  - **Max $168/月**(Monthly 原价)
+  - **$134.4/月**(Quarterly -20%)
+  - **$117.6/月**(Yearly -30%)
+  - 用量:**14× Lite = 140,000 Credits/周**
+  - 首发接入新旗舰模型 + 高峰期专属资源
+
+measurements:
+  - measurement_id: m_2026_07_zai_max_v3_official_pricing
+    source_kind: anthropic_official
+    period: 2026-07-31
+    pricing_monthly_usd: 168
+    pricing_quarterly_discount_percent: 20
+    pricing_yearly_discount_percent: 30
+    credits_weekly: 140000
+    credibility: high
+    notes: |
+      来源:z.ai/subscribe Chrome dump-dom。
+      原文:Max「$117.6 /month $168/month Subscribe | 14× Lite usage」。
+      「Max Usage」标签。

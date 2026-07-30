@@ -1,0 +1,64 @@
+# Z.AI GLM Coding Plan Lite (v3)
+# 2026-07-31 官方页面 Chrome dump-dom (https://z.ai/subscribe)
+# v2 数据保留(zai-glm-coding-lite.yml),v3 独立 yml
+# 价格:$18/月(Monthly),$12.6/月(Yearly -30%),季付 -20% ≈ $14.4/月
+
+plan_id: zai-glm-coding-lite-v3
+vendor: zai
+plan_name: GLM Coding Plan Lite (v3)
+plan_tier: lite
+status: active
+last_verified: 2026-07-31
+
+pricing:
+  currency: USD
+  original_monthly: 18            # 官方 Monthly 原价
+  original_quarterly: 14.4       # 官方未直列,按 Quarterly -20% = 18 × 0.8 = 14.4 (折月)
+  original_quarterly_total: 51.84  # 14.4 × 12 ÷ 4 = 51.84
+  original_yearly: 151.2         # 官方 Yearly -30% = 18 × 12 × 0.7 = 151.2
+  auto_renew_default: true
+
+limits:
+  window_weekly:
+    credits_weekly: 10000          # 官方原话「10,000 Credits / week」
+    note: |
+      官方页面原话:Lite「10,000 Credits / week | Built for lightweight iteration on small repo」
+      「Rolling access to the latest flagship models and features」
+      「Supports 20+ agent tools, including ZCode, Claude Code, and more」
+  window_monthly:
+    credits_monthly: 40000         # 10,000 × 4 ≈ 40,000 Credits/月
+    monthly_estimated: true
+
+ratio_note: |
+  v3 (2026-07-31 官方 Chrome dump-dom):
+  - **Lite $18/月**(Monthly 原价)
+  - **$14.4/月**(Quarterly -20%, 折月)
+  - **$12.6/月**(Yearly -30%, 折月 = 18 × 0.7)
+  - 用量:**10,000 Credits/周**
+  - 模型:GLM-5.2 / GLM-5-Turbo / GLM-4.7(1M 上下文)
+  - 工具支持:ZCode / Claude Code 等 20+
+
+  ## v2 → v3 价格差异
+  | 字段 | v2 | v3 | 变化 |
+  | --- | --- | --- | --- |
+  | 月价 | $16.2 | $18 | +11% |
+  | 季付折月 | $14.4 (9 折) | $14.4 (8 折) | 0% |
+  | 年付折月 | $12.6 (7 折) | $12.6 (7 折) | 0% |
+
+  注:v2 zai Lite monthly $16.2 vs v3 $18 (+11%)。
+  v2 yml 把季付标 9 折,官方实际是 8 折。
+
+measurements:
+  - measurement_id: m_2026_07_zai_lite_v3_official_pricing
+    source_kind: anthropic_official
+    period: 2026-07-31
+    pricing_monthly_usd: 18
+    pricing_quarterly_discount_percent: 20
+    pricing_yearly_discount_percent: 30
+    credits_weekly: 10000
+    credibility: high
+    notes: |
+      来源:z.ai/subscribe Chrome dump-dom (2026-07-31)。
+      原文:Lite「$12.6 /month $18/month Subscribe | 10,000 Credits / week」。
+      「Built for lightweight iteration on small repo」。
+      「New Monthly | Quarterly -20% | Yearly -30%」三个价格档。
