@@ -41,6 +41,37 @@ description: 改 llm-api-ledger 项目的套餐/厂商数据前必读。触发�
 
 ---
 
+## 0.5 启动协议（任何 AIDASH 工作开始前必走）
+
+**铁律级硬约束**：用户布置 AIDASH 任务时（改 yml / 加套餐 / 加厂商 / 查数据 / 推 GH），**第一步必须按顺序做下面 5 步**，不能跳过任意一步：
+
+1. **读 SKILL-and-SOP.md**（本文件）—— 重新看一遍 18 条铁律 + 7. 升级机制 + 9. 常见错误自检表
+2. **读 NDNS 任务**：`mcp__npl__npl command="root.project.aidash.task list"` → `aidash.task001 read` → `mem list` 看最近 5 条
+3. **搜相关 memory**：`search query="<用户关键词>"` 查历史纠偏（特别是 feedback_*.md 索引过的）
+4. **核对用户原话**：把用户的指令抄到响应里，确认每条指令对应哪个字段/文件
+5. **才开始干活**：写 yml / 跑 build / commit / push
+
+**Why**（2026-07-31 用户原话「你得现有一个数据，给我看看。比如某人说他什么套餐一周还是一个月用了多少。我看没问题同意你反推到其他套餐没问题吧？」+「你说得对，但是豆包说的也有道理」+「我让你做什么就做什么。不让你动的不要动一个比特」）：
+- 没读 SOP 直接干 → 触发铁律 18 自作主张（连续 3 次踩坑）
+- 没查 NDNS → 重复犯同一个错，m1_* 记忆系统失效
+- 没核对用户原话 → 「44k 不适合 Agent 场景」「sibling 反推是假数据」这种**主观评估**溜进数据
+- 「豆包说的也有道理」= 豆包 SOP 是外部参考，**不能替代本文件 18 铁律**——本文件优先
+
+**反推合法化流程**（来自用户原话「我看没问题同意你反推到其他套餐没问题吧？」）：
+```
+用户提供 1 个实测数据点
+   ↓
+我展示：「这是数据，可以反推到 X / Y / Z 套餐，反推公式是 A」
+   ↓
+用户同意（说「没问题」「同意」「可以」等）
+   ↓
+我才能在 yml 里填 inferred_* 字段 + build 函数读它
+```
+
+**未授权反推 = 禁止**。无 inferred_* 字段时 build 输出 null（前端显示 —）。
+
+---
+
 ## 1. 18 条铁律
 
 ### 铁律 1：pricing / discount / boost 严禁混用字段
@@ -420,13 +451,18 @@ pricing:
 ### 铁律 18：用户没让动的字段，一个比特都不许动
 
 **事故**（2026-07-31，本会话连续两次）：
-1. 第一次：用户原话「你改 kimi 了？我让你改了？」——我在 commit 0a75a9b 自作主张在 Kimi Allegretto weekly 填了 9.8亿、Allegro weekly 填了 29.4亿（ratio_note 里有这数字，但 ratio_note 是注释不是用户指令）
+1. 第一次：用户原话「你改 kimi 了？我让我改了？」——我在 commit 0a75a9b 自作主张在 Kimi Allegretto weekly 填了 9.8亿、Allegro weekly 填了 29.4亿（ratio_note 里有这数字，但 ratio_note 是注释不是用户指令）
 2. 第二次：用户原话「我让你动了吗？？？？你说你删了？？」——我自作主张删 Allegretto/Allegro yml 里 5 条 measurements 字段（inferred_weekly_tokens / weekly_tokens_measured / used_tokens / usage_pct / 整个 aggregate_median 条目）
+3. 第三次：用户原话「数据去哪了！！！！」——我在 commit 0a75a9b 自作主张禁 `inferTokensFromSibling` 函数，导致 Kimi/MiniMax/Volc 的 weekly 反推数据全没了。**用户原话**：反推需要先给 1 个数据点 → 给用户看 → 用户同意才能反推到其他套餐。**反推 ≠ 默认行为**
 
 **规则**：
 - **零修改原则**：用户明确指令「做 X」时，只动 X 涉及的字段。**其他字段、注释、measurements、ratio_note、token 数据、API 价一律不许动**
 - **注释不是指令**：`ratio_note` / `note` / `comments` 字段里写了某个数字 ≠ 用户要求把这个数字填进 `tokens_measured`。注释是给人读的参考，yml 字段才是权威数据
-- **build 反推 ≠ 用户数据**：`build-plans.mjs` 的 `inferTokensFromSibling` 函数从 sibling 实测算出的 token 数，是**自动算的假数据**，不是用户给的。但**修复方式只禁 build 反推函数**，**不动 yml**（yml 里没写反推数据，是 build 凑出来的）
+- **反推需要用户授权**（**2026-07-31 用户裁定**）：
+  - 默认禁止反推：yml `tokens_measured: null` 时，build-plans.mjs 不准凭空算
+  - 反推合法化流程：用户提供 1 个实测数据点（例：「某人说他某套餐一周用了多少」）→ 我展示给用户看 + 说明「可以反推到 X/Y/Z 套餐」→ **用户同意** → 才能在 yml 里填 `inferred_weekly_tokens` 或类似字段
+  - 已经在 yml measurements 里的反推字段（inferred_weekly_tokens / tier_ratio / source_weekly_tokens）是历史反推记录，**保留**，build 函数读了它会填到 plans.json（这是合法的，不是「凭空算」）
+- **build 函数不能擅自禁用**：禁 `inferTokensFromSibling` 等任何 build 函数 = 数据源破坏。需要改时必须用户指令
 - **历史测量不删**：`measurements` 数组是**审计追溯数据**，用于记录"历史上曾经有这么个测量"。即使这个测量现在不再展示给用户，也**不许删**，因为它记录了「数据演进路径」。删了等于销毁证据
 - **diff 必须是最小集**：commit 前 `git diff` 自检——任何不在用户指令范围的行变更都必须撤回
 
@@ -441,8 +477,8 @@ pricing:
 - 「ratio_note 里有这个数字，应该填进 tokens_measured」 → 不准，ratio_note 是注释
 - 「measurements 里 inferred_weekly_tokens 不显示了，应该删」 → 不准，measurements 是审计数据
 - 「Kimi Allegretto 的 95% 反推 326M 是单点数据，应该删」 → 不准，用户没让删
-- 「volc-coding-lite 的 weekly 是 sibling 反推出来的，应该 null」 → 不准 yml，只禁 build 函数
-- 「minimax-tp-plus 5h 是反推，应该清掉」 → 不准 yml，只禁 build 函数
+- 「sibling 反推是假数据，应该禁掉」 → 不准，已经在 yml 里的反推是合法的
+- 「用户没给 token 数据，应该 null 整个套餐」 → 不准，没给就留 null，但 build 不能禁
 
 ---
 
