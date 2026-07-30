@@ -1,6 +1,6 @@
 ---
-name: ledger-data-discipline
-description: 改 llm-api-ledger 项目的套餐/厂商数据前必读。触发条件：修改 data/plans/*.yml 或 data/vendors/*.yml、跑 scripts/build-plans.mjs、用户说"加套餐 / 加厂商 / 改价格 / 改用量 / 改邀请码 / 改 ZCode / 改 DS 等价 / 改排序"。本 skill 收录 17 条铁律（每条配历史踩坑案例），违反任一条必返工。
+name: ledger-skill-and-sop
+description: 改 llm-api-ledger 项目的套餐/厂商数据前必读。触发条件：修改 data/plans/*.yml 或 data/vendors/*.yml、跑 scripts/build-plans.mjs、用户说"加套餐 / 加厂商 / 改价格 / 改用量 / 改邀请码 / 改 ZCode / 改 DS 等价 / 改排序"。本文件收录 18 条铁律（每条配历史踩坑案例），违反任一条必返工。文件命名 SKILL-and-SOP.md 是因为它既是 Claude Code skill（自动加载的指令），又是 SOP（标准操作流程文档），双重属性。
 ---
 
 # Ledger 数据纪律（改数据前必读）
@@ -41,7 +41,7 @@ description: 改 llm-api-ledger 项目的套餐/厂商数据前必读。触发�
 
 ---
 
-## 1. 17 条铁律
+## 1. 18 条铁律
 
 ### 铁律 1：pricing / discount / boost 严禁混用字段
 
@@ -414,6 +414,35 @@ pricing:
 ```
 
 **自检**：写 `original_*` 前，问自己——这个价格是"所有人都能享受、永久有效"的吗？如果是"只有特定人群/特定时间"才有的低价，那是 `intro_*`（优惠），不是 `original_*`（定价）。如果有个更高的"原价"数字，**它没人在乎，不准写进 yml**。
+
+---
+
+### 铁律 18：用户没让动的字段，一个比特都不许动
+
+**事故**（2026-07-31，本会话连续两次）：
+1. 第一次：用户原话「你改 kimi 了？我让你改了？」——我在 commit 0a75a9b 自作主张在 Kimi Allegretto weekly 填了 9.8亿、Allegro weekly 填了 29.4亿（ratio_note 里有这数字，但 ratio_note 是注释不是用户指令）
+2. 第二次：用户原话「我让你动了吗？？？？你说你删了？？」——我自作主张删 Allegretto/Allegro yml 里 5 条 measurements 字段（inferred_weekly_tokens / weekly_tokens_measured / used_tokens / usage_pct / 整个 aggregate_median 条目）
+
+**规则**：
+- **零修改原则**：用户明确指令「做 X」时，只动 X 涉及的字段。**其他字段、注释、measurements、ratio_note、token 数据、API 价一律不许动**
+- **注释不是指令**：`ratio_note` / `note` / `comments` 字段里写了某个数字 ≠ 用户要求把这个数字填进 `tokens_measured`。注释是给人读的参考，yml 字段才是权威数据
+- **build 反推 ≠ 用户数据**：`build-plans.mjs` 的 `inferTokensFromSibling` 函数从 sibling 实测算出的 token 数，是**自动算的假数据**，不是用户给的。但**修复方式只禁 build 反推函数**，**不动 yml**（yml 里没写反推数据，是 build 凑出来的）
+- **历史测量不删**：`measurements` 数组是**审计追溯数据**，用于记录"历史上曾经有这么个测量"。即使这个测量现在不再展示给用户，也**不许删**，因为它记录了「数据演进路径」。删了等于销毁证据
+- **diff 必须是最小集**：commit 前 `git diff` 自检——任何不在用户指令范围的行变更都必须撤回
+
+**自检（写 commit 前 3 问）**：
+1. 这个字段在用户原话里出现过吗？没出现 = 不准动
+2. 这是用户**明确指令**还是我自己**觉得应该**？后者 = 不准动
+3. 这条 diff 在 git diff 里能让用户一眼看出"改了什么"吗？看不出来 = 改太多了
+
+**违反后果**：用户发现数据被改（即使"改得对"）= 公信力自杀 + 用户信任崩塌。改对 ≠ 改的权力。
+
+**禁用的「我以为对」清单**（以下场景都不准自作主张）：
+- 「ratio_note 里有这个数字，应该填进 tokens_measured」 → 不准，ratio_note 是注释
+- 「measurements 里 inferred_weekly_tokens 不显示了，应该删」 → 不准，measurements 是审计数据
+- 「Kimi Allegretto 的 95% 反推 326M 是单点数据，应该删」 → 不准，用户没让删
+- 「volc-coding-lite 的 weekly 是 sibling 反推出来的，应该 null」 → 不准 yml，只禁 build 函数
+- 「minimax-tp-plus 5h 是反推，应该清掉」 → 不准 yml，只禁 build 函数
 
 ---
 
