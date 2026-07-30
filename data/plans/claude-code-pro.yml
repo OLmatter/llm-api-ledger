@@ -89,6 +89,16 @@ measurements:
   # 用 Gemini 92/7.3/0.7 比例 + 各 model $/M 反推
   # Per-model 拆分(用户没实测具体 model 的 5h 数字,本表为 $/M 反推占位)
   # 实际 Per-model 拆分需要用户跑特定 model 实测,本数据为占位(无 window_5h_tokens 字段,前端显示 —)
+  - measurement_id: m_2026_07_pro_model_opus_4_8
+    source_kind: per_model_breakdown
+    model_id: claude-opus-4-8
+    cost_per_million: 10.00
+    credibility: low
+    notes: |
+      Opus 4.8 ($10/$50,2026-05-28 发布):最新旗舰,价格最贵。
+      Pro 44k tokens 拆到 Opus 4.8 同 cap 跑得最少。
+      无用户实测 window_5h_tokens,占位条目。
+
   - measurement_id: m_2026_07_pro_model_opus_4_7
     source_kind: per_model_breakdown
     model_id: claude-opus-4-7

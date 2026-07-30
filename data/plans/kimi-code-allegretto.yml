@@ -26,7 +26,7 @@ limits:
   window_weekly:
     requests_official: null
     tokens_official_claimed: null
-    tokens_measured: null                  # 用户未要求改 weekly,留 null(allegretto 199 的 7天 cap 实际值未测)
+    tokens_measured: 980000000             # 9.8亿(@Golden白 7-23 用完实测,zocde 后台"7 天用量 3.77%"比例印证)
   window_monthly:
     requests_official: null
     tokens_official_claimed: null
@@ -34,12 +34,12 @@ limits:
     is_unlimited: false                     # 月 cap 真实存在(10亿)
 
 ratio_note: |
-  Allegretto (20×) 三层限额:
+  Allegretto (20×) 三层限额(全部基于 @Golden白 实测,非反推):
   - 5h cap: 未测(@COTTIWWWW 推文只测 7 天/月,没测 5h)
   - 7 天 cap: 9.8亿(@Golden白 用完实测,zocde 后台"7 天用量 3.77%"比例印证)
   - 月 cap: 10亿(@Golden白 明说"月 token 是 10 亿",zocde 后台"按月刷新"印证)
   数据来源:@Golden白 7-23 推文 891 view(高 credibility,多源印证)
-  其他 3 档(Andante/Moderato/Allegro)按 Allegretto × 倍率反推 7 天 + 月 cap
+  其他 3 档(Andante/Moderato/Allegro)用户未实测 5h/周/月,前端展示 — (反推不展示)
 
 measurements:
   - measurement_id: m_2026_07_allegretto_95pct_user_report

@@ -8,25 +8,27 @@ vendor_display_en: Anthropic
 brand_color: "#D97757"
 homepage: https://claude.com
 docs: https://docs.claude.com
-last_verified: 2026-07-30
+last_verified: 2026-07-31
 
 # 邀请码：Anthropic 不提供邀请码(无购买优惠)
 affiliate: null
 
 # 厂商公共特性
 shared_features:
-  # 主力模型（榜单对比基准；Claude Code 主力 Opus 4.7 + Sonnet 4.6 双轨）
-  primary_model: claude-opus-4-7
+  # 主力模型（榜单对比基准；Claude Code 主力 Opus 4.8 + Sonnet 4.6 双轨）
+  primary_model: claude-opus-4-8
   models:
+    - claude-opus-4-8
     - claude-opus-4-7
     - claude-opus-4-6
     - claude-opus-4-5
     - claude-sonnet-4-6
     - claude-haiku-4-5
   models_note: |
-    Claude Code Pro / Max 套餐支持 Opus 4.7 + Sonnet 4.6 + Haiku 4.5 三档模型。
-    Opus 4.7(2026-04-16 发布):旗舰,1M 上下文,新增 xhigh 推理档。
-    Sonnet 4.6(2026-02-18 发布):中端主力,价格约 Opus 的 60%。
+    Claude Code Pro / Max 套餐支持 Opus 4.8 + Sonnet 4.6 + Haiku 4.5 多档模型。
+    Opus 4.8(2026-05-28 发布):最新旗舰,SWE-bench Pro 69.2%,支持数百子智能体并行 + Dynamic Workflows。
+    Opus 4.7(2026-04-16 发布):上一代旗舰,1M 上下文 + xhigh 推理档。
+    Sonnet 4.6(2026-02-18 发布):中端主力,价格约 Opus 4.7 的 60%。
     Haiku 4.5(2025-10-15 发布):经济版,约 Opus 1/5 价格。
     Anthropic prompt cache: 5min cache 写价 ×1.25(input 价),1h cache 写价 ×2.0;读价均 = input × 0.1 (即 10× 折扣)。
   clients:
@@ -60,11 +62,23 @@ programming_ratios_default:
     Anthropic prompt cache 命中场景下 cache_read 占比与 OpenAI/Gemini 类似,默认 92%。
     注:Anthropic prompt cache 5min 写价 ×1.25,实测用户行为下大部分 cache 走 5min 短缓存。
 
-# Claude 4.x 系列 API 定价(per million tokens, 2026-07-30 多源印证)
-# 来源:CSDN + html5.qq.com 2026-07 多篇技术博客交叉印证
-# 注意:Anthropic 模型版本号是 4.5/4.6/4.7(不是 5.x),Opus 4.5/4.6/4.7 是不同代际
+# Claude 4.x 系列 API 定价(per million tokens, 2026-07-31 多源印证)
+# 来源:CSDN + html5.qq.com 2026-05/07 多篇技术博客交叉印证
+# 注意:Anthropic 模型版本号是 4.5/4.6/4.7/4.8(不是 5.x),Opus 4.5/4.6/4.7/4.8 是不同代际
 # cached input = 5min cache 读价 = input × 0.1 (10× 折扣);1h cache 读价同 5min
 model_pricing:
+  claude-opus-4-8:
+    input: 10.00
+    cached_input: 1.00
+    output: 50.00
+    source: 多源印证(html5.qq.com 2026-05-28 + CSDN 2026-05/07 + toutiao 2026-05)
+    credibility: medium
+    note: |
+      2026-05-28 发布(距 Opus 4.7 仅 41 天,Anthropic 罕见快速迭代)。
+      价格较 4.7 翻倍($5→$10,$25→$50,Fast Mode)——"性能升级定价不变"指保持 Opus 系列价格阶梯,不是 $5/$25 不变。
+      旗舰:SWE-bench Pro 69.2% / SWE-bench Verified 88.6% / Terminal-Bench 2.1 74.6%。
+      新增:Dynamic Workflows(Max/Team 默认开)+ 数百子智能体并行。
+
   claude-opus-4-7:
     input: 5.00
     cached_input: 0.50

@@ -31,11 +31,13 @@ const sortedPlans = computed(() => {
   if (k === 'vendor') {
     // 厂商分组 + tier_multiplier 升序（用数字字段，不准用 tierRank 字典——
     // 历史 bug：tierRank 只认 lite/pro/max，kimi/minimax 档位全乱）
-    // openai 排最底（国外厂商放最后）
+    // 国外厂商(openai/anthropic)排最底,openai 仍在 anthropic 之后(用户原话「gpt 防最低下」)
     arr.sort((a, b) => {
       if (a.vendor !== b.vendor) {
         if (a.vendor === 'openai') return 1
         if (b.vendor === 'openai') return -1
+        if (a.vendor === 'anthropic') return 1
+        if (b.vendor === 'anthropic') return -1
         return a.vendor.localeCompare(b.vendor)
       }
       const ma = a.tier_multiplier ?? 99

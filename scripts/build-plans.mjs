@@ -155,25 +155,26 @@ function getDirectTokens(plan) {
 }
 
 // 反推 tokens：本档没填，找同厂商其他档实测
+// ⚠ 2026-07-31 禁用:铁律:用户没实测 = null,反推不展示
+// 历史事故:用户原话「没数据你就推」—— sibling 反推导致 Andante weekly=49M/Moderato=196M/Allegro=1.5B
+// 出现在前端 weekly 列(变红 disputed),用户骂「你又自作主张」
+// 保留函数定义以备未来显式 enable(比如某个 plan 标 inherit_from_sibling: true 才允许)
 function inferTokensFromSibling(plan, allRawPlans) {
+  // 禁用:见上方注释
+  return null
+  // 以下代码保留,未来可显式 enable
+  /*
   const vendor = plan.vendor
   const ratio = VENDOR_RATIOS[vendor]
   if (!ratio) return null
-
-  // 找同厂商能拿到 tokens 的 sibling（不管是直接填还是从 measurements 推）
   for (const sib of allRawPlans) {
     if (sib.vendor !== vendor || sib.plan_id === plan.plan_id) continue
     const sibTokens = getDirectTokens(sib)
     if (sibTokens.weekly == null) continue
-
     const tierRatio = getTierRatio(vendor, sib.plan_tier, plan.plan_tier)
     if (!tierRatio) continue
-
-    // 5h/周 按 tierRatio 反推
     const weekly = Math.round(sibTokens.weekly * tierRatio)
     const h5 = ratio.weekly_to_5h ? Math.round(weekly * ratio.weekly_to_5h) : null
-
-    // 月度：按周 × monthly_to_weekly 反推（实测口径）
     let monthly = null
     let monthlySource = null
     let monthlyEstimated = false
@@ -182,7 +183,6 @@ function inferTokensFromSibling(plan, allRawPlans) {
       monthlySource = 'inferred_from_sibling'
       monthlyEstimated = ratio.monthly_is_estimate
     }
-
     return {
       h5,
       weekly,
@@ -192,6 +192,7 @@ function inferTokensFromSibling(plan, allRawPlans) {
     }
   }
   return null
+  */
 }
 
 const plans = planFiles.map(f => {

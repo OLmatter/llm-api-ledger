@@ -74,6 +74,15 @@ measurements:
       待 Max 20× 用户实测 dashboard 数据后填入独立 measurement。
 
   # Per-model 拆分(无用户实测 window_5h_tokens,占位)
+  - measurement_id: m_2026_07_max_20x_model_opus_4_8
+    source_kind: per_model_breakdown
+    model_id: claude-opus-4-8
+    cost_per_million: 10.00
+    credibility: low
+    notes: |
+      Opus 4.8 ($10/$50):最新旗舰,Max 20× 220k tokens 拆到 Opus 4.8,扛得住大型项目。
+      无用户实测 window_5h_tokens,占位条目。
+
   - measurement_id: m_2026_07_max_20x_model_opus_4_7
     source_kind: per_model_breakdown
     model_id: claude-opus-4-7
