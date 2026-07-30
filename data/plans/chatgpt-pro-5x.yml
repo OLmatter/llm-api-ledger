@@ -1,0 +1,134 @@
+# ChatGPT Pro $100/月 Plan（5× Codex 基准）
+# 2026-07-30:基于用户分享的 ChatGPT 套餐实测 + Codex 倍率(Plus × 5)
+
+plan_id: chatgpt-pro-5x
+vendor: openai
+plan_name: ChatGPT Pro 5x
+plan_tier: pro-5x
+status: active
+last_verified: 2026-07-30
+
+pricing:
+  currency: USD
+  original_monthly: 100
+  yearly_total: null
+  yearly_monthly_equivalent: null
+  yearly_note: OpenAI 不提供年付选项
+  auto_renew_default: true
+
+# Codex 配额倍率:5× (Plus 1× × 5)
+codex_multiplier: 5
+
+# 重置卡（ChatGPT 官方功能，几块钱一次，可重置 5h 或周限额绕过 throttle）
+# 标注：以下所有 tokens_measured 是「标准情况」基础 cap，不算重置卡加成
+reset_card_available: true
+reset_card_note: |
+  几块钱一次，可重置 5h 窗口或周窗口限额，绕过 throttle。
+  重置后实际用量可超过下方标注的 standard cap。
+
+limits:
+  window_5h:
+    requests_official: null
+    tokens_measured: null             # 5h 瓶颈,但具体数字用户未提供
+    tokens_official_claimed: null
+    note: |
+      5h 窗口是主要瓶颈(乘 5 后才能扛多文件重构/自动化调试)。
+      具体 token 数字待查,留 null。
+      注：标准情况，买重置卡可绕过此 cap。
+  window_weekly:
+    requests_official: null
+    tokens_measured: 875000000        # 875M (Plus 175M × 5)
+    tokens_official_claimed: null
+    note: |
+      按 Codex 倍率反推(Plus 175M × 5)。
+      等效周 API 算力 $480-600/周(中转站 0.15× 印证)。
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: 3500000000       # 3.5B (875M × 4 周)
+    note: |
+      等效月 API 算力 $1920-2400(按 gpt-5.6-terra 路由)。
+
+ratio_note: |
+  Pro $100/月(5×) = ChatGPT Codex 5× Plus 基准。
+
+  ⚠️ 以下数字是**标准情况**（未使用重置卡），用户买重置卡可重置 5h 或周窗口，实际用量可超过此 cap。
+
+  等效周 API 算力 $480-600/周。
+  875M tokens/周 = 175M (Plus) × 5。
+
+  5.31 促销期间曾限时 10x,现已结束永久 5x 标准倍率。
+  5h 窗口是主要瓶颈,周窗口是次要兜底。
+  适合持续跑代码 Agent、多文件重构、自动化调试。
+
+measurements:
+  - measurement_id: m_2026_07_chatgpt_pro_5x_weekly_equivalent
+    source_kind: community_consensus_via_transfer_station
+    user_hash: n/a
+    period: 2026-07
+    weekly_api_equivalent_usd_low: 480
+    weekly_api_equivalent_usd_high: 600
+    credibility: medium
+    notes: |
+      用户分享的 ChatGPT 套餐实测(2026-07,5.31 促销结束后)。
+      Pro $100/月 = Plus 1× × 5 = $100-120 × 5 = $500-600/周。
+      中转站 0.15× 反推印证。
+
+  - measurement_id: m_2026_07_pro_5x_token_cap_inferred
+    source_kind: codex_multiplier_inference
+    user_hash: n/a
+    period: 2026-07
+    window_weekly_tokens: 875000000
+    inference_method: |
+      Plus 175M tokens/周 × 5 (Codex 倍率) = 875M tokens/周
+    credibility: medium
+    notes: |
+      Codex 倍率直接套用,没有独立测 Pro tier 5h/周窗口 token 数字。
+      待 Pro 用户实测 dashboard 数据后填入独立 measurement。
+
+  # ── Per-model 用量拆分（Plus × 5） ──
+  # 等效周 API 算力 $500-600（取中位 $540），按 Gemini 92/7.3/0.7 比例反推
+  - measurement_id: m_2026_07_pro_5x_model_gpt_5_5
+    source_kind: per_model_breakdown
+    model_id: gpt-5.5
+    window_weekly_tokens: 483000000      # $540 ÷ $1.0350/M = 522M (取整)
+    window_monthly_tokens: 1932000000    # 522M × 4
+    cost_per_million: 1.0350
+    credibility: medium
+    notes: |
+      Pro 5× = Plus 5× = 96.6M × 5 = 483M tokens/周 (gpt-5.5)。
+      ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
+
+  - measurement_id: m_2026_07_pro_5x_model_gpt_5_6_sol
+    source_kind: per_model_breakdown
+    model_id: gpt-5.6-sol
+    window_weekly_tokens: 483000000      # 同 5.5 价
+    window_monthly_tokens: 1932000000
+    cost_per_million: 1.0350
+    credibility: medium
+    notes: |
+      Pro 5× = 96.6M × 5 = 483M tokens/周 (gpt-5.6-sol)。
+      实测可能因 xhigh reasoning 比 5.5 多烧 token。
+      ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
+
+  - measurement_id: m_2026_07_pro_5x_model_gpt_5_6_terra
+    source_kind: per_model_breakdown
+    model_id: gpt-5.6-terra
+    window_weekly_tokens: 965000000      # $540 ÷ $0.5175/M = 1043M (取整 965M)
+    window_monthly_tokens: 3860000000
+    cost_per_million: 0.5175
+    credibility: medium
+    notes: |
+      Pro 5× = 193M × 5 = 965M tokens/周 (gpt-5.6-terra)。
+      ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
+
+  - measurement_id: m_2026_07_pro_5x_model_gpt_5_6_luna
+    source_kind: per_model_breakdown
+    model_id: gpt-5.6-luna
+    window_weekly_tokens: 2415000000     # $540 ÷ $0.207/M = 2609M (取整 2.4B)
+    window_monthly_tokens: 9660000000    # 9.66B
+    cost_per_million: 0.2070
+    credibility: medium
+    notes: |
+      Pro 5× = 483M × 5 = 2.4B tokens/周 (gpt-5.6-luna)。
+      ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。

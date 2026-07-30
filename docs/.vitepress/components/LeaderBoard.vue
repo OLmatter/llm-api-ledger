@@ -31,8 +31,13 @@ const sortedPlans = computed(() => {
   if (k === 'vendor') {
     // 厂商分组 + tier_multiplier 升序（用数字字段，不准用 tierRank 字典——
     // 历史 bug：tierRank 只认 lite/pro/max，kimi/minimax 档位全乱）
+    // openai 排最底（国外厂商放最后）
     arr.sort((a, b) => {
-      if (a.vendor !== b.vendor) return a.vendor.localeCompare(b.vendor)
+      if (a.vendor !== b.vendor) {
+        if (a.vendor === 'openai') return 1
+        if (b.vendor === 'openai') return -1
+        return a.vendor.localeCompare(b.vendor)
+      }
       const ma = a.tier_multiplier ?? 99
       const mb = b.tier_multiplier ?? 99
       if (ma !== mb) return ma - mb
@@ -443,14 +448,32 @@ function fmtTokensYi(n) {
 
             <!-- 实测用量（tokens） -->
             <td class="num tok">
-              {{ fmtTokens(row.plan.tokens.h5) }}<span v-if="row.plan.primary_model && row.plan.tokens.h5 != null" class="model-tag">@{{ row.plan.primary_model }}</span>
+              <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
+                <div v-for="mb in row.plan.model_breakdown" :key="mb.model_id" class="tok-row">
+                  <span v-if="mb.h5_tokens">{{ fmtTokens(mb.h5_tokens) }}</span>
+                  <span v-else class="muted">—</span>
+                  <span class="model-tag">@{{ mb.model_id }}</span>
+                </div>
+              </template>
+              <template v-else>
+                {{ fmtTokens(row.plan.tokens.h5) }}<span v-if="row.plan.primary_model && row.plan.tokens.h5 != null" class="model-tag">@{{ row.plan.primary_model }}</span>
+              </template>
               <div v-if="row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_h5" class="zcode-aff">
                 <span class="zcode-label">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_h5) }}</span>
               </div>
             </td>
             <td class="num tok" :class="{ disputed: row.plan.tokens.weekly_disputed }">
-              {{ fmtTokens(row.plan.tokens.weekly) }}<span v-if="row.plan.primary_model && row.plan.tokens.weekly != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-if="row.plan.tokens.weekly_disputed" class="dispute-warn" :title="row.plan.tokens.dispute_note || '数据存在较大不确定性'">⚠</span><span v-if="row.plan.tokens.weekly_aggregate_note && !row.plan.tokens.weekly_disputed" class="info-tooltip-wrap info-down"><span class="info-icon info-warn" aria-hidden="true">!</span><span class="info-tooltip">{{ row.plan.tokens.weekly_aggregate_note }}</span></span>
+              <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
+                <div v-for="mb in row.plan.model_breakdown" :key="'w-' + mb.model_id" class="tok-row">
+                  {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span>
+                </div>
+              </template>
+              <template v-else>
+                {{ fmtTokens(row.plan.tokens.weekly) }}<span v-if="row.plan.primary_model && row.plan.tokens.weekly != null" class="model-tag">@{{ row.plan.primary_model }}</span>
+                <span v-if="row.plan.tokens.weekly_disputed" class="dispute-warn" :title="row.plan.tokens.dispute_note || '数据存在较大不确定性'">⚠</span><span v-if="row.plan.tokens.weekly_aggregate_note && !row.plan.tokens.weekly_disputed" class="info-tooltip-wrap info-down"><span class="info-icon info-warn" aria-hidden="true">!</span><span class="info-tooltip">{{ row.plan.tokens.weekly_aggregate_note }}</span></span>
+              </template>
+              <div v-if="row.plan.reset_card_available" class="reset-card-note">这是标准额度，用几块钱的重置卡或者官方都会重置额度</div>
               <div v-if="row.plan.tokens.weekly_disputed" class="dispute-text">数据有争议</div>
               <div v-if="row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_weekly" class="zcode-aff">
                 <span class="zcode-label" title="ZCode 客户端限时活动，全周期 0.67 折算（等效 1.5x 额度）。跟邀请码独立，可同时享受。活动截止 2026-07-31。">ZCode×1.5</span>
@@ -458,7 +481,14 @@ function fmtTokensYi(n) {
               </div>
             </td>
             <td class="num tok">
-              {{ fmtTokens(row.plan.tokens.monthly) }}<span v-if="row.plan.primary_model && row.plan.tokens.monthly != null" class="model-tag">@{{ row.plan.primary_model }}</span>
+              <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
+                <div v-for="mb in row.plan.model_breakdown" :key="'m-' + mb.model_id" class="tok-row">
+                  {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span>
+                </div>
+              </template>
+              <template v-else>
+                {{ fmtTokens(row.plan.tokens.monthly) }}<span v-if="row.plan.primary_model && row.plan.tokens.monthly != null" class="model-tag">@{{ row.plan.primary_model }}</span>
+              </template>
               <div v-if="row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_monthly" class="zcode-aff">
                 <span class="zcode-label">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_monthly) }}</span>
@@ -579,6 +609,28 @@ thead tr:nth-child(2) th {
 }
 
 /* 模型 tag（行内 @模型名，紧跟数字后面，附属信息样式） */
+.model-tag {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 10px;
+  color: var(--vp-c-text-2);
+  font-weight: 400;
+}
+.tok-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  white-space: nowrap;
+}
+.tok-row:not(:last-child) { margin-bottom: 2px; }
+.reset-card-note {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--vp-c-text-2);
+  line-height: 1.3;
+  font-style: italic;
+}
 .model-tag {
   font-size: 10px;
   font-weight: 500;

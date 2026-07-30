@@ -70,6 +70,7 @@ const VENDOR_RATIOS = {
   minimax:    { weekly_to_5h: 1 / 10.0, monthly_to_weekly: 4.3, monthly_is_estimate: true },
   kimi:       { weekly_to_5h: null, monthly_to_weekly: null, monthly_is_estimate: false, monthly_unlimited: true },
   zai:        { weekly_to_5h: 1 / 5.0, monthly_to_weekly: 4.3, monthly_is_estimate: true },
+  openai:     { weekly_to_5h: null, monthly_to_weekly: 4.0, monthly_is_estimate: true },
 }
 
 // 各厂商不同 tier 的倍率（基于官方产品定义）
@@ -84,6 +85,7 @@ const TIER_RATIOS = {
   minimax:    { plus: 1, max: 3, ultra: 11.8 },
   kimi:       { andante: 1, moderato: 4, allegretto: 20, allegro: 60 },
   zai:        { lite: 1, pro: 5, max: 20 },
+  openai:     { plus: 1, 'pro-5x': 5, 'pro-20x': 20 },
 }
 
 function getTierRatio(vendor, fromTier, toTier) {
@@ -392,6 +394,19 @@ const plans = planFiles.map(f => {
         return Math.max(m, rank[x.credibility] || 0)
       }, 0
     ),
+    // Per-model breakdown：每个 model 一个 token 组合（同一 cap 不同 model 用量不同）
+    // 前端渲染多个 model_tag 堆叠在 tokens 列
+    model_breakdown: (p.measurements || [])
+      .filter(m => m.source_kind === 'per_model_breakdown' && m.model_id)
+      .map(m => ({
+        model_id: m.model_id,
+        weekly_tokens: m.window_weekly_tokens,
+        monthly_tokens: m.window_monthly_tokens,
+        h5_tokens: m.window_5h_tokens || null,
+        cost_per_million: m.cost_per_million,
+        credibility: m.credibility,
+        notes: m.notes,
+      })),
     // 数据争议标记：任一 measurement 标 disputed=true，整个 plan 标争议
     measurements_disputed: (p.measurements || []).some(x => x.disputed === true),
     measurements_dispute_note: (() => {
@@ -411,6 +426,12 @@ const plans = planFiles.map(f => {
 
     // 厂商名跳转目标：有邀请码用邀请码链接（带 source/折扣参数），否则用各家官方订阅直达页
     subscribe_url: (aff?.url) || SUBSCRIBE_URLS[p.vendor] || v.homepage || null,
+
+    // 重置卡（ChatGPT 官方功能，几块钱一次可重置 5h/周窗口）
+    // 标注：tokens_measured 是「标准情况」基础 cap，买重置卡可继续超额使用
+    reset_card_available: p.reset_card_available ?? null,
+    reset_card_note: p.reset_card_note || null,
+    ratio_note: p.ratio_note || null,
 
     // DeepSeek V4 按量等价换算：月费 → 如果买 DS V4 官网原价能跑多少 tokens
     // 注意：此处按缓存命中 95% 写死，仅作兜底/快照。
@@ -441,8 +462,13 @@ const credLabel = { 3: 'high', 2: 'medium', 1: 'low', 0: 'none' }
 //     导致 kimi andante/moderato/allegretto/allegro 和 minimax plus/ultra 全部落到 || 99 乱序）
 // 排序用价格：USD 套餐用折算价（CNY），统一口径对比
 const priceFor = (p) => p.pricing.original_monthly_cny ?? p.pricing.original_monthly ?? 0
+// 厂商排序优先级：openai 排最底（国外厂商），其他按字母序
+const VENDOR_SORT_ORDER = { openai: 99 }
 plans.sort((a, b) => {
-  // 1. 厂商分组（按 vendor 字母序，保证同厂商连续）
+  // 1. 厂商分组：openai 排最底，其他按字母序
+  const aOrder = VENDOR_SORT_ORDER[a.vendor] ?? 0
+  const bOrder = VENDOR_SORT_ORDER[b.vendor] ?? 0
+  if (aOrder !== bOrder) return aOrder - bOrder
   if (a.vendor !== b.vendor) return a.vendor.localeCompare(b.vendor)
   // 2. 同厂商内按 tier_multiplier 升序（基础档 < 高档）
   const ma = a.tier_multiplier ?? 99

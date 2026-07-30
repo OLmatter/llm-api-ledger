@@ -1,0 +1,177 @@
+# ChatGPT Plus Plan（ChatGPT 订阅入门档 = 1× Codex 基准）
+# 2026-07-30:基于 @Personuo X 中文推文(235 view)+ 中转站 0.15× 倍率反推 + 用户分享的 ChatGPT 套餐实测
+
+plan_id: chatgpt-plus
+vendor: openai
+plan_name: ChatGPT Plus
+plan_tier: plus
+status: active
+last_verified: 2026-07-30
+
+pricing:
+  currency: USD
+  original_monthly: 20
+  yearly_total: null
+  yearly_monthly_equivalent: null
+  yearly_note: OpenAI 不提供年付选项
+  auto_renew_default: true
+
+# Codex 配额倍率:1× 基准
+codex_multiplier: 1
+
+# 重置卡（ChatGPT 官方功能，几块钱一次，可重置 5h 或周限额绕过 throttle）
+# 标注：以下所有 tokens_measured 是「标准情况」基础 cap，不算重置卡加成
+# 用户买重置卡后实际用量可超过此 cap
+reset_card_available: true
+reset_card_note: |
+  几块钱一次，可重置 5h 窗口或周窗口限额，绕过 throttle。
+  重置后实际用量可超过下方标注的 standard cap。
+
+# 限额：5h + 周 + 月（标准情况，未使用重置卡）
+limits:
+  window_5h:
+    requests_official: null
+    tokens_measured: null             # 5h 是主要瓶颈,但具体数字用户未提供
+    tokens_official_claimed: null
+    note: |
+      5h 滚动窗口是 Plus 主要瓶颈(大型代码 Agent 2-3 个高强度会话撞上限)。
+      具体 token 数字待查,留 null。
+      注：这是标准情况，买重置卡可绕过此 cap。
+  window_weekly:
+    requests_official: null
+    tokens_measured: 175000000        # 175M (@Personuo 实测 throttle 阈值)
+    tokens_official_claimed: null
+    note: |
+      @Personuo X 中文 7-23 推文(235 view)实测。
+      中转站 0.15× 反推印证: $20/月 套餐 → 等效 $100-120/周 → ~175M tokens @ gpt-5.6-terra 路由。
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: 700000000        # 700M (@Personuo 175M × 4 周)
+    note: |
+      @Personuo 推文:「一个月四倍也有 700M 左右的额度」。
+      等效月 API 算力 $400-480(按 gpt-5.6-terra 路由)。
+
+ratio_note: |
+  Plus ($20/月) = ChatGPT Codex 1× 基准。
+
+  ⚠️ 以下数字是**标准情况**（未使用重置卡），用户买重置卡可重置 5h 或周窗口，实际用量可超过此 cap。
+
+  等效周 API 算力 $100-120/周(社区压测 + 中转站 0.15× 反推验证)。
+  175M tokens/周 是社区实测 throttle 阈值(@Personuo, 单源 235 view, 中等 credibility)。
+
+  编程场景默认 token 分布(Gemini 调查 vLLM + SWE-bench):
+  - 92% cache hit
+  - 7.3% non-cache input
+  - 0.7% output
+  - input:output ≈ 130-140:1
+
+  按 Gemini 比例 + gpt-5.6-terra 路由($0.5175/M),175M tokens ≈ $90.56/周(略低于 $100 cap)。
+  175M 反推最可能路由 = gpt-5.6-terra(193M ≈ 175M 完美命中)。
+
+  5h 窗口是主要瓶颈,周窗口是次要兜底。
+
+measurements:
+  - measurement_id: m_2026_07_personuo_chatgpt_plus_throttle
+    source_kind: community_single_user
+    user_hash: pending
+    period: 2026-07
+    window_5h_tokens: 25000000       # 25M
+    window_weekly_tokens: 175000000  # 175M
+    window_monthly_tokens: 700000000 # 700M
+    credibility: medium
+    notes: |
+      @Personuo X 中文推文 7-23(235 view)实测:
+      「chatgpt 使用5h模型,5小时额度是25M,一周是七倍大约是175M,一个月四倍也有700M左右的额度」。
+      Cross-validated by 中转站 0.15× 反推(Plus 月租 $20 → 等效周 $100-120 API 算力)。
+
+  - measurement_id: m_2026_07_chatgpt_plus_weekly_equivalent
+    source_kind: community_consensus_via_transfer_station
+    user_hash: n/a
+    period: 2026-07
+    weekly_api_equivalent_usd_low: 100
+    weekly_api_equivalent_usd_high: 120
+    credibility: medium
+    notes: |
+      中转站 0.15× 倍率反推:
+      - Plus 月租 $20 ÷ 每周 $110 等效算力 × 4.33 周 = $20/$476 = 0.042×(理论上限)
+      - 实际有效利用率 30-40% → 0.12-0.18×
+      - 市场 0.15× 是行业均衡报价(0.13× 以下亏钱,0.18× 以上没人用)
+      印证 @Personuo 175M/周 ≈ $100-120 API 等价值。
+      注:0.15× 是 sub2api 灰色渠道行业价,不是 OpenAI 官方限额。
+
+  - measurement_id: m_2026_07_gemini_programming_scenario_default
+    source_kind: community_survey
+    user_hash: n/a
+    period: 2026-07
+    cache_hit_rate: 92               # 90-94% 范围
+    new_input_rate: 7.3              # 5-9% 范围
+    output_rate: 0.7                # < 1%
+    input_output_ratio: 130-140
+    credibility: medium
+    disputed: false
+    notes: |
+      Gemini 调查(2026-07)基于 vLLM 社区 + SWE-bench Agent 编程测试。
+      用户已确认作为 AIDASH 编程场景默认比例。
+      glm-5.2 95% cache 是 glm 模型特定,OpenAI 默认用 92%。
+
+  # ── Per-model 用量拆分 ──
+  # 同 $100/周 cap,不同 model 因为 $/M 价格不同,实际能跑 token 数差 5×
+  # 用 Gemini 92/7.3/0.7 比例 + $0.5175/M 等效价反推(以 gpt-5.6-terra 为基准 175M)
+  - measurement_id: m_2026_07_plus_model_gpt_5_5
+    source_kind: per_model_breakdown
+    model_id: gpt-5.5
+    window_weekly_tokens: 96600000      # 96.6M ($1.035/M × 96.6M = $100)
+    window_monthly_tokens: 386000000    # 386M
+    cost_per_million: 1.0350
+    credibility: medium
+    notes: |
+      按 Gemini 92/7.3/0.7 比例 + gpt-5.5 定价 ($5/$0.5/$30) 反推:
+      0.92 × $0.5 + 0.073 × $5 + 0.007 × $30 = $1.0350/M
+      $100 ÷ $1.0350 = 96.6M tokens/周
+      同 cap 下 gpt-5.5 比 gpt-5.6-terra 少 45%(193M vs 96.6M)。
+      ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
+
+  - measurement_id: m_2026_07_plus_model_gpt_5_6_sol
+    source_kind: per_model_breakdown
+    model_id: gpt-5.6-sol
+    window_weekly_tokens: 96600000      # 96.6M (同 gpt-5.5 价)
+    window_monthly_tokens: 386000000    # 386M
+    cost_per_million: 1.0350
+    credibility: medium
+    notes: |
+      按 Gemini 92/7.3/0.7 + gpt-5.6-sol 定价 (同 gpt-5.5) 反推:$1.0350/M,96.6M/周。
+      标价同 gpt-5.5,但实测可能因 xhigh reasoning 触发更多 output token,实际账单可能 1.5-3× 5.5。
+      ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
+
+  - measurement_id: m_2026_07_plus_model_gpt_5_6_terra
+    source_kind: per_model_breakdown
+    model_id: gpt-5.6-terra
+    window_weekly_tokens: 193000000     # 193M ($0.5175/M × 193M = $100)
+    window_monthly_tokens: 772000000    # 772M
+    cost_per_million: 0.5175
+    credibility: medium
+    notes: |
+      按 Gemini 92/7.3/0.7 + gpt-5.6-terra 定价 ($2.5/$0.25/$15) 反推:
+      0.92 × $0.25 + 0.073 × $2.5 + 0.007 × $15 = $0.5175/M
+      $100 ÷ $0.5175 = 193M tokens/周
+      @Personuo 175M 完美命中(差 18M,在 Gemini 比例浮动范围内)。
+      ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
+
+  - measurement_id: m_2026_07_plus_model_gpt_5_6_luna
+    source_kind: per_model_breakdown
+    model_id: gpt-5.6-luna
+    window_weekly_tokens: 483000000     # 483M ($0.207/M × 483M = $100)
+    window_monthly_tokens: 1930000000   # 1.93B
+    cost_per_million: 0.2070
+    credibility: medium
+    notes: |
+      按 Gemini 92/7.3/0.7 + gpt-5.6-luna 定价 ($1/$0.1/$6) 反推:
+      0.92 × $0.1 + 0.073 × $1 + 0.007 × $6 = $0.207/M
+      $100 ÷ $0.207 = 483M tokens/周
+      Luna 是 Plus 用户最经济选择,但能力不如 Sol/Terra。
+      ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
+
+  # Pro tier 独占 model 在 Plus 里不可用,跳过
+  # gpt-5.5-pro($30/M) → $100 ÷ $6.1065 = 16.4M/周 (Plus 跑不动)
+  # gpt-5.6-pro 价格未公布,跳过

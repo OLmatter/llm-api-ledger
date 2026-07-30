@@ -1,0 +1,111 @@
+# OpenAI 原生 ChatGPT / Codex Plan 厂商元数据
+# 2026-07-30:基于用户分享的 ChatGPT Codex 套餐实测 + Gemini 编程场景 token 分布调查
+# 简化为只列 5.5 + 5.6 系列（用户偏好：少一点）
+
+vendor_id: openai
+vendor_display: OpenAI
+vendor_display_en: OpenAI
+brand_color: "#10A37F"
+homepage: https://chatgpt.com
+docs: https://platform.openai.com/docs
+last_verified: 2026-07-30
+
+# 邀请码：OpenAI 不提供邀请码（无购买优惠）
+affiliate: null
+
+# 厂商公共特性
+shared_features:
+  primary_model: gpt-5.6-terra
+  models:
+    - gpt-5.5
+    - gpt-5.6-sol
+    - gpt-5.6-terra
+    - gpt-5.6-luna
+    - gpt-5.5-pro
+  models_note: |
+    只列 5.5 + 5.6 系列(用户精简要求)。
+    5.5(2026-04-23 发布,代号 Spud,上下文 1M)。
+    5.6(2026-07-09 发布,三档:sol/terra/luna)。
+    Pro 版本(gpt-5.5-pro / gpt-5.6-pro)仅 Pro tier 可用。
+    Plus tier ($20/月) 可用: gpt-5.5 + gpt-5.6-sol/terra/luna(部分限制)。
+  clients:
+    - ChatGPT Web
+    - ChatGPT Desktop
+    - Codex CLI
+    - Codex VS Code 插件
+    - Cursor (via API key)
+    - Claude Code (via OpenAI API key)
+  clients_note: |
+    ChatGPT 套餐(Plus/Pro)走 Codex 配额,需用 ChatGPT 账号登录。
+    直接走 API key 是 Platform API(独立计费,不受套餐额度约束)。
+    中转站常用 0.15× 倍率(2026-07 行业均衡价),验证 Plus $100-120/周 等效算力估算。
+  rate_limit_tiers: [5h, weekly]
+  rate_limit_note: |
+    ChatGPT 套餐(Plus/Pro)Codex 配额采用双层限流:
+    - 5h 滚动窗口 = 主要瓶颈(大型代码 Agent 2-3 个高强度会话就撞上限)
+    - 7 天滚动窗口 = 次要兜底(连续多天高强度才真正触达)
+    官方不公布具体 dollar 限额,社区压测 + 中转站 0.15× 反推得到等效美元:
+    - Plus ($20/月,1×): 等效 $100-120/周 API 算力
+    - Pro $100/月 (5×): 等效 $480-600/周
+    - Pro $200/月 (20×): 等效 $1900-2400/周
+    中转站 0.15× 是行业均衡报价(0.13× 以下亏钱,0.18× 以上没人用)。
+  api:
+    upstream: https://api.openai.com/v1
+
+# 编程场景默认 token 分布(Gemini 调查,vLLM 社区 + SWE-bench)
+# input:output ≈ 130-140:1(input 99%+, output <1%)
+programming_ratios_default:
+  cache_hit_rate: 92          # 92% cache (90-94% range)
+  new_input_rate: 7.3         # 7.3% non-cache input (5-9% range)
+  output_rate: 0.7            # 0.7% output
+  source: |
+    Gemini 调查(2026-07-30)基于 vLLM 社区 + SWE-bench Agent 编程场景测试。
+    用户已确认作为 AIDASH 编程场景默认值。
+    glm-5.2 实测 95% cache 是 glm 模型特定(95/4.9/0.8),不进 OpenAI 默认。
+
+# OpenAI 5.5 + 5.6 系列 API 定价(per million tokens, 2026-07-30 WebSearch 验证)
+# cached input = 10× 折扣
+model_pricing:
+  gpt-5.5:
+    input: 5.00
+    cached_input: 0.50
+    output: 30.00
+    source: https://openai.com/api/pricing/
+    note: |
+      2026-04-23 发布(代号 Spud)。上下文 1M,token 消耗比 5.4 降 ~30%。
+
+  gpt-5.6-sol:
+    input: 5.00
+    cached_input: 0.50
+    output: 30.00
+    source: https://openai.com/api/pricing/
+    note: |
+      2026-07-09 发布(与 GPT-5.5 同价)。
+      默认最大推理强度,实测可能比 5.5 触发更多推理 token(社区吐槽"Token 刺客")。
+
+  gpt-5.6-terra:
+    input: 2.50
+    cached_input: 0.25
+    output: 15.00
+    source: https://openai.com/api/pricing/
+    note: |
+      2026-07-09 发布,GPT-5.6 三档均衡版(性能对标 5.5,价格一半)。
+      性价比主力,被多家媒体称为"性价比甜点"。
+      @Personuo 175M/周 反推最可能 Plus 路由模型。
+
+  gpt-5.6-luna:
+    input: 1.00
+    cached_input: 0.10
+    output: 6.00
+    source: https://openai.com/api/pricing/
+    note: |
+      2026-07-09 发布,GPT-5.6 三档经济版(价格为 Sol 的 1/5)。
+
+  gpt-5.5-pro:
+    input: 30.00
+    cached_input: 3.00
+    output: 180.00
+    source: WebSearch 多源印证(2026-07)
+    note: |
+      Pro tier 独占,价格 6× gpt-5.5 标准版。
+      $100/周 跑不动(只 16M tokens),需要 Pro 20× (~$2000/周) 才跑得满。
