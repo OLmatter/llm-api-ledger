@@ -1,13 +1,12 @@
 # Kimi Code Plan Moderato（中档 = 4×）
-# 2026-07 实测更新：基于 Allegretto 95% 用量反推 326M，按 ÷5 = 65.2M。
-# 早期基于 690M 反推 138M 已被新数据替代。
+# 2026-07-30 三层限额 (基于 Allegretto 反推: 7天 9.8亿 / 月 10亿 × 4/20)
 
 plan_id: kimi-code-moderato
 vendor: kimi
 plan_name: Code Plan Moderato
 plan_tier: moderato
 status: active
-last_verified: 2026-07-21
+last_verified: 2026-07-30
 
 pricing:
   currency: CNY
@@ -23,19 +22,20 @@ limits:
     tokens_measured: null
   window_weekly:
     requests_official: null
-    # ⚠ Kimi 官方只标倍数（1×/4×/20×/60×），从不公开绝对 token 数。
-    # 此前 yml 曾写 tokens_official_claimed: 200000000（200M），无任何官方依据，已删除（铁律 9）。
     tokens_official_claimed: null
-    tokens_measured: null                 # 实测按 Allegretto 326M/5 反推 = 65.2M
+    tokens_measured: null                  # 用户未要求改 weekly,留 null
   window_monthly:
     requests_official: null
-    tokens_measured: null
-    is_unlimited: true
+    tokens_official_claimed: null
+    tokens_measured: 200000000             # 200M(Allegretto 10亿 × 4/20 = 2B)
+    is_unlimited: false
 
 ratio_note: |
-  Moderato = Andante × 4 = Allegretto / 5。
-  实测周按 Allegretto 两点 median 508M × 4/20 = 101.6M。
-  ⚠ Kimi 官方只标倍数（1×/4×/20×/60×），不公开绝对 token 数，无法跟"官方标称"对比。
+  Moderato (4×) 三层限额(基于 Allegretto 反推):
+  - 5h cap: 未测
+  - 7 天 cap: 196M
+  - 月 cap: 200M
+  倍率:Moderato=4× = Allegretto / 5
 
 measurements:
   - measurement_id: m_2026_07_allegretto_95pct_user_report

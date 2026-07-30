@@ -1,13 +1,12 @@
 # Kimi Code Plan Andante（入门档 = 1× 基准）
-# 2026-07 实测更新：基于 Allegretto 周 95% 用量反推 326M,按 ÷20 = 16.3M。
-# 早期基于 690M 反推 34.5M 已被新数据替代。
+# 2026-07-30 三层限额 (基于 Allegretto 反推: 7天 9.8亿 / 月 10亿 × 1/20)
 
 plan_id: kimi-code-andante
 vendor: kimi
 plan_name: Code Plan Andante
 plan_tier: andante
 status: active
-last_verified: 2026-07-21
+last_verified: 2026-07-30
 
 pricing:
   currency: CNY
@@ -17,29 +16,27 @@ pricing:
   yearly_note: 年付 468 元，折合 39 元/月（预付优惠）
   auto_renew_default: false
 
-# 限额：5h + 周（Kimi 无月度封顶）
+# 限额：5h + 周 + 月
 limits:
   window_5h:
-    requests_official: null       # 官方不公布
-    tokens_measured: null         # 社区浮动大不采信
+    requests_official: null
+    tokens_measured: null                  # 5h cap 存在但未测
   window_weekly:
     requests_official: null
-    # ⚠ Kimi 官方只标倍数（1×/4×/20×/60×），从不公开绝对 token 数。
-    # 此前 yml 曾写 tokens_official_claimed: 50000000（50M），无任何官方依据，已删除（铁律 9）。
     tokens_official_claimed: null
-    tokens_measured: null                 # 实测按 Allegretto 326M/20 反推 = 16.3M
+    tokens_measured: null                  # 用户未要求改 weekly,留 null
   window_monthly:
     requests_official: null
-    tokens_measured: null
-    is_unlimited: true             # Kimi 无月度封顶
+    tokens_official_claimed: null
+    tokens_measured: 50000000              # 50M(Allegretto 10亿 / 20 反推)
+    is_unlimited: false
 
 ratio_note: |
-  Kimi 无固定换算公式（不像火山/智谱/MiniMax）。
-  - 5h：官方不公布，社区浮动 300-1200 次（Andante），不采信
-  - 周：官方只标倍数不公开绝对 token 数；实测按 Allegretto 两点 median 508M ÷ 20 = 25.4M
-  - 月：无（按周循环刷新）
-  倍率（Andante=1）：Moderato=4×，Allegretto=20×，Allegro=60×
-  ⚠ 早期 yml 曾写「官方标称 50M token」，无任何官方依据，已删除。
+  Andante (1×) 三层限额(基于 Allegretto 9.8亿/10亿 × 1/20 反推):
+  - 5h cap: 未测
+  - 7 天 cap: 49M
+  - 月 cap: 50M
+  倍率:Andante=1×,Moderato=4×,Allegretto=20×,Allegro=60×
 
 measurements:
   - measurement_id: m_2026_07_allegretto_95pct_user_report

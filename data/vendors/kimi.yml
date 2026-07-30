@@ -1,5 +1,7 @@
 # Kimi（月之暗面 Moonshot）原生 Code Plan 厂商元数据
 # ⚠️ 区分：火山方舟内调用 Kimi ≠ Kimi 原生套餐，本档是原生官方线路
+# 2026-07-30 重大更新:基于 @Golden白 7-23 推文 + Allegretto 后台 3 段用量比例,确认 Kimi 有 5h/周/月 三层限额
+# Allegretto 7天 9.8亿 + 月 10亿;Allegro 7天 29.4亿 + 月 30亿(@Nero 1468 view 验证)
 
 vendor_id: kimi
 vendor_display: Kimi
@@ -7,7 +9,7 @@ vendor_display_en: Moonshot
 brand_color: "#000000"
 homepage: https://kimi.moonshot.cn/membership/code
 docs: https://platform.moonshot.cn
-last_verified: 2026-07-21
+last_verified: 2026-07-30
 
 # 邀请码：Kimi 不提供邀请码（无购买优惠）
 affiliate: null
@@ -30,14 +32,16 @@ shared_features:
   clients_note: |
     必须使用 Code 订阅专属 Key；普通按量充值 API Key 不消耗套餐额度。
     原生 Kimi Code 对第三方编辑器限制比火山/智谱严格，部分客户端容易触发风控。
-  rate_limit_tiers: [5h, weekly]   # 注意：无官方月度封顶
+  rate_limit_tiers: [5h, weekly, monthly]   # 2026-07-30 确认 Kimi 有 3 层限额(Allegretto 后台"按月刷新" + 3 段用量百分比)
   rate_limit_note: |
-    Kimi 原生规则和火山/GLM/MiniMax 完全不一样：
-    - 无官方公开固定「请求次数限额」，只对外描述为 Token 额度制
-    - 无公开 5h/周精确数字，不存在固定 `月=n周=n×5h` 换算公式
-    - 刷新周期：按【每周】重置额度（不是自然月）
-    - 剩余 Token 不清零，结转至下周上限
-    - 无官方独立月度硬封顶；长期上限 = 每周额度持续循环使用
+    Kimi 原生规则(2026-07-30 修正):
+    - 有 3 层限额:5h / 7 天 / 月 (Allegretto 后台"权益额度将按月刷新" + 3 段用量百分比印证)
+    - 5h cap: 存在但 cap 数字未测(@COTTIWWWW 没测 5h)
+    - 7 天 cap: Allegretto 9.8亿(@Golden白 7-23 用完实测),Andante 49M / Moderato 196M / Allegretto 980M / Allegro 2.94B
+    - 月 cap: Allegretto 10亿(@Golden白 7-23 明说),Andante 50M / Moderato 200M / Allegretto 1B / Allegro 3B
+    - Kimi 官方不公开绝对 token 数(只标 1×/4×/20×/60× 倍数)
+    - 刷新周期:5h 子限额 5h 重置,7 天限额 7 天重置,月限额按月重置
+    - ⚠ 之前 yml 写"按每周重置额度""无官方独立月度硬封顶"是错的,基于错误 community 早期数据(326M/690M/508M)
   api:
     upstream: https://api.moonshot.cn/v1
 
