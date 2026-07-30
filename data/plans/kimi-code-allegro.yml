@@ -23,7 +23,7 @@ limits:
   window_weekly:
     requests_official: null
     tokens_official_claimed: null
-    tokens_measured: null                  # 用户未要求改 weekly,留 null
+    tokens_measured: 2940000000            # 29.4亿(Allegretto 9.8亿 × 3,@Golden白 + @Nero 双向验证)
   window_monthly:
     requests_official: null
     tokens_official_claimed: null
@@ -36,5 +36,6 @@ ratio_note: |
   - 7 天 cap: 29.4亿(Allegretto 9.8亿 × 3)
   - 月 cap: 30亿(@Golden白 推文"699 套餐 30 亿" + @Nero 推文"699 大概 30 亿" 双向验证,1468 view)
   倍率:Allegro=60× = Allegretto × 3
+  数据状态:7 天 + 月 cap 都有双源实测,前端展示;5h 未实测展示 —
 
 measurements: []  # 反推不算数(铁律:用户没给 = null),留空数组
