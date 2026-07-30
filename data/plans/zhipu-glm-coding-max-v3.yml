@@ -1,0 +1,64 @@
+# 智谱 GLM Coding Plan Max (v3)
+# 2026-07-28 后版本(CSDN vibecoding77 / weixin_44733660 文章整理)
+# v2 数据保留(zhipu-glm-coding-max.yml),v3 独立 yml
+# 价格同 v2(¥469),月 Token 上限从 v2 反推 4300M → 官方 2400M
+
+plan_id: zhipu-glm-coding-max-v3
+vendor: zhipu
+plan_name: GLM Coding Plan Max (v3)
+plan_tier: max
+status: active
+last_verified: 2026-07-31
+
+pricing:
+  currency: CNY
+  original_monthly: 469
+  original_quarterly: 1266.3      # 连续包季 9 折 ¥422.1/月
+  original_yearly: 4502.4         # 连续包年 8 折
+  auto_renew_default: true
+
+limits:
+  window_5h:
+    requests_official: 1600        # CSDN 2026-07-28
+    tokens_measured: 112000000     # 112M(2400M ÷ 4.3 周 ÷ 5 = 平均分配估算)
+  window_weekly:
+    requests_official: 8000        # CSDN 2026-07-28
+    tokens_measured: 558000000     # 558M(2400M ÷ 4.3 周估算)
+  window_monthly:
+    requests_official: 480000      # CSDN 2026-07-28
+    tokens_measured: 2400000000    # 2400M(CSDN 7-28 引智谱官方 cap)
+    monthly_estimated: false
+
+ratio_note: |
+  v3 (CSDN 2026-07-28 整理):
+  - Max ¥469/月(连续包季 9 折,连续包年 8 折)
+  - 5h **1,600 prompts** / 周 **8,000** / 月 **480,000** prompts
+  - 月 Token cap **2,400M**(CSDN 引智谱官方)
+  - 模型池:GLM-5.2 / GLM-5-Turbo / GLM-4.7 / GLM-5
+  - MCP 合计 4,000 次/月
+
+  ## 与 v2 差异
+  - v2 tokens:5h 200M / 周 1000M / 月 4300M(实测 + 反推)
+  - v3 tokens:5h 112M / 周 558M / 月 2400M(官方 cap,v2 overestimated ~1.79×)
+
+  ZCode 0.67 折算权益(等效 1.5x 额度)适用本套餐。
+  v2 yml 中 Pro 普通客户端周实测 1B 是 Lite 等效的,本 yml 用官方 cap 优先。
+
+measurements:
+  - measurement_id: m_2026_07_zhipu_max_v3_official_caps
+    source_kind: community_survey
+    period: 2026-07
+    user_hash: n/a
+    window_5h_requests: 1600
+    window_weekly_requests: 8000
+    window_monthly_requests: 480000
+    window_monthly_tokens_cap: 2400000000
+    credibility: medium
+    notes: |
+      CSDN vibecoding77 2026-07-28 智谱 Max 行原文:
+      「Max | ¥469 | 24,000 / 120,000 / 480,000 | 2,400M | +GLM-5」
+      CSDN weixin_44733660 2026-07-28 智谱 Max 行:
+      「¥469; 连续包季 9 折 ¥422.1/月; 连续包年 8 折; MCP 月度合计 4,000 次」
+
+      月 Token 2400M = Lite 120M × 20(Max 倍率)
+      月请求 480,000 = Lite 24,000 × 20

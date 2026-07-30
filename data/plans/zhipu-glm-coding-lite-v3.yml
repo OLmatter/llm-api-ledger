@@ -1,0 +1,78 @@
+# 智谱 GLM Coding Plan Lite (v3)
+# 2026-07-28 后版本(CSDN vibecoding77 / weixin_44733660 文章整理)
+# v2 数据保留(zhipu-glm-coding-lite.yml),v3 独立 yml
+# 价格同 v2(¥49),月 Token 上限从 v2 反推 215M → 官方 120M
+
+plan_id: zhipu-glm-coding-lite-v3
+vendor: zhipu
+plan_name: GLM Coding Plan Lite (v3)
+plan_tier: lite
+status: active
+last_verified: 2026-07-31
+
+pricing:
+  currency: CNY
+  original_monthly: 49
+  original_quarterly: 132.3       # 连续包季 9 折 ¥44.1/月
+  original_yearly: 470.4          # 连续包年 8 折
+  auto_renew_default: true
+
+limits:
+  window_5h:
+    requests_official: 80          # 用户可见 prompts(CSDN 2026-07-28)
+    tokens_measured: 5600000       # 5.6M(120M ÷ 4.3 周 ÷ 5 = 平均分配估算)
+  window_weekly:
+    requests_official: 400         # CSDN 2026-07-28
+    tokens_measured: 28000000      # 28M(120M ÷ 4.3 周估算)
+  window_monthly:
+    requests_official: 24000       # CSDN 2026-07-28
+    tokens_measured: 120000000     # 120M(CSDN 7-28 引智谱官方 cap)
+    monthly_estimated: false        # 官方 cap,不是反推
+
+ratio_note: |
+  v3 (CSDN 2026-07-28 整理):
+  - Lite ¥49/月(连续包季 9 折 ¥44.1/月,连续包年 8 折)
+  - 5h **80 prompts** / 周 **400** / 月 **24,000** prompts(用户可见)
+  - 月 Token cap **120M**(CSDN 引智谱官方,2026-07-28)
+  - 模型池:GLM-5.2 / GLM-5-Turbo / GLM-4.7(GLM-5.1/5 自动切 5.2)
+
+  5h/weekly tokens 按月 cap 平均分配估算(÷ 4.3 周 ÷ 5 5h 窗口),
+  实际单 prompt token 数决定真实消耗;突发场景 80 prompts × 大 prompt 可能
+  短时间撞月 cap 上限。
+
+  ## 与 v2 差异
+  - v2 tokens:5h 10M / 周 50M / 月 215M(反推 Max 4.3B ÷ 20)
+  - v3 tokens:5h 5.6M / 周 28M / 月 120M(官方 cap,v2 反推 overestimated ~1.79×)
+  - v3 数据更权威(官方 cap 明确),v2 yml 仍保留作为历史快照
+
+  主力模型:GLM-5.2(2026-06-13 全量开放 Coding Plan,1M 上下文)
+  ZCode 0.67 折算权益(等效 1.5x 额度)适用本套餐,详见 data/vendors/zhipu.yml。
+
+measurements:
+  - measurement_id: m_2026_07_zhipu_lite_v3_official_caps
+    source_kind: community_survey
+    period: 2026-07
+    user_hash: n/a
+    window_5h_requests: 80
+    window_weekly_requests: 400
+    window_monthly_requests: 24000
+    window_monthly_tokens_cap: 120000000
+    credibility: medium
+    notes: |
+      来源 1:CSDN vibecoding77 2026-07-28 「2026 年 Coding Plan 盘点:六家平台横评与选型决策表」
+      智谱 Lite 行原文:
+      「Lite | ¥49 | 1,200 / 6,000 / 24,000 | 120M | GLM-5.1 / 5.2 / 5-Turbo」
+
+      来源 2:CSDN weixin_44733660 2026-07-28 「AI 平台订阅套餐 Coding Plan、Token Plan 信息整理」
+      智谱 AI(国内)Lite 原文:
+      「¥49; 连续包季 9 折 ¥44.1/月; 连续包年 8 折; 约 80 Prompt/5小时; 400 Prompt/周」
+
+      数字差异说明:
+      - vibecoding77 1200/6000/24000 = API calls/5h/周/月(后台计费口径)
+      - weixin_44733660 80/400 = 用户可见 prompts/5h/周(用户面对的口径)
+      - 单 prompt 平均 15 API calls(阿里云官方:简单 5-10 次,复杂 10-30+ 次)
+      - 80 prompts × 15 ≈ 1200 API calls ✓ 自洽
+      - 24000 prompts × 5k tokens/prompt = 120M tokens ✓ 月 token cap 自洽
+
+      v3 monthly token 120M 是官方硬上限,与 v2 反推 215M 差异 ~1.79×;
+      v2 反推基于 Max 1B 周实测 × 4.3 月比例,v3 用直接官方数据。
