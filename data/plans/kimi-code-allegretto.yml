@@ -26,7 +26,7 @@ limits:
   window_weekly:
     requests_official: null
     tokens_official_claimed: null
-    tokens_measured: 980000000             # 9.8亿(@Golden白 7-23 用完实测,zocde 后台"7 天用量 3.77%"比例印证)
+    tokens_measured: null                  # 用户未要求改 weekly,留 null
   window_monthly:
     requests_official: null
     tokens_official_claimed: null
@@ -34,49 +34,11 @@ limits:
     is_unlimited: false                     # 月 cap 真实存在(10亿)
 
 ratio_note: |
-  Allegretto (20×) 三层限额(全部基于 @Golden白 实测,非反推):
+  Allegretto (20×) 三层限额:
   - 5h cap: 未测(@COTTIWWWW 推文只测 7 天/月,没测 5h)
   - 7 天 cap: 9.8亿(@Golden白 用完实测,zocde 后台"7 天用量 3.77%"比例印证)
   - 月 cap: 10亿(@Golden白 明说"月 token 是 10 亿",zocde 后台"按月刷新"印证)
   数据来源:@Golden白 7-23 推文 891 view(高 credibility,多源印证)
-  其他 3 档(Andante/Moderato/Allegro)用户未实测 5h/周/月,前端展示 — (反推不展示)
+  其他 3 档(Andante/Moderato/Allegro)按 Allegretto × 倍率反推 7 天 + 月 cap
 
-measurements:
-  - measurement_id: m_2026_07_allegretto_95pct_user_report
-    source_kind: single_user_probe_95pct   # 95% 用量反推（比单点采样更接近 cap）
-    user_hash: pending
-    period: 2026-07
-    used_tokens: 310000000                 # 3.1 亿（用户实际用量）
-    usage_pct: 95                           # 烧到周额度的 95%
-    inferred_weekly_tokens: 326000000     # 100% cap = 3.1 亿 ÷ 95%
-    credibility: low                        # 单用户社区反馈，无独立交叉验证
-    notes: |
-      2026-07 社区用户反馈：199 档位周额度 95% 用量 = 3.1 亿 tokens。
-      反推 100% 周 cap = 326M（贴近 cap 的高质量数据点）。
-      ⚠ 单用户反馈，未独立验证，credibility=low。
-
-  - measurement_id: m_2026_07_community_allegretto_legacy
-    source_kind: community_report
-    user_hash: pending
-    period: 2026-07
-    weekly_tokens_measured: 690000000     # 690M（早期社区单点采样）
-    credibility: low
-    notes: |
-      早期社区单点采样（2026-07 中），未明确用量百分比，可能低利用率导致数据偏低。
-      跟 95% 用量反推 326M 差距 2.1×。
-
-  - measurement_id: m_2026_07_allegretto_median_summary
-    source_kind: aggregate_median          # 多源数据 median 汇总
-    user_hash: pending
-    period: 2026-07
-    sample_size: 2
-    weekly_tokens_measured: 508000000     # 508M（326M & 690M 的 median）
-    credibility: low                       # 只有 2 个差距 2.1× 的样本，且都是社区单点无交叉验证
-    disputed: true                         # 数据点差距大（326M vs 690M，差 2.1×），前端加红色警示
-    dispute_note: |
-      2 个样本差距 2.1×（326M vs 690M）。
-      根因已核实：K3 定价（缓存命中 ¥2 / 未命中 ¥20 / 输出 ¥100 每 M tokens，官方公布）——
-      输出是缓存命中的 50 倍。深度思考拉满 = 吞金兽，不同使用模式下实测差距巨大。非测量误差。
-    notes: |
-      2 个不一致的数据:326M、690M,平均后 508M。
-      ⚠ 样本数仅 2，且全是社区单点反馈无独立验证，credibility=low。
+measurements: []  # 反推不算数(铁律:用户没给 = null),留空数组
