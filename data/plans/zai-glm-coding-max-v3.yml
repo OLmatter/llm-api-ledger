@@ -10,6 +10,10 @@ plan_tier: max
 status: active
 last_verified: 2026-07-31
 
+# v3 tier ratio: Lite 1 / Pro 6 / Max 14 (vs v2 1/5/20)
+# z.ai = 智谱海外版,同套餐同比例
+tier_multiplier: 14
+
 # SOP 铁律 18：v3 暂无论测数据，禁止 build 从 sibling 反推实测
 tokens_inference_disabled: true
 

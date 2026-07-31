@@ -292,7 +292,7 @@ const plans = planFiles.map(f => {
     // 同厂商不同档位的用量倍率（基于官方产品定义，1 = 最低档）
     // 例：kimi andante=1, moderato=4, allegretto=20, allegro=60
     // 前端用作「×N」标签显示，让用户一眼看出档位差距
-    tier_multiplier: (() => {
+    tier_multiplier: p.tier_multiplier ?? (() => {
       const tr = TIER_RATIOS[p.vendor]
       const m = tr?.[p.plan_tier]
       // 整数显示 4，小数显示 11.8（保留 1 位）
