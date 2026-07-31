@@ -15,9 +15,6 @@ hero:
     - theme: alt
       text: TG 群交流
       link: https://t.me/+s1flX6cpUZ1kM2M1
-    - theme: alt
-      text: ⭐ Star on GitHub
-      link: https://github.com/OLmatter/llm-api-ledger
 
 # 显眼显示 GitHub URL（截图分享时能搜到 repo 名字, 不只是显示名）
 # 不用 link 形式, 用纯文字 + monospace 字体让 URL 本身可读
