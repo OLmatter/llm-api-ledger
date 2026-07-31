@@ -26,6 +26,7 @@ export default defineConfig({
       { text: '工具', link: '/probe' },
       { text: '关于', link: '/about' },
       { text: '💬 TG 群', link: 'https://t.me/+s1flX6cpUZ1kM2M1' },
+      { text: '⭐ GitHub', link: 'https://github.com/OLmatter/llm-api-ledger' },
     ],
 
     sidebar: {

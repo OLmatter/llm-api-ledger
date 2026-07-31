@@ -16,7 +16,7 @@ hero:
       text: TG 群交流
       link: https://t.me/+s1flX6cpUZ1kM2M1
     - theme: alt
-      text: GitHub
+      text: ⭐ Star on GitHub
       link: https://github.com/OLmatter/llm-api-ledger
 ---
 
