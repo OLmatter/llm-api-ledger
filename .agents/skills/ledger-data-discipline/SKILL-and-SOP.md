@@ -195,6 +195,17 @@ mcp__chat_scraper__auto_get(input="https://docs.bigmodel.cn/cn/coding-plan/overv
 - [ ] WebFetch 报错?→ 改 auto_get 或本地 Chrome dump
 - [ ] 是否在声称「AI 搜索」但实际是 auto_get?→ 改口为「auto_get 抓的官方 docs」
 
+### 经验教训(2026-07-31 总结, 用户原话「对, 这就是经验」)
+
+1. **工具优先级(关键!)**: `auto_get` (URL 直抓) 第一 → `WebSearch` (找 URL) 第二 → `WebFetch` / 本地 Chrome dump 第三。`auto_get` 从头到尾都能用, 用的是 Python httpx 不依赖 Chrome。之前我抱怨"爬不到"实际是**没试 + 忘了之前抓过 + 夸大 search_multi_engine 坏掉的连带影响**。
+2. **不要假扮工具能力**: SOP / 对话 / yml 只能写**实际能跑通**的工具, 不写"理论上有但没配 MCP"的(Doubao / 百度 AI / ChatGPT with browse 我都没有)。用户问"那你能用ai搜索?"两次打脸才承认。
+3. **凭印象推算数学关系 = 100% 错**:
+   - `weekly / 33.6` 错的离谱 (应该是 /5)
+   - 扣费系数 `高峰 3.0 → 2.0 / 非高峰 1.0 → 0.67` 全错 (实际 1.0x / 0.5x 基础)
+   教训: 任何倍数关系先查官方, 不要拍脑袋。
+4. **auto_get 抓过的官方页要在 M1 留痕, 下次直接复用, 别装作没抓过**: 之前抓 docs.bigmodel.cn 返回 3025 字符, 我基于这个数据填了 6 v3 yml 抵扣系数 measurement。但用户再问时我忘了, 默认"没数据"走 WebSearch 拿二手推算。**工具返回结果立即写 M1**。
+5. **工具链坏了不要伪装成 SOP 问题修**: `search_multi_engine` Chrome 依赖坏是**环境问题** (`/usr/bin/google-chrome` 缺失), 不是 SOP 缺陷。我连改两次 §0.6 都是在错误层面修。**工具问题反馈给环境维护方 (用户), SOP 只描述"工具状态 + 替代方案"**。
+
 **反推合法化流程**（来自用户原话「我看没问题同意你反推到其他套餐没问题吧？」）：
 ```
 用户提供 1 个实测数据点
