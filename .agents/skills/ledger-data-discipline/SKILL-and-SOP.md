@@ -133,38 +133,67 @@ description: 改 llm-api-ledger 项目的套餐/厂商数据前必读。触发�
 
 ---
 
-## 0.6 查询技巧选择（事实查询强制走 AI 搜索）
+## 0.6 查询技巧选择（事实查询实际工作流）
 
-**2026-07-31 事故**：用户问「GLM Coding Plan 5h 限额是多少」，我用 WebSearch 关键词搜，拿到一堆 CSDN 二手博客推算数字。然后我**凭印象**推算「5h = weekly/33.6」（错的，应该是 /5）。用户质问「你连查都没去查？？」，贴 Doubao/百度 AI 搜索截图，AI 直接给「周额度 = 5h × 5」官方倍数关系。本地 Chrome dump `docs.bigmodel.cn/cn/coding-plan/overview` 验证：Lite 5h=2000/周=10000（=5×），Pro 5h=12000/周=60000（=5×），Max 5h=28000/周=140000（=5×）。
+**2026-07-31 事故**：用户问「GLM Coding Plan 5h 限额是多少」，我用 WebSearch 关键词搜，拿到一堆 CSDN 二手博客推算数字，凭印象推算「5h = weekly/33.6」全错（应该是 /5）。用户贴 Doubao/百度 AI 搜索截图，AI 直接给「周额度 = 5h × 5」官方倍数关系。
 
-**根因**：事实查询（数字、日期、定义、倍数关系）**应该优先用 AI 搜索**（Doubao/百度 AI/ChatGPT with browse/智谱清言等），不是关键词 WebSearch。WebSearch 返回链接列表，需要自己读 + 二次提炼 + 推算 → 容易出错。
+**根因**：**我没有 Doubao/百度 AI/ChatGPT with browse 的 MCP 工具**。`mcp__chat_scraper__search_multi_engine` 在本机 (2026-07-31 实测) 返回 0 结果,后台 Chrome 依赖 `/usr/bin/google-chrome` 缺失。**实际能用的工具链是:WebSearch 找 URL → mcp__chat_scraper__auto_get 抓内容 → 本地 Chrome dump 验证**。
 
-### 5 种查询工具 + 决策树
+### 4 种实际可用工具 + 决策树
 
-| 工具 | 适用场景 | 限制 |
+| 工具 | 适用场景 | 实测状态 (2026-07-31) |
 |---|---|---|
-| **AI 搜索**(Doubao/百度 AI/ChatGPT with browse) | **事实查询**（数字/日期/定义/倍数关系/官方政策） | 需要联网，部分需要账号 |
-| **WebSearch** | 找特定页/URL（关键词搜索） | 返回链接列表，需自己读；二次提炼的数字 = 二手 |
-| **WebFetch** | 抓特定 URL 内容 | 域名不在白名单时报「Unable to verify」 |
-| **本地 Chrome dump-dom** | 绕过 WebFetch 拦截；SPA 初次渲染抓全 | `chrome.exe --headless --disable-gpu --no-sandbox --dump-dom URL` |
-| **mcp__chat_scraper__auto_get / search** | 多平台并行搜（HN/Reddit/Stack Overflow/DuckDuckGo） | 海外平台为主 |
+| **mcp__chat_scraper__auto_get** | **抓已知 URL** (官方 docs / 套餐页 / SPA) | ✅ 抓 docs.bigmodel.cn 成功, 3025 字符 markdown |
+| **WebSearch** | 找特定页/URL (关键词搜索) | ✅ 基础能用, 返回链接列表 |
+| **WebFetch** | 抓已知 URL 内容 | ⚠ 部分域名报「Unable to verify」 |
+| **本地 Chrome dump-dom** | SPA 初次渲染抓全;数据双重验证 | ✅ Windows `chrome.exe --headless --disable-gpu --no-sandbox --dump-dom URL` |
+| ~~mcp__chat_scraper__search_multi_engine~~ | ~~Baidu/Google/Bing 自然语言搜~~ | ❌ 本机 0 结果, Chrome 依赖缺失 |
+| ~~mcp__chat_scraper__google_search~~ | ~~Google 搜~~ | ❌ `chrome dump failed: No such file or directory: '/usr/bin/google-chrome'` |
 
-### 强制规则（铁律 21，2026-07-31 新增）
+### 实际工作流（事实查询标准流程）
 
-1. **事实查询必须先 AI 搜索**（Doubao/百度 AI/ChatGPT with browse/智谱清言）。任何「XX 是多少」「XX 倍数关系」「XX 什么时候」类问题，先发 AI 搜索 query
-2. **AI 搜索 + 本地 Chrome dump 双重验证**：AI 给的数字要 dump 官方页（`chrome.exe --headless --no-sandbox --dump-dom URL > /tmp/dump.html`）交叉核对，不一致立即报告用户
-3. **WebSearch 二次提炼的数字必须标注「二手」**：「根据 CSDN 文章 X 报」≠「官方公布 X」
-4. **不要凭印象推算数学关系**：用户原话「5h 能反推吗？」→ 应该先查官方 5h 数字，不是 weekly/33.6 瞎算
-5. **WebFetch 受限 → 本地 Chrome dump**：`Unable to verify if domain X is safe to fetch` 时用本地 Chrome，**禁止**反复 WebFetch 同一域
-6. **找不到官方页 → 明确告诉用户「没找到官方页，只找到 X 来源」**，**禁止**编造或二次推算后当成官方数据
+```
+1. 用户给自然语言 query (如「智谱 5h 限额是多少」)
+2. WebSearch(query) 找候选 URL (返回 5-10 个链接)
+3. 找官方域名 (zhipu/zai/openai 等厂商 docs 子域)
+4. mcp__chat_scraper__auto_get(url) 抓内容 (SPA 也能抓)
+5. 关键数字 → 本地 Chrome dump-dom 二次验证 (铁律 21.2)
+6. 提取数据 → 填 yml, source_kind 标 anthropic_official / vendor_scenario_estimate
+```
 
-### 自检（每次事实查询前扫一遍）
+### 调用示例
 
-- [ ] 这是「数字/日期/定义」类问题吗？是 → 优先 AI 搜索
-- [ ] AI 搜索结果是否明确给出官方数据？→ 是 → 用；→ 否 → dump 官方页验证
-- [ ] 是否需要 WebSearch 找 URL？→ 用 WebSearch 找 URL，再 dump
-- [ ] 是否在凭印象推算数学关系？→ 是 → 停下来，先查
-- [ ] WebFetch 报错？→ 改本地 Chrome dump
+```python
+# Step 1: WebSearch 找 URL
+WebSearch(query="智谱 GLM Coding Plan 5小时窗口 积分")
+
+# Step 2: auto_get 抓官方 docs (注意: 智谱 docs 子域是 cn/coding-plan/overview)
+mcp__chat_scraper__auto_get(input="https://docs.bigmodel.cn/cn/coding-plan/overview")
+
+# Step 3: 本地 Chrome dump 二次验证 (铁律 21.2)
+# Bash: "C:/Program Files/Google/Chrome/Application/chrome.exe" \
+#   --headless --disable-gpu --no-sandbox --dump-dom \
+#   "https://docs.bigmodel.cn/cn/coding-plan/overview" > /tmp/dump.html
+```
+
+### 强制规则(铁律 21,2026-07-31 新增)
+
+1. **事实查询 → WebSearch 找 URL → auto_get 抓内容 → Chrome dump 验证**:不要直接信 WebSearch 返回的二手摘要
+2. **auto_get 抓的内容 + 本地 Chrome dump 双重验证**:关键数字必须 dump 官方页核对,**禁止**只信 auto_get 一家
+3. **二手数据必须标注**:`source_kind: vendor_scenario_estimate` 不能伪装成 `anthropic_official`,CSDN/博客园/知乎的推算 ≠ 官方公布
+4. **不要凭印象推算数学关系**:用户原话「5h 能反推吗?」→ 应该先查官方 5h 数字,不是 weekly/33.6 瞎算
+5. **WebFetch 受限 → 本地 Chrome dump 或 auto_get**:`Unable to verify if domain X is safe to fetch` 时换 auto_get,本地 Chrome 兜底
+6. **找不到官方页 → 明确告诉用户「没找到官方页,只找到 X 来源」**,**禁止**编造或二次推算后当成官方数据
+7. **禁止假扮 AI 搜索**:我没有 Doubao/百度 AI/ChatGPT with browse 的 MCP,**禁止**声称「用 AI 搜索查了 X」,老老实实说「auto_get 抓的官方 docs」
+
+### 自检(每次事实查询前扫一遍)
+
+- [ ] 这是「数字/日期/定义」类问题吗?是 → WebSearch 找 URL → auto_get 抓 → dump 验证
+- [ ] auto_get 抓的内容是否明确给出官方数据?→ 是 → 用;→ 否 → 找其他 URL 重抓
+- [ ] 是否需要 WebSearch 找 URL?→ 用 WebSearch 找 URL,再 auto_get
+- [ ] 是否在凭印象推算数学关系?→ 是 → 停下来,先查
+- [ ] WebFetch 报错?→ 改 auto_get 或本地 Chrome dump
+- [ ] 是否在声称「AI 搜索」但实际是 auto_get?→ 改口为「auto_get 抓的官方 docs」
 
 **反推合法化流程**（来自用户原话「我看没问题同意你反推到其他套餐没问题吧？」）：
 ```
@@ -201,15 +230,30 @@ description: 改 llm-api-ledger 项目的套餐/厂商数据前必读。触发�
 **事故**：把 ZCode 1.5x 等同于"首单 9 折"。
 
 **规则**：
-- ZCode 1.5x = 额度加成（boost）：跑相同 tokens 只扣 0.67 额度，等效多跑 1.5×
+- ZCode 1.5x = 额度加成（boost）：跑相同 tokens 只扣更少额度，等效多跑
 - 邀请码 95折 = 价格折扣（discount）：付的钱 ×0.95
 - 两者**独立可叠加**，不能合并成单一字段
 - build 输出时：`tokens.zcode_*` 独立成行，不污染 `tokens.monthly`
 
-**ZCode 计算公式**（智谱官方）：
-- 非高峰期：扣费系数 1.0 → 0.67（=1/1.5）
-- 高峰期 14:00-18:00：扣费系数 3.0 → 2.0
-- 全程非高峰假设下：等效额度 × 1.5
+**智谱 v3 基础扣费规则**（docs.bigmodel.cn/cn/coding-plan/overview, 2026-07-31 抓取）：
+- **高峰期**：周一至周五 14:00-18:00 (UTC+8)，基础积分 **1.0×** 扣费
+- **非高峰期**：基础积分 **0.5×** 扣费（50% 抵扣）
+- **缓存命中**：编程场景平均 **90.9%** 命中
+- **抵扣系数表**（每 10000 tokens 消耗的积分数）：
+  - GLM-5.2: input=6.9 / cached=1.7 / output=24
+  - GLM-5-Turbo: input=5.7 / cached=1.5 / output=21
+  - GLM-4.7: input=4.6 / cached=1.2 / output=16
+- **节省**：比按量调用 GLM-5.2 标准 API 最高省 **92%**（全程非高峰 + 缓存命中）
+
+**官方周 tokens 估算**（GLM-5.2, 90.9% 缓存命中）：
+- Lite: 0.43-0.87 亿/周（全高峰-全非高峰）
+- Pro: 2.63-5.26 亿/周
+- Max: 6.13-12.26 亿/周
+
+**ZCode 1.5× 在上述基础上再除以 1.5**：
+- 高峰：1.0 / 1.5 = 0.67
+- 非高峰：0.5 / 1.5 = 0.33
+- 全程非高峰 + ZCode：等效 3× 基础（= 1 / 0.33）
 
 **适用范围**：仅 `zhipu` 和 `zai` 两家厂商，其他厂商写 ZCode 字段 = bug。
 

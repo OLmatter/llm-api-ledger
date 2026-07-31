@@ -82,6 +82,27 @@ measurements:
       「适合高阶用户中大型 Repo 深度开发」。
       ⚠ claimed only,无 measured。
 
+  # 抵扣系数表（智谱官方 docs, 2026-07-31 auto_get 抓取）
+  - measurement_id: m_2026_07_zhipu_max_v3_credit_coefficients
+    source_kind: anthropic_official
+    period: 2026-07-31
+    credibility: high
+    disputed: false
+    notes: |
+      来源:docs.bigmodel.cn/cn/coding-plan/overview (2026-07-31 auto_get 抓取, 3025 字符)
+      抵扣公式:(输入Token × Input + 缓存命中 × Cached + 输出 × Output) / 10000
+      抵扣系数表(per 10000 tokens):
+      | 模型 | Input | Cached | Output |
+      | --- | --- | --- | --- |
+      | GLM-5.2 | 6.9 | 1.7 | 24 |
+      | GLM-5-Turbo | 5.7 | 1.5 | 21 |
+      | GLM-4.7 | 4.6 | 1.2 | 16 |
+      时段规则:
+      - 高峰:周一-周五 14:00-18:00 (UTC+8) → 基础 1.0x
+      - 非高峰 → 基础 0.5x (50% 抵扣)
+      - 编程场景缓存命中率平均 90.9%
+      - 全程非高峰 + 缓存命中 vs 按量 API 最高省 92%
+
   # 官方「全非高峰期」场景估算(不是实测,只供参考)
   - measurement_id: m_2026_07_zhipu_max_v3_offpeak_weekly_estimate
     source_kind: vendor_scenario_estimate
