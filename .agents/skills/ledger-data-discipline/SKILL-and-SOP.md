@@ -758,6 +758,107 @@ const standard_yearly = pricing.original_yearly || pricing.intro_yearly || prici
 - m1_0076 v3 yml 修复 + 加 measurement
 - memory feedback_independent_vs_derived_data
 
+### 铁律 21：scope 标注（per-model 拆分必须说明数据来源范围，2026-07-31 opencode 教训）
+
+**事故**：opencode Go 公布 per-model 数据时，给出「DeepSeek V4 Flash 每次请求 790 input + 68,000 cached + 280 output」—— 缓存命中 98.4% 看似惊人，但这是 **OpenCode 团队在自家 Go 客户端** 观察到的使用模式（编程场景下 prompt 模板稳定，cache 跨轮复用），**不是 DS V4 Flash API 在所有场景下的通用缓存率**。如果不做 scope 标注，用户看到 98.4% 可能误以为「DS V4 Flash 缓存率极高」从而做出错误购买决策。
+
+**规则**：
+- 当 measurement 数据来源是「特定客户端/场景的观察值」而非「该模型 API 在所有场景下的通用值」时，**必须**填 `scope` 字段
+- 已知值与对应前端展示：
+  - `null` / 不填 — 不显示标签（API 通用值）
+  - `'opencode-go-client'` — 橙色「Go 观测」标签 + tooltip 提示
+  - 其他值 — 在 `scopeLabel`/`scopeTooltip` 字典加映射
+
+**反 mode**（禁止）：
+- ❌ 不填 scope 但实际是客户端观察值（误导用户）
+- ❌ 把 scope 当作「是否可信」标记（那是 `credibility` 字段的职责）
+
+**How to apply**：
+- 加新厂商/新套餐时若数据来自单一客户端公开，**必须**问自己：「这个数字放之该模型 API 全场景都对吗？」
+- 不对 → 必填 scope 字段
+- 对 → 保持 null 或不填
+
+### 铁律 22：官方多维数据必须做自洽性验算（2026-07-31 DS V4 Flash 教训）
+
+**事故**：拿到官方公布的 per-model 请求数 + 每请求 token 组成 + 单价，包含三条独立数据。本来应该用「每请求成本 × 官方请求数 = 官方额度」做反推验证，但前几次都漏做这一步。
+
+**规则**：
+- 拿到以下三组独立官方数据时，**必须**做反推验证：
+  1. 每请求 token 组成（input / cached / output 各自多少）
+  2. 单价（input / cached / output 各自的 $/M）
+  3. 窗口额度（$X / 5h、周、月）
+- 计算：`每请求成本 = (input × input_per_M + cached × cached_per_M + output × output_per_M) / 1e6`
+- 反推：`窗口额度 ÷ 每请求成本 ≈ 官方请求数`
+- 判定：
+  - 误差 < 0.1% → credibility: high（数据完全自洽）
+  - 误差 0.1%-15% → credibility: medium（官方一数据为观察值取整）
+  - 误差 > 15% → **必须**回头查哪一步错了（`dispute_note` 写明）
+
+**反 mode**：
+- ❌ 拿到官方数据就照搬，不做反推验证
+- ❌ 误差大时悄悄调数字凑齐
+- ❌ 把反推值覆盖官方公布值（官方值是「公理」，反推值是「验证」）
+
+**案例**（DS V4 Flash, 验证完美）：
+```
+每请求成本 = (790×$0.14 + 68,000×$0.0028 + 280×$0.28) / 1e6 = $0.0003794
+$12 / $0.0003794 = 31,629 请求 vs 官方 31,650 ✓（误差 0.07%）
+$30 / $0.0003794 = 79,072 请求 vs 官方 79,050 ✓
+$60 / $0.0003794 = 158,145 请求 vs 官方 158,150 ✓
+```
+
+**反例**（GLM-5.2, 验证有缺口但诚实标注）：
+```
+每请求成本 = (700×$1.40 + 52,000×$0.26 + 150×$4.40) / 1e6 = $0.01516
+$60 / $0.01516 = 3,958 请求 vs 官方 4,300（误差 8.6%）
+→ credibility: medium，notes 写明「GLM-5.2 在 Go 走厂商标价无额外折扣，官方请求数为观察值取整」
+```
+
+### 铁律 23：跨渠道售卖需独立交叉验证单价（2026-07-31 opencode Go 教训）
+
+**事故**：第三方平台（opencode Go）转卖多家厂商模型时，**不能直接相信「零加价」声明**。要独立查每个被卖模型的**厂商官方**单价做对账。
+
+**规则**：
+- 任何第三方平台/分销商/聚合器售卖多家厂商模型时，必须**逐模型**去厂商官方 docs 查单价
+- 至少验证 input / output / cached 三项（如果有缓存读）
+- 6/6 项一致 → 标「零加价」属实
+- 任何一项不一致 → 标 `pricing_disputed: true` + `dispute_note` 写明
+
+**Why this matters**：
+- 「零加价」是市场宣传口径，**不一定**等于实际收的钱
+- 第三方平台可能在拿厂商返点（Credit rebate），但前端报价持平，这种情况下「零加价」其实隐藏成本
+- 也可能是平台**真的**批发价转售（这种情况下适合做基准对照）
+
+**反 mode**：
+- ❌ 看到平台声明「零加价」就照抄
+- ❌ 只验证一个模型就推广到「全平台零加价」
+- ❌ 验证发现不一致时继续写「零加价」
+
+**How to apply**：
+- 第三方平台新增时：plan.yml 写完主套餐后，**逐 model** 查厂商官方 dns
+- 厂商官方 dns 找不到数据时：在 yml ratio_note 写「该模型 X 厂商未公布官方价格，暂无法验证零加价」，**不**标「零加价」
+- 后续平台改价时：重跑验证流程
+
+### 铁律 24：交付前必须先截图给用户过目（2026-07-31 用户教学）
+
+**用户原话**：「你可以把本地榜单给我看，一般"把草稿给我过目就是这样"」
+
+**事故**：本会话曾多次「改完代码用文字汇报 X 字段生效了」，但实际渲染报错/位置不对（hero github 文字不可见、对齐偏移两个 bug）。文字汇报无法替代视觉确认。
+
+**规则**：
+- 有可视化产出的任务（榜单/页面/图表/UI 改动），交付前**必须**截图贴出
+- 截图流程：
+  1. 改完跑 dev server / build
+  2. Chrome headless 截图：`chrome.exe --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=2200,4200 --virtual-time-budget=9000 "--screenshot=<Windows 绝对路径>" URL`
+  3. 长页面用 PIL 裁成多段（每段 2200px 宽 × 600-700px 高才能看清）
+  4. 用 Read 工具贴出来
+- 时机：「草稿」阶段就要给，不要等全部完成。中途用户能拦下方向问题。
+
+**反 mode**：
+- ❌ 只用文字描述「页面上有 X 字段已生效」
+- ❌ 整页缩略图（看不清）
+- ❌ 只截相关行而忽略上下文（用户可能想看其他行受影响没）
+
 ---
 
 ## 2. YAML Schema 模板
@@ -778,7 +879,14 @@ last_verified: 2026-07-21                # 必填，最后核实日期
 affiliate:
   code: NMJG4D6P
   url: https://...                       # 带 source/折扣参数的邀请链接
-  discount: 0.95                          # 折扣系数（0.95 = 95折）
+  discount: 0.95                          # 折扣系数（0.95 = 95折）。特殊场景（铁律 7 扩展）：
+                                          # 若该码本身不给被推荐人折扣，纯推荐链接，必须用
+                                          # no_user_discount: true 显式声明，**禁止**通过「discount 留空」
+                                          # 绕过——lint 必须能区分「忘填」和「本来就无折扣」两种状态
+  no_user_discount: false                 # 铁律 7 扩展（2026-07-31 opencode 教训）：
+                                          # true 时 lint 允许 discount=null
+                                          # 典型场景：opencode 推荐码 https://opencode.ai/go?ref=XXX
+                                          # 只种 30 天 cookie，被推荐人价格与直接购买相同
   stackable: true                         # 能否跟官方活动叠加
   expires: 2026-08-08                     # 过期日（铁律 11）
   owner: OLmatter
@@ -854,7 +962,7 @@ limits:
 # 实测样本（铁律 10）
 measurements:
   - measurement_id: m_2026_07_single_001  # 全局唯一
-    source_kind: single_user_probe        # single_user_probe / multi_user_average / verified_pr / burn_quota / aggregate_median / vendor_sibling_inferred / community_report
+    source_kind: single_user_probe        # single_user_probe / multi_user_average / verified_pr / burn_quota / aggregate_median / vendor_sibling_inferred / community_report / per_model_breakdown / vendor_official
     user_hash: pending                    # sha256(token+salt) 前 12 位，待 PR 填
     period: 2026-07
     method: burn_quota                    # 可选，测试方法
@@ -864,6 +972,10 @@ measurements:
     credibility: low                      # low/medium/high（铁律 10）
     disputed: false                       # 铁律 10
     dispute_note: ...                     # disputed=true 必填
+    # 铁律 21（2026-07-31 opencode 教训）：scope 字段———— 当数据来源是「特定客户端/场景观察值」而非
+    # 「该模型 API 在所有场景下的通用值」时必须填。前端展示橙色「Go 观测」标签 + tooltip 提示
+    # 已知值：opencode-go-client（OpenCode Go 客户端观察值，缓存率尤其偏高于通用 API）
+    scope: null                           # 必填：null（API 通用值）/ 'opencode-go-client'（客户端观察值）/ 其他
     notes: |
       样本说明...
 
@@ -906,6 +1018,12 @@ features:
 | 套餐只有一个数据点却显示 high credibility | credibility 字段乱填 | 铁律 10 |
 | 同一价格出现两次（原价/首单分不开） | intro/original 混用 | 铁律 8 |
 | 厂商页显示"实测 0" | 应该是 null 写成了 0 | 铁律 9 |
+| 月度估算且未标 monthly_estimated | 漏铁律 20 明示状态 | 铁律 20 |
+| 邀请码 lint 报错但 discount 真的没折扣 | 漏 no_user_discount: true | 铁律 7 扩展 |
+| 缓存率/请求数标「极端」但实际是客户端观察值 | 漏 scope 字段 | 铁律 21 |
+| 第三方平台「零加价」但实际可能加价 | 漏逐模型查厂商官方单价 | 铁律 23 |
+| 改完代码没截图直接说「好了」 | 漏交付前截图 | 铁律 24 |
+| 官方请求数与反推误差 > 15% | 缺自洽性验算 | 铁律 22 |
 
 ---
 
@@ -919,6 +1037,10 @@ features:
 - 铁律 10（单点当高可信）：`kimi allegretto 690M 326M median`
 - 铁律 12（USD/CNY 混淆）：`zai USD 排序 original_monthly 折算`
 - 铁律 13（tierRank 残缺）：`kimi andante moderato allegretto tier 排序 乱`
+- 铁律 21（scope 标注）：`opencode go observation 缓存率 98.4 客户端`
+- 铁律 22（自洽性验算）：`opencode go ds v4 flash 反推 0.1 误差`
+- 铁律 23（跨渠道零加价）：`opencode go zai deepseek 官方 6 6 一致`
+- 铁律 24（截图交付）：`本地榜单 草稿 过目`
 
 ---
 
