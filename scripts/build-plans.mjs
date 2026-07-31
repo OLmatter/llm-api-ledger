@@ -67,7 +67,10 @@ const SUBSCRIBE_URLS = {
 const VENDOR_RATIOS = {
   volcengine: { weekly_to_5h: 1 / 7.5, monthly_to_weekly: 2.0, monthly_is_estimate: false },
   zhipu:      { weekly_to_5h: 1 / 5.0, monthly_to_weekly: 4.3, monthly_is_estimate: true },
-  minimax:    { weekly_to_5h: 1 / 10.0, monthly_to_weekly: 4.3, monthly_is_estimate: true },
+  // MiniMax: 5h 实测反推周比例 1/10 保留 (Plus/Ultra 5h/周 从 Max 实测 sibling 反推)
+  // monthly_to_weekly: null — MiniMax 月度只有官方 published cap (1.8B Max / 0.6B Plus / 7.1B Ultra)
+  // 不是实测,build 不应算 weekly × 4.3 假充实测,前端显示 —
+  minimax:    { weekly_to_5h: 1 / 10.0, monthly_to_weekly: null },
   kimi:       { weekly_to_5h: null, monthly_to_weekly: null, monthly_is_estimate: false, monthly_unlimited: true },
   zai:        { weekly_to_5h: 1 / 5.0, monthly_to_weekly: 4.3, monthly_is_estimate: true },
   openai:     { weekly_to_5h: null, monthly_to_weekly: 4.0, monthly_is_estimate: true },
@@ -103,6 +106,9 @@ function getTierRatio(vendor, fromTier, toTier) {
 function getDirectTokens(plan) {
   const lim = plan.limits || {}
   const ratio = VENDOR_RATIOS[plan.vendor]
+  // SOP 铁律 18：tokens_inference_disabled 同步禁止 in-function 周×ratio 推导和 measurements 反推
+  // 之前只 gate 了外层 inferTokensFromSibling,内层 monthly = weekly × 4.3 仍会跑出"看起来像实测"的数字
+  const inferenceDisabled = plan.tokens_inference_disabled === true
   const direct = {
     h5: lim.window_5h?.tokens_measured ?? lim.window_5h?.tokens_official_claimed ?? null,
     weekly: lim.window_weekly?.tokens_measured ?? lim.window_weekly?.tokens_official_claimed ?? null,
@@ -110,7 +116,7 @@ function getDirectTokens(plan) {
     monthly_estimated: lim.window_monthly?.monthly_estimated || false,
   }
   // Kimi 特殊：周可能直接从 measurements 拿（Allegretto 社区实测 690M）
-  if (direct.weekly == null) {
+  if (direct.weekly == null && !inferenceDisabled) {
     const m = (plan.measurements || [])[0]
     if (m?.weekly_tokens_measured) {
       direct.weekly = m.weekly_tokens_measured
@@ -124,8 +130,8 @@ function getDirectTokens(plan) {
   if (direct.h5 && direct.weekly == null && ratio?.weekly_to_5h) {
     direct.weekly = Math.round(direct.h5 / ratio.weekly_to_5h)
   }
-  // 月度：Kimi 无月度（monthly_unlimited）；其他按周×ratio
-  if (direct.monthly == null && !ratio?.monthly_unlimited) {
+  // 月度：Kimi 无月度（monthly_unlimited）；其他按周×ratio（inferenceDisabled 时跳过，避免把 cap 当实测）
+  if (direct.monthly == null && !ratio?.monthly_unlimited && !inferenceDisabled) {
     if (direct.weekly && ratio?.monthly_to_weekly) {
       direct.monthly = Math.round(direct.weekly * ratio.monthly_to_weekly)
       direct.monthly_estimated = ratio.monthly_is_estimate
@@ -133,7 +139,7 @@ function getDirectTokens(plan) {
     }
   }
   // 从 measurements 反推（火山 Pro 月度 / MiniMax Max 5h burn 测试）
-  if (direct.h5 == null && direct.monthly == null && !ratio?.monthly_unlimited) {
+  if (direct.h5 == null && direct.monthly == null && !ratio?.monthly_unlimited && !inferenceDisabled) {
     const m = (plan.measurements || [])[0]
     if (m?.inferred_monthly_cap_tokens) {
       direct.monthly = m.inferred_monthly_cap_tokens
