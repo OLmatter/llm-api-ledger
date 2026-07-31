@@ -11,14 +11,14 @@ hero:
       link: '#leaderboard'
 
 # 截图分享时, 让群友直接看到 repo URL (避免搜不到)
-# 跟"看榜单"按钮用 flex 水平排列, 跟 hero 区视觉一致
+# 用 <div> 不用 <p>, 避免 markdown 渲染嵌套 <p> 失效
 ---
 
-<p style="text-align: center; margin: -1rem 0 1.5rem; font-size: 0.85rem; color: var(--vp-c-text-3);">
+<div style="text-align: center; margin: -1rem 0 1.5rem; font-size: 1rem; color: var(--vp-c-text-1);">
 
 github: **[LLM API Ledger](https://github.com/OLmatter/llm-api-ledger)**
 
-</p>
+</div>
 
 
 # 榜单 {#leaderboard}
