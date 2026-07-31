@@ -5,7 +5,7 @@ description: 同类型项目对比，记录方法论差异与可借鉴点
 
 # 竞品调研
 
-最后更新：2026-07-31
+最后更新：2026-08-01
 
 ## 调研目的
 
@@ -17,7 +17,7 @@ AIDASH（llm-api-ledger）做的是「LLM API 订阅套餐横向对比 + 实测�
 
 ## 直接对标：[tokscale](https://github.com/junhoyeo/tokscale)
 
-**规模**：4724 stars · MIT License · 30+ 客户端覆盖 · 持续更新（v2 native Rust TUI）
+**规模**：4,724 stars · 386 forks · MIT · 持续更新（v2 native Rust TUI）
 
 ### 它解决什么问题
 
@@ -73,19 +73,71 @@ Plan     Max 20x
 
 ---
 
-## AIDASH vs toksscale：本质区别
+## 直接对标：[ccusage](https://github.com/ryoppippi/ccusage)
 
-| 维度 | AIDASH | tokscale |
+**规模**：17,630 stars · 764 forks · NOASSERTION（之前 m1_0014 调研时 1524 commits / 实际更高，已超到scale 3.7 倍）
+
+### 它解决什么问题
+
+**个人日常编码 session 的 token 用量 report**——比 tokscale 更窄更深：不做社交 leaderboard，专做 daily / weekly / monthly / session 四种维度的本地报告。
+
+### 核心命令
+
+```bash
+npx ccusage@latest
+ccusage daily / weekly / monthly / session
+ccusage blocks                  # 5h 账单窗口
+ccusage statusline              # 状态栏集成（Beta）
+```
+
+### 数据来源（与 tokscale 高度相似）
+
+读本地客户端文件：Claude Code / Codex / OpenCode / Amp / Droid / Codebuff / Hermes / pi-agent / Goose / OpenClaw / Kilo / Kimi / Qwen / Copilot / Gemini / Antigravity——**16+ 客户端**（比 tokscale 30+ 少）。
+
+### 定价数据
+
+也用 [LiteLLM pricing data](https://github.com/BerriAI/litellm)，跟 tokscale 一致。
+
+### 关键差异 vs tokscale
+
+| 维度 | tokscale | ccusage |
 |---|---|---|
-| 数据视角 | 套餐能跑多少（横比） | 用户用了多少（个人） |
-| 数据来源 | 维护者手动 + 官方监控 API | 用户本地客户端文件 + 监控 API |
-| 提交流程 | 维护者 PR | 用户主动 `submit` |
-| 隐私 | 服务端零账号（无用户名） | 公开 profile |
-| 排行榜 | 厂商×套餐横比 | 用户个人 rank |
-| 客户端覆盖 | 26 套餐 | 30+ 客户端 |
-| 价格来源 | yml 手维护 | LiteLLM 自动 JSON |
+| **社交**：排行榜 / submit | ✅ 有 | ❌ 没有（纯本地 report） |
+| **状态栏集成**（statusline） | ❌ | ✅ 有（Beta） |
+| **订阅配额面板**（Subscription Usage） | ✅ 调厂商监控 API | ❌ 没有 |
+| **客户端覆盖** | 30+ | 16+ |
+| **stars** | 4,724 | **17,630** |
 
-**两个项目互补不重叠**——这是好消息，意味着 AIDASH 不被 tokscale 替代。
+**为什么 ccusage stars 更高**：ccusage 早做 + 专注 Claude Code 单类场景（用户量最大）+ 状态栏集成。比 tokscale 更实用，能直接嵌到开发者工作流（statusline 实时显示）。
+
+### 局限性
+
+- **无社交**：没有 leaderboard、没有 profile 提交
+- **无套餐横比**：跟 tokscale 一样不回答「我该买哪个」
+- **无订阅实时剩余**：不像 tokscale 调监控 API 显示 5h 剩余
+
+### 借鉴价值
+
+- **状态栏集成**（statusline）—— AIDASH 未来也可做 statusline 模式，让用户在 IDE 直接看到当前套餐剩余
+- **blocks 命令**（5h 账单窗口）—— 这个命名比 tokscale 的「Subscription Usage」更直观
+
+---
+
+## AIDASH vs tokscale vs ccusage：三方对比
+
+| 维度 | AIDASH | tokscale | ccusage |
+|---|---|---|---|
+| 数据视角 | 套餐能跑多少（横比） | 用户用了多少（个人） | 用户用了多少（个人） |
+| 数据来源 | 维护者手动 + 官方监控 API | 本地客户端文件 + 监控 API | 本地客户端文件 |
+| 提交流程 | 维护者 PR | 用户主动 `submit` | 无 |
+| 隐私 | 服务端零账号（无用户名） | 公开 profile | 纯本地，无上传 |
+| 排行榜 | 厂商×套餐横比 | 用户个人 rank | 无 |
+| 状态栏集成 | ❌ | ❌ | ✅ |
+| 订阅实时剩余 | ❌ | ✅ | ❌ |
+| 客户端覆盖 | 26 套餐 | 30+ 客户端 | 16+ 客户端 |
+| 价格来源 | yml 手维护 | LiteLLM 自动 JSON | LiteLLM 自动 JSON |
+
+**三个项目互补不重叠** —— AIDASH 不被 tokscale/ccusage 替代。
 
 ---
 
@@ -116,13 +168,15 @@ Plan     Max 20x
 
 ## AIDASH 借鉴清单（按实施成本排序）
 
-| 借鉴点 | 实施成本 | 优先级 | 状态 |
-|---|---|---|---|
-| 接入 LiteLLM pricing data 自动算成本 | 中（一次性脚本） | 高 | 未做 |
-| 本地客户端 JSONL 读取（探针替代） | 高（要写 parser） | 中 | 未做 |
-| 实时剩余配额面板（订阅 View） | 中（前端 + 后端） | 中 | 未做 |
-| Nuxt 3 / Web 3D Graph 替代 VitePress | 高（重构） | 低 | 未做 |
-| 公开 profile + submit 模式 | 中（账号 + 流程） | 中 | 未做 |
+| 借鉴点 | 实施成本 | 优先级 | 状态 | 来源 |
+|---|---|---|---|---|
+| 接入 LiteLLM pricing data 自动算成本 | 中（一次性脚本） | 高 | 未做 | tokscale + ccusage |
+| 状态栏集成（statusline） | 低（生成字符串） | 高 | 未做 | ccusage |
+| 实时剩余配额面板（订阅 View） | 中（前端 + 后端） | 中 | 未做 | tokscale |
+| 本地客户端 JSONL 读取（探针替代） | 高（要写 parser） | 中 | 未做 | tokscale + ccusage |
+| 公开 profile + submit 模式 | 中（账号 + 流程） | 中 | 未做 | tokscale |
+| `${model} blocks` 5h 账单窗口命名 | 低 | 中 | 未做 | ccusage |
+| Nuxt 3 / Web 3D Graph 替代 VitePress | 高（重构） | 低 | 未做 | tokscale |
 
 ---
 
@@ -138,4 +192,5 @@ Plan     Max 20x
 
 ## 更新日志
 
+- **2026-08-01**：v2。补 ccusage（17,630 stars）作为第二大直接对标；增加 AIDASH ↔ tokscale ↔ ccusage 三方对比；借鉴清单从 5 项扩张到 7 项（新增 statusline 集成、`blocks` 命名参考）
 - **2026-07-31**：初版。核心对标 tokscale；其他参考项目（Awesome-Coding-Plan 已 404、llm-pricing.com、中文博客类）标注对比；产生借鉴清单 5 项
