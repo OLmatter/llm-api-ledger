@@ -7,14 +7,8 @@ hero:
   tagline: 集齐主流厂商的真实用量与性能 · 本地装探针自核账 · 众包脱敏数据上榜
   actions:
     - theme: brand
-      text: 看榜单
+      text: 看榜单 →
       link: '#leaderboard'
-    - theme: alt
-      text: 装探针
-      link: /probe
-    - theme: alt
-      text: TG 群交流
-      link: https://t.me/+s1flX6cpUZ1kM2M1
 
 # 显眼显示 GitHub URL（截图分享时能搜到 repo 名字, 不只是显示名）
 # 不用 link 形式, 用纯文字 + monospace 字体让 URL 本身可读
