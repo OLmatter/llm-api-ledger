@@ -1,13 +1,38 @@
 affiliate:
   added_at: 2026-07-31
   code: AQ0H42B676
-  discount: null                # 官方页未公布推荐码权益，铁律 16：没数据不编
-  no_user_discount: true        # 显式声明：这是纯推荐链接，被推荐人不打折（区别于"忘填 discount"）
-  discount_note: 推荐链接（种 30 天 oc_referral cookie）；官方未公布返现/送额度规则，被推荐人价格与直接购买相同
+  discount: null                # 推荐奖励是 usage credit 不是价格折扣，frontend 旧逻辑会在 intro_tag
+                                # 显示「首月价 vs 用邀请码」对比；opencode 的「首月 $5」是官方公开价，
+                                # 推荐码的「$5 credit」是另一种机制(降低使用额度)，不构成价格折扣
+  no_user_discount: true        # 不是价格折扣；推荐奖励形态是「Go usage credit」(额度形式)
+  reward_kind: usage_credit     # 新加字段：明确推荐奖励形态 = 额度抵扣，不是价格折扣
+                                # 已知候选：usage_credit / cash_back / discount / free_trial
+  discount_note: |
+    Go 套餐推荐奖励机制（依据 PR #28345 / #28368 源代码 + commit 描述，2026-07-31 查 anomalyco/opencode）：
+
+    **双方都获得 Go usage credit**（双向激励；双方都获得额度抵扣，不是降价）：
+    - 推荐人(老用户)：apply 后降低自己后续 Go 使用额度
+    - 被推荐人(新用户)：订阅 Go 后解锁 credit,降低使用额度
+
+    **关键 commit 描述**:
+    - `core: let Go referral rewards lower active usage limits` — 奖励形态是「降低使用额度」
+    - `core: show who each Go referral credit comes from` — 双方都看到对方贡献的 credit
+    - `core: keep Go referral credit visible until subscription unlock` — 新用户登录后能看到 pending credit,订阅 Go 后解锁
+    - `core: show Go reward usage relief before applying` — 应用前能预览额度降低效果
+    - `core: clarify referral rewards unlock after subscribing` — 订阅后解锁奖励
+
+    **官方公开页未公布具体金额**（控制台实时显示）：
+    - 案例 #33451 提到「$5 Go received」+「$20 stuck in Zen balance」,提示单次 credit 级别约 $5
+    - 实际金额以 OpenCode 控制台 → Referrals 页面实时显示为准
+
+    **不构成价格折扣**:
+    - 订阅价格不变（首月 $5 / 之后 $10/月,跟直接购买相同）
+    - 用量额度不变（月 $60 等,跟直接购买相同）
+    - 区别仅在「未来某次撞 limit 时,credit 可降低下次使用成本」
   expires: null
   models_highlight: GLM-5.2, DeepSeek V4 Flash, Kimi K2.7 Code, MiniMax M3
   owner: OLmatter
-  stackable: false              # 无折扣数值，不参与叠加计算
+  stackable: false              # 不是价格折扣,不参与价格叠加计算
   url: https://opencode.ai/go?ref=AQ0H42B676
 brand_color: '#f5a623'
 docs: https://opencode.ai/docs/zh-cn/go/

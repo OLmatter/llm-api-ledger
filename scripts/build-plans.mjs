@@ -472,7 +472,8 @@ const plans = planFiles.map(f => {
       code: affActive.code,
       url: affActive.url,
       discount: affActive.discount,
-      no_user_discount: affActive.no_user_discount === true,   // 纯推荐链接，被推荐人无折扣
+      no_user_discount: affActive.no_user_discount === true,   // 纯推荐链接，被推荐人无价格折扣
+      reward_kind: affActive.reward_kind || null,              // 推荐奖励形态: usage_credit / cash_back / discount 等
       stackable: affActive.stackable,
       discount_note: affActive.discount_note,
       owner: affActive.owner,
