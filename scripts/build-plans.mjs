@@ -583,17 +583,18 @@ writeFileSync(
 console.log(`✓ built ${plans.length} plans from ${Object.keys(vendors).length} vendors → docs/.vitepress/plans.json`)
 
 // ── build 末尾自动更新 docs/index.md 的「最新更新」时间 ──
-// 数据源:git log -1 --format=%cI . (最近 commit 提交日, ISO 8601)
-// 替换 docs/index.md 的 actions 数组里 text: '📅 最新更新 YYYY-MM-DD' 里的日期
-// (为啥 commit 日期而不是文件 mtime? —— commit 日期反映榜单内容变更时刻, 更准)
+// 数据源:git log -1 --format=%cI . (最近 commit 提交时间, ISO 8601 with timezone)
+// 替换 docs/index.md 的 actions 数组里 text: '📅 最新更新 YYYY-MM-DD HH:MM' 里的时间
+// (为啥 commit 时间而不是文件 mtime? —— commit 时间反映榜单内容变更时刻, 更准)
 try {
   const { execSync } = await import('node:child_process')
   const dateOut = execSync('git log -1 --format=%cI .', { cwd: root, encoding: 'utf-8' }).trim()
-  const dateStr = dateOut.slice(0, 10)
+  // ISO 8601: 2026-08-01T14:30:00+08:00 → 截前 16 字符 = 2026-08-01T14:30, 再把 T 替空格
+  const dateStr = dateOut.slice(0, 16).replace('T', ' ')
   const indexPath = join(root, 'docs', 'index.md')
   const indexText = readFileSync(indexPath, 'utf-8')
   const updated = indexText.replace(
-    /(text: ['"]📅 最新更新 )\d{4}-\d{2}-\d{2}(['"])/,
+    /(text: ['"]📅 最新更新 )[\d\s:-]+(['"])/,
     `$1${dateStr}$2`
   )
   if (updated !== indexText) {
