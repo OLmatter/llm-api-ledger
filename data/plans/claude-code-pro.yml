@@ -17,13 +17,9 @@ last_verified: 2026-07-31
 # Claude Code 倍率:Pro 1× 基准
 codex_multiplier: 1
 
-# 额外用量(usage credits):Anthropic 官方「撞 limit 后按 API 价继续跑」机制
-# 标 true 是因为开启后实际用量可超过 tokens_measured,前端需明示
-reset_card_available: true
-reset_card_note: |
-  Anthropic 提供 usage credits(额外用量):撞 limit 后按标准 API 价继续跑。
-  开启后实际用量可超过下方 tokens_measured 基础 cap,直到月度账单封顶。
-  以下 tokens_measured 是「标准情况」,未开启 usage credits。
+# 注: Claude 用的是 usage credits (撞 limit 按 API 价继续跑), 不是 ChatGPT 的「重置卡」
+# (几块钱重置 5h/周窗口)。本 yml 不设 reset_card_* 字段(那是 GPT 概念)
+# usage credits 机制在 window_5h/window_weekly/window_monthly 的 note 里说明
 
 pricing:
   currency: USD
