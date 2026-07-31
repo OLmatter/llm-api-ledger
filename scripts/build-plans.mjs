@@ -373,11 +373,23 @@ const plans = planFiles.map(f => {
       // opencode Go：官方窗口是「$12/$30/$60 使用额度」，不是次数也不是 token
       const isCostDollar = p.vendor === 'opencode' && lim.window_5h?.cost_limit_usd != null
       if (isCostDollar) {
+        const cred = affActive?.credit_usd
         return {
           unit: '$',
           h5: lim.window_5h.cost_limit_usd,
           weekly: lim.window_weekly?.cost_limit_usd ?? null,
           monthly: lim.window_monthly?.cost_limit_usd ?? null,
+          // 用邀请码后额度：仅加在月列
+          // 原因：usage credit 是「一次性 apply」而非「每周期叠加」(credit_apply: once)。
+          // 一次性 $5 credit 计入整体订阅期(约 1 个月),**不能**每个 5h/周窗口都加 $5,
+          // 否则会显示「每个窗口都多 $5」=假象「每月额外 $5×3=$15」,这跟实际不符。
+          // 5h 和周窗口的撞 limit 阈值仍按基准；月窗口撞 limit 阈值 = $60 + $5 = $65(整体期间)
+          with_credit: cred ? {
+            h5: null,
+            weekly: null,
+            monthly: (lim.window_monthly?.cost_limit_usd ?? 0) + cred,
+            credit_usd: cred,
+          } : null,
         }
       }
       // v3 积分/Credits 单位（智谱/z.ai v3 启用，单位不同）
@@ -449,18 +461,38 @@ const plans = planFiles.map(f => {
     // 前端渲染多个 model_tag 堆叠在 tokens 列
     model_breakdown: (p.measurements || [])
       .filter(m => m.source_kind === 'per_model_breakdown' && m.model_id)
-      .map(m => ({
-        model_id: m.model_id,
-        weekly_tokens: m.window_weekly_tokens,
-        monthly_tokens: m.window_monthly_tokens,
-        h5_tokens: m.window_5h_tokens || null,
-        cost_per_million: m.cost_per_million,
-        credibility: m.credibility,
-        notes: m.notes,
-        // 数据来源范围标注（前端在 @model 后显示小标签，例如 @glm-5.2 [Go 观测]）
-        // 用于区分"厂商 API 通用值" vs "特定客户端/场景的观察值（如 opencode Go 缓存率 98%）"
-        scope: m.scope || null,
-      })),
+      .map(m => {
+        // 用邀请码后用量：仅 +monthly。
+        // 原因：usage credit 是「一次性 apply」而非「每周期叠加」(credit_apply: once)。
+        // 一次性 $5 credit 计入整体订阅期(约 1 个月)+只在月窗口内有效,**不能**5h/周也都加
+        // ——否则显示「每个窗口都多 $5」= 假象「每月额外 $5×3 = $15」,跟实际不符。
+        const creditUsd = affActive?.credit_usd
+        const monthlyCreditBase = m.model_monthly_credit_usd
+        let withCredit = null
+        if (creditUsd && monthlyCreditBase) {
+          const ratio = 1 + creditUsd / monthlyCreditBase
+          withCredit = {
+            credit_usd: creditUsd,
+            h5_tokens: null,                                       // 5h 窗口不变
+            weekly_tokens: null,                                   // 周窗口不变
+            monthly_tokens: m.window_monthly_tokens ? Math.round(m.window_monthly_tokens * ratio) : null,
+          }
+        }
+        return {
+          model_id: m.model_id,
+          weekly_tokens: m.window_weekly_tokens,
+          monthly_tokens: m.window_monthly_tokens,
+          h5_tokens: m.window_5h_tokens || null,
+          cost_per_million: m.cost_per_million,
+          credibility: m.credibility,
+          notes: m.notes,
+          // 数据来源范围标注（前端在 @model 后显示小标签，例如 @glm-5.2 [Go 观测]）
+          // 用于区分"厂商 API 通用值" vs "特定客户端/场景的观察值（如 opencode Go 缓存率 98%）"
+          scope: m.scope || null,
+          // 用邀请码后用量（仅 opencode 等有 usage_credit 机制的有意义；仅 +monthly 适用）
+          with_referral_credit: withCredit,
+        }
+      }),
     // 数据争议标记：任一 measurement 标 disputed=true，整个 plan 标争议
     measurements_disputed: (p.measurements || []).some(x => x.disputed === true),
     measurements_dispute_note: (() => {

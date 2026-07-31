@@ -7,6 +7,8 @@ affiliate:
   no_user_discount: true        # 不是价格折扣；推荐奖励形态是「Go usage credit」(额度形式)
   reward_kind: usage_credit     # 新加字段：明确推荐奖励形态 = 额度抵扣，不是价格折扣
                                 # 已知候选：usage_credit / cash_back / discount / free_trial
+  credit_usd: 5                # 推荐奖励金额（单位 USD），双方各得一次性 apply
+  credit_apply: once            # 一次性（once）/ 每月（monthly）;opencode 是 once
   discount_note: |
     Go 套餐推荐奖励机制（依据 PR #28345 / #28368 源代码 + commit 描述，2026-07-31 查 anomalyco/opencode）：
 

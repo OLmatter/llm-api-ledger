@@ -445,6 +445,10 @@ function fmtTokensYi(n) {
               <template v-if="row.plan.claimed.h5 != null">
                 <span class="claimed-val">{{ fmtClaimed(row.plan, row.plan.claimed.h5) }}</span>
                 <div class="claimed-unit">{{ row.plan.claimed_unit }}</div>
+                <div v-if="row.plan.claimed.with_credit" class="claimed-credit">
+                  <span class="credit-val">{{ fmtClaimed(row.plan, row.plan.claimed.with_credit.h5) }}</span>
+                  <span class="credit-tag" :title="`用邀请码 +$${row.plan.claimed.with_credit.credit_usd} credit 后额度`">+ 邀请码</span>
+                </div>
               </template>
               <span v-else class="muted">—</span>
             </td>
@@ -452,6 +456,10 @@ function fmtTokensYi(n) {
               <template v-if="row.plan.claimed.weekly != null">
                 <span class="claimed-val">{{ fmtClaimed(row.plan, row.plan.claimed.weekly) }}</span>
                 <div class="claimed-unit">{{ row.plan.claimed_unit }}</div>
+                <div v-if="row.plan.claimed.with_credit" class="claimed-credit">
+                  <span class="credit-val">{{ fmtClaimed(row.plan, row.plan.claimed.with_credit.weekly) }}</span>
+                  <span class="credit-tag" :title="`用邀请码 +$${row.plan.claimed.with_credit.credit_usd} credit 后额度`">+ 邀请码</span>
+                </div>
               </template>
               <span v-else class="muted">—</span>
             </td>
@@ -459,6 +467,10 @@ function fmtTokensYi(n) {
               <template v-if="row.plan.claimed.monthly != null">
                 <span class="claimed-val">{{ fmtClaimed(row.plan, row.plan.claimed.monthly) }}</span>
                 <div class="claimed-unit">{{ row.plan.claimed_unit }}</div>
+                <div v-if="row.plan.claimed.with_credit" class="claimed-credit">
+                  <span class="credit-val">{{ fmtClaimed(row.plan, row.plan.claimed.with_credit.monthly) }}</span>
+                  <span class="credit-tag" :title="`用邀请码 +$${row.plan.claimed.with_credit.credit_usd} credit 后额度`">+ 邀请码</span>
+                </div>
               </template>
               <span v-else class="muted">—</span>
             </td>
@@ -471,6 +483,13 @@ function fmtTokensYi(n) {
                   <span v-else class="muted">—</span>
                   <span class="model-tag">@{{ mb.model_id }}</span>
                   <span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
+                </div>
+                <!-- 用邀请码后用量（仅当有 usage credit 时显示） -->
+                <div v-for="mb in row.plan.model_breakdown.filter(m => m.with_referral_credit)" :key="'cref-' + mb.model_id" class="tok-row tok-row-credit">
+                  <span v-if="mb.with_referral_credit.h5_tokens" class="credit-val">{{ fmtTokens(mb.with_referral_credit.h5_tokens) }}</span>
+                  <span v-else class="muted">—</span>
+                  <span class="model-tag">@{{ mb.model_id }}</span>
+                  <span class="credit-tag" :title="`用邀请码 +$${mb.with_referral_credit.credit_usd} Go usage credit 后用量`">+ 邀请码</span>
                 </div>
               </template>
               <template v-else>
@@ -485,6 +504,13 @@ function fmtTokensYi(n) {
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
                 <div v-for="mb in row.plan.model_breakdown" :key="'w-' + mb.model_id" class="tok-row">
                   {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
+                </div>
+                <!-- 用邀请码后用量（仅当有 usage credit 时显示） -->
+                <div v-for="mb in row.plan.model_breakdown.filter(m => m.with_referral_credit)" :key="'cref-w-' + mb.model_id" class="tok-row tok-row-credit">
+                  <span v-if="mb.with_referral_credit.weekly_tokens" class="credit-val">{{ fmtTokens(mb.with_referral_credit.weekly_tokens) }}</span>
+                  <span v-else class="muted">—</span>
+                  <span class="model-tag">@{{ mb.model_id }}</span>
+                  <span class="credit-tag" :title="`用邀请码 +$${mb.with_referral_credit.credit_usd} Go usage credit 后用量`">+ 邀请码</span>
                 </div>
               </template>
               <template v-else>
@@ -502,6 +528,13 @@ function fmtTokensYi(n) {
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
                 <div v-for="mb in row.plan.model_breakdown" :key="'m-' + mb.model_id" class="tok-row">
                   {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
+                </div>
+                <!-- 用邀请码后用量（仅当有 usage credit 时显示） -->
+                <div v-for="mb in row.plan.model_breakdown.filter(m => m.with_referral_credit)" :key="'cref-m-' + mb.model_id" class="tok-row tok-row-credit">
+                  <span v-if="mb.with_referral_credit.monthly_tokens" class="credit-val">{{ fmtTokens(mb.with_referral_credit.monthly_tokens) }}</span>
+                  <span v-else class="muted">—</span>
+                  <span class="model-tag">@{{ mb.model_id }}</span>
+                  <span class="credit-tag" :title="`用邀请码 +$${mb.with_referral_credit.credit_usd} Go usage credit 后用量`">+ 邀请码</span>
                 </div>
               </template>
               <template v-else>
@@ -669,6 +702,38 @@ thead tr:nth-child(2) th {
   margin-left: 4px;
   cursor: help;
   white-space: nowrap;
+}
+/* 用邀请码后用量（绿色 highlight） */
+.tok-row-credit {
+  margin-top: 2px;
+  padding-left: 6px;
+  border-left: 2px solid #10b981;
+}
+.credit-val {
+  color: #059669;
+  font-weight: 600;
+}
+.credit-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: #059669;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  border-radius: 3px;
+  padding: 0 4px;
+  margin-left: 4px;
+  cursor: help;
+  white-space: nowrap;
+}
+/* 宣称用量列上的「用邀请码」子行 */
+.claimed-credit {
+  margin-top: 3px;
+  padding-left: 4px;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  border-left: 2px solid #10b981;
 }
 
 /* hover tooltip 标记 — 红色感叹号 ! + 下方弹出 tooltip */

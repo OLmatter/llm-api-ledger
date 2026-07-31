@@ -839,6 +839,27 @@ $60 / $0.01516 = 3,958 请求 vs 官方 4,300（误差 8.6%）
 - 厂商官方 dns 找不到数据时：在 yml ratio_note 写「该模型 X 厂商未公布官方价格，暂无法验证零加价」，**不**标「零加价」
 - 后续平台改价时：重跑验证流程
 
+### 铁律 25：一次性 credit 只能加在月列（2026-07-31 opencode 教训）
+
+**事故**：opencode Go 推荐码奖励是「一次性 $5 usage credit」（apply 后整订阅期有效）。我之前在 `claimed.with_credit` 和 `model_breakdown.with_referral_credit` 都对 5h/周/月三个窗口都加了 $5，结果显示「每月额外 $5 × 3 = $15」——**与实际不符**。
+
+用户原话：「这样不对。我们只能加在月上!!!我们都疏忽了，等下得记下来。因为这是一次性的！」
+
+**规则**：
+- 当 `affiliate.credit_apply: once`（一次性 apply）时，$5 credit 计入**整个订阅期**总使用额度
+- 5h / 周 / 月 三个窗口**不能**都加 credit，否则会显示「每月额外多 $5 × 3」= 假象
+- 正确加法：5h 列 = 基准不增；周列 = 基准不增；月列 = 基准 + credit（一次性整体计入）
+- 当 `credit_apply: monthly`（每月叠加）时，所有窗口都加
+
+**反模式**：
+- ❌ 一次性 credit 也按窗口叠加（5h + $5 + 周 + $5 + 月 + $5 = 错误）
+- ❌ 把 credit 写到 `claimed.h5`/`claimed.weekly`/`claimed.monthly` 三个字段里（这些是基础额度，不能混）
+
+**How to apply**：
+- yml affiliate 字段先填 `credit_apply: once | monthly` 明确语义
+- build 输出 `with_credit.h5 = null / weekly = null / monthly = base + credit`（once 情况）
+- 前端用 `v-if` 区分 null 不显示 vs 数字显示
+
 ### 铁律 24：交付前必须先截图给用户过目（2026-07-31 用户教学）
 
 **用户原话**：「你可以把本地榜单给我看，一般"把草稿给我过目就是这样"」
@@ -1024,6 +1045,7 @@ features:
 | 第三方平台「零加价」但实际可能加价 | 漏逐模型查厂商官方单价 | 铁律 23 |
 | 改完代码没截图直接说「好了」 | 漏交付前截图 | 铁律 24 |
 | 官方请求数与反推误差 > 15% | 缺自洽性验算 | 铁律 22 |
+| 一次性 credit 显示在 5h/周/月三列 | 漏 credit_apply 语义判断 | 铁律 25 |
 
 ---
 
@@ -1041,6 +1063,7 @@ features:
 - 铁律 22（自洽性验算）：`opencode go ds v4 flash 反推 0.1 误差`
 - 铁律 23（跨渠道零加价）：`opencode go zai deepseek 官方 6 6 一致`
 - 铁律 24（截图交付）：`本地榜单 草稿 过目`
+- 铁律 25（一次性 credit）：`opencode go credit_apply once 一次性 5h 周 月 不能加每个窗口`
 
 ---
 
