@@ -582,6 +582,31 @@ writeFileSync(
 )
 console.log(`✓ built ${plans.length} plans from ${Object.keys(vendors).length} vendors → docs/.vitepress/plans.json`)
 
+// ── build 末尾自动更新 docs/index.md 的「最新更新」时间 ──
+// 数据源:git log -1 --format=%cI . (最近 commit 提交日, ISO 8601)
+// 替换 docs/index.md 的 actions 数组里 text: '📅 最新更新 YYYY-MM-DD' 里的日期
+// (为啥 commit 日期而不是文件 mtime? —— commit 日期反映榜单内容变更时刻, 更准)
+try {
+  const { execSync } = await import('node:child_process')
+  const dateOut = execSync('git log -1 --format=%cI .', { cwd: root, encoding: 'utf-8' }).trim()
+  const dateStr = dateOut.slice(0, 10)
+  const indexPath = join(root, 'docs', 'index.md')
+  const indexText = readFileSync(indexPath, 'utf-8')
+  const updated = indexText.replace(
+    /(text: ['"]📅 最新更新 )\d{4}-\d{2}-\d{2}(['"])/,
+    `$1${dateStr}$2`
+  )
+  if (updated !== indexText) {
+    writeFileSync(indexPath, updated, 'utf-8')
+    console.log(`✓ index.md 最新更新 → ${dateStr}`)
+  } else {
+    console.log(`✓ index.md 最新更新 (已是 ${dateStr})`)
+  }
+} catch (e) {
+  // git 命令失败不阻塞 build（CI 无 git 时容错）
+  console.warn('⚠ 自动更新 index.md 时间失败:', e.message.slice(0, 80))
+}
+
 // ── build 末尾自动跑 lint（铁律机械化检查）──
 // 详见 .agents/skills/ledger-data-discipline/SKILL.md
 // error 阻塞 build（exit 1），warning 只提示不阻塞
