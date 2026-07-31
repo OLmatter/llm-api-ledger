@@ -366,7 +366,7 @@ const plans = planFiles.map(f => {
       if (hasCredits) {
         return {
           unit: p.vendor === 'zai' ? 'Credits' : '积分',
-          h5: null,
+          h5: lim.window_5h?.credits_5h ?? null,
           weekly: lim.window_weekly.credits_weekly ?? null,
           monthly: lim.window_monthly?.credits_monthly ?? null,
         }
