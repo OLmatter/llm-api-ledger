@@ -136,3 +136,23 @@ measurements:
       调价前 2.4B/周 → 调价后 13B/周 (+440%)。
       ⚠️ 2026-07-31 调价来自腾讯新闻/CSDN 报道,等 OpenAI 官方页确认。
       ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
+
+  # ── 官方 API 定价 (platform.openai.com/docs/pricing 2026-07-31) ──
+  - measurement_id: m_2026_07_openai_api_pricing_official
+    source_kind: anthropic_official
+    source_url: https://platform.openai.com/docs/pricing
+    evidence_path: data/openai/official/2026-07-31_openai_api_pricing.md
+    captured_at: 2026-07-31
+    period: 2026-07-31
+    pricing_monthly_usd: 100
+    pricing_api_gpt_5_6_sol: { input: 5.00, cached: 0.50, output: 30.00 }
+    pricing_api_gpt_5_6_terra: { input: 2.00, cached: 0.20, output: 12.00 }
+    pricing_api_gpt_5_6_luna: { input: 0.20, cached: 0.02, output: 1.20 }
+    pricing_api_gpt_5_5: { input: 5.00, cached: 0.50, output: 30.00 }
+    pricing_api_gpt_5_5_pro: { input: 30.00, cached: null, output: 180.00 }
+    credibility: high
+    disputed: false
+    notes: |
+      来源:platform.openai.com/docs/pricing (2026-07-31 Chrome CDP 抓取)。
+      ChatGPT 订阅页被 Turnstile 拦截,$100/月 自 2025-12 推出后稳定(WebSearch 多源印证)。
+      API 定价表与 yml 之前标注 "2026-07-31 调价待确认" 一致,现确认已生效。

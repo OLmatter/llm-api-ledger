@@ -63,14 +63,16 @@ programming_ratios_default:
     用户已确认作为 AIDASH 编程场景默认值。
     glm-5.2 实测 95% cache 是 glm 模型特定(95/4.9/0.8),不进 OpenAI 默认。
 
-# OpenAI 5.5 + 5.6 系列 API 定价(per million tokens, 2026-07-30 WebSearch 验证)
+# OpenAI 5.5 + 5.6 系列 API 定价(per million tokens, 2026-07-31 platform.openai.com CDP 抓取确认)
 # cached input = 10× 折扣
 model_pricing:
   gpt-5.5:
     input: 5.00
     cached_input: 0.50
     output: 30.00
-    source: https://openai.com/api/pricing/
+    source: https://platform.openai.com/docs/pricing
+    evidence_path: data/openai/official/2026-07-31_openai_api_pricing.md
+    captured_at: 2026-07-31
     note: |
       2026-04-23 发布(代号 Spud)。上下文 1M,token 消耗比 5.4 降 ~30%。
 
@@ -78,7 +80,9 @@ model_pricing:
     input: 5.00
     cached_input: 0.50
     output: 30.00
-    source: https://openai.com/api/pricing/
+    source: https://platform.openai.com/docs/pricing
+    evidence_path: data/openai/official/2026-07-31_openai_api_pricing.md
+    captured_at: 2026-07-31
     note: |
       2026-07-09 发布(与 GPT-5.5 同价)。
       默认最大推理强度,实测可能比 5.5 触发更多推理 token(社区吐槽"Token 刺客")。
@@ -87,32 +91,37 @@ model_pricing:
     input: 2.00
     cached_input: 0.20
     output: 12.00
-    source: https://openai.com/api/pricing/
-    source_secondary: https://new.qq.com/rain/a/20260731A05HG100
+    source: https://platform.openai.com/docs/pricing
+    evidence_path: data/openai/official/2026-07-31_openai_api_pricing.md
+    captured_at: 2026-07-31
     note: |
       2026-07-09 发布,GPT-5.6 三档均衡版(性能对标 5.5)。
       2026-07-31 调价 -20%:input $2.50→$2.00,output $15→$12,cached $0.25→$0.20。
       性价比主力,被多家媒体称为"性价比甜点"。
       @Personuo 175M/周 反推最可能 Plus 路由模型。
-      ⚠️ 2026-07-31 调价来自腾讯新闻/CSDN 报道,等 OpenAI 官方页确认。
+      ✅ 2026-07-31 调价已被官方 platform.openai.com CDP 抓取确认。
 
   gpt-5.6-luna:
     input: 0.20
     cached_input: 0.02
     output: 1.20
-    source: https://openai.com/api/pricing/
-    source_secondary: https://new.qq.com/rain/a/20260731A05HG100
+    source: https://platform.openai.com/docs/pricing
+    evidence_path: data/openai/official/2026-07-31_openai_api_pricing.md
+    captured_at: 2026-07-31
     note: |
       2026-07-09 发布,GPT-5.6 三档经济版。
       2026-07-31 调价 -80%:input $1.00→$0.20,output $6.00→$1.20,cached $0.10→$0.02。
       Luna 是 Plus 用户最经济选择,但能力不如 Sol/Terra。
-      ⚠️ 2026-07-31 调价来自腾讯新闻/CSDN 报道,等 OpenAI 官方页确认。
+      ✅ 2026-07-31 调价已被官方 platform.openai.com CDP 抓取确认。
 
   gpt-5.5-pro:
     input: 30.00
-    cached_input: 3.00
+    cached_input: null         # 官方表 "—" 不支持 cached input,2026-07-31 修正
     output: 180.00
-    source: WebSearch 多源印证(2026-07)
+    source: https://platform.openai.com/docs/pricing
+    evidence_path: data/openai/official/2026-07-31_openai_api_pricing.md
+    captured_at: 2026-07-31
     note: |
       Pro tier 独占,价格 6× gpt-5.5 标准版。
+      不支持 cached input(官方表 "—"),之前 yml 误标 $3.00/M,本次修正为 null。
       $100/周 跑不动(只 16M tokens),需要 Pro 20× (~$2000/周) 才跑得满。
