@@ -72,3 +72,20 @@ measurements:
       原文:Pro「$56 /month $80/month Subscribe | 6× Lite usage」。
       「Built for day-to-day development on mid-sized repo」。
       ⚠ claimed only,无 measured。
+
+  # 官方「全非高峰期」场景估算(不是实测,只供参考)
+  - measurement_id: m_2026_07_zai_pro_v3_offpeak_weekly_estimate
+    source_kind: vendor_scenario_estimate
+    period: 2026-07-31
+    usage_scenario: full_offpeak
+    window_weekly_tokens: 526000000    # 5.26 亿/周
+    window_monthly_tokens: 2104000000
+    model_route: GLM-5.2
+    cache_hit_rate: 90.9
+    credibility: medium
+    disputed: false
+    notes: |
+      来源:智谱官方《套餐概览》(z.ai 是智谱海外版)
+      https://docs.bigmodel.cn/cn/coding-plan/overview
+      「编程场景(90.9% 缓存命中)官方换算:Pro 周可 2.63–5.26 亿 tokens」
+      ⚠ 官方场景估算,非实测。普通用户在高峰期混合跑只会到下限 2.63 亿。

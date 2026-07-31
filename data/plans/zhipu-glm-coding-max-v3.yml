@@ -79,3 +79,21 @@ measurements:
       原文:Max「¥ 862.4 /月 | ¥ 1078 /月 | 14× Lite 用量额度」。
       「适合高阶用户中大型 Repo 深度开发」。
       ⚠ claimed only,无 measured。
+
+  # 官方「全非高峰期」场景估算(不是实测,只供参考)
+  - measurement_id: m_2026_07_zhipu_max_v3_offpeak_weekly_estimate
+    source_kind: vendor_scenario_estimate
+    period: 2026-07-31
+    usage_scenario: full_offpeak
+    window_weekly_tokens: 1226000000   # 12.26 亿 tokens/周 (官方估算上限)
+    window_monthly_tokens: 4904000000  # 12.26 亿 × 4 ≈ 4.9B/月
+    model_route: GLM-5.2
+    cache_hit_rate: 90.9
+    credibility: medium
+    disputed: false
+    notes: |
+      来源:智谱官方《套餐概览》积分抵扣计算方式
+      https://docs.bigmodel.cn/cn/coding-plan/overview
+      「编程场景(90.9% 缓存命中)官方换算:Max 周可 6.13–12.26 亿 tokens」
+      上限 12.26 亿 = 全非高峰期场景(避免高峰 14:00-18:00 ×3 扣费)。
+      ⚠ 官方场景估算,非实测。普通用户在高峰期混合跑只会到下限 6.13 亿。

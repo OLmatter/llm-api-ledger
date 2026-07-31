@@ -81,3 +81,20 @@ measurements:
       原文:Lite「$12.6 /month $18/month Subscribe | 10,000 Credits / week」。
       「New Monthly | Quarterly -20% | Yearly -30%」三个价格档。
       ⚠ claimed only,无 measured。
+
+  # 官方「全非高峰期」场景估算(不是实测,只供参考)
+  - measurement_id: m_2026_07_zai_lite_v3_offpeak_weekly_estimate
+    source_kind: vendor_scenario_estimate
+    period: 2026-07-31
+    usage_scenario: full_offpeak
+    window_weekly_tokens: 87000000     # 0.87 亿/周 (官方估算上限,与 zhipu Lite 同模型同模型池)
+    window_monthly_tokens: 348000000
+    model_route: GLM-5.2
+    cache_hit_rate: 90.9
+    credibility: medium
+    disputed: false
+    notes: |
+      来源:智谱官方《套餐概览》(z.ai 是智谱海外版,模型/计费一致)
+      https://docs.bigmodel.cn/cn/coding-plan/overview
+      「编程场景(90.9% 缓存命中)官方换算:Lite 周可 0.43–0.87 亿 tokens」
+      ⚠ 官方场景估算,非实测。普通用户在高峰期混合跑只会到下限 0.43 亿。
