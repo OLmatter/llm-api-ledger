@@ -23,11 +23,11 @@ hero:
 # 不用 link 形式, 用纯文字 + monospace 字体让 URL 本身可读
 ---
 
-<div style="text-align: center; margin: -1.5rem 0 2rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.1rem; color: var(--vp-c-text-2);">
+<p style="text-align: center; margin: -1rem 0 1.5rem; font-size: 0.85rem; color: var(--vp-c-text-3);">
 
-**🔗 github.com/[OLmatter](https://github.com/OLmatter)/[llm-api-ledger](https://github.com/OLmatter/llm-api-ledger)**
+github: **[LLM API Ledger](https://github.com/OLmatter/llm-api-ledger)**
 
-</div>
+</p>
 
 
 # 榜单 {#leaderboard}
