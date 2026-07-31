@@ -10,8 +10,8 @@ hero:
       text: 看榜单 →
       link: '#leaderboard'
 
-# 显眼显示 GitHub URL（截图分享时能搜到 repo 名字, 不只是显示名）
-# 不用 link 形式, 用纯文字 + monospace 字体让 URL 本身可读
+# 截图分享时, 让群友直接看到 repo URL (避免搜不到)
+# 跟"看榜单"按钮用 flex 水平排列, 跟 hero 区视觉一致
 ---
 
 <p style="text-align: center; margin: -1rem 0 1.5rem; font-size: 0.85rem; color: var(--vp-c-text-3);">
