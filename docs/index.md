@@ -9,16 +9,11 @@ hero:
     - theme: brand
       text: 看榜单 →
       link: '#leaderboard'
-
-# 截图分享时, 让群友直接看到 repo URL (避免搜不到)
-# 用 <div> 不用 <p>, 避免 markdown 渲染嵌套 <p> 失效
+    # 截图分享时, 让群友直接看到 repo (避免搜不到)。放 actions 里才能和主按钮同行对齐
+    - theme: alt
+      text: 'github: OLmatter/llm-api-ledger'
+      link: https://github.com/OLmatter/llm-api-ledger
 ---
-
-<div style="text-align: center; margin: -1rem 0 1.5rem; font-size: 1rem; color: var(--vp-c-text-1);">
-
-github: **[LLM API Ledger](https://github.com/OLmatter/llm-api-ledger)**
-
-</div>
 
 
 # 榜单 {#leaderboard}
