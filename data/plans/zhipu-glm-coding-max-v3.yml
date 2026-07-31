@@ -74,6 +74,9 @@ ratio_note: |
 measurements:
   - measurement_id: m_2026_07_zhipu_max_v3_official_pricing
     source_kind: anthropic_official
+    source_url: https://www.bigmodel.cn/glm-coding
+    evidence_path: data/zhipu/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31
     period: 2026-07-31
     pricing_monthly_cny: 1078
     pricing_quarterly_cny: 2587.2
@@ -90,6 +93,9 @@ measurements:
   # 抵扣系数表（智谱官方 docs, 2026-07-31 auto_get 抓取）
   - measurement_id: m_2026_07_zhipu_max_v3_credit_coefficients
     source_kind: anthropic_official
+    source_url: https://docs.bigmodel.cn/cn/coding-plan/overview
+    evidence_path: data/zhipu/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31
     period: 2026-07-31
     credibility: high
     disputed: false

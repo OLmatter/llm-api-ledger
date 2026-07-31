@@ -72,6 +72,9 @@ ratio_note: |
 measurements:
   - measurement_id: m_2026_07_zai_lite_v3_official_pricing
     source_kind: anthropic_official
+    source_url: https://docs.z.ai/guides/overview/pricing
+    evidence_path: data/zai/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31
     period: 2026-07-31
     pricing_monthly_usd: 18
     pricing_quarterly_usd: 43.2
@@ -88,6 +91,9 @@ measurements:
   # 抵扣系数表（智谱官方 docs, 2026-07-31 auto_get 抓取,z.ai = 智谱海外版,同模型池同计费）
   - measurement_id: m_2026_07_zai_lite_v3_credit_coefficients
     source_kind: anthropic_official
+    source_url: https://docs.z.ai/guides/overview/pricing
+    evidence_path: data/zai/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31
     period: 2026-07-31
     credibility: high
     disputed: false

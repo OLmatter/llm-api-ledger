@@ -116,6 +116,9 @@ measurements:
   # ── 2. 政策层：5h 翻倍永久 ──
   - measurement_id: m_2026_05_5h_doubling_permanent
     source_kind: anthropic_official
+    source_url: https://www.anthropic.com/pricing
+    evidence_path: data/anthropic/official/2026-07-31_claude_pro_pricing.md
+    captured_at: 2026-07-31
     period: 2026-05-06 ~
     cost_limit_5h_usd_before: 18.00
     cost_limit_5h_usd_after: 36.00
@@ -128,6 +131,9 @@ measurements:
   # ── 3. 政策层：周 +50% 临时促销已结束 ──
   - measurement_id: m_2026_07_weekly_promo_50pct_expired
     source_kind: anthropic_official
+    source_url: https://www.anthropic.com/pricing
+    evidence_path: data/anthropic/official/2026-07-31_claude_pro_pricing.md
+    captured_at: 2026-07-31
     period: 2026-05-14 ~ 2026-07-19
     weekly_bonus_percent: 50
     status: expired
