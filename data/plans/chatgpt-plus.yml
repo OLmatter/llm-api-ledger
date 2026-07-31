@@ -147,29 +147,32 @@ measurements:
   - measurement_id: m_2026_07_plus_model_gpt_5_6_terra
     source_kind: per_model_breakdown
     model_id: gpt-5.6-terra
-    window_weekly_tokens: 193000000     # 193M ($0.5175/M × 193M = $100)
-    window_monthly_tokens: 772000000    # 772M
-    cost_per_million: 0.5175
+    window_weekly_tokens: 241500000     # 241.5M ($0.414/M × 241.5M = $100)
+    window_monthly_tokens: 966000000    # 966M
+    cost_per_million: 0.4140
     credibility: medium
     notes: |
-      按 Gemini 92/7.3/0.7 + gpt-5.6-terra 定价 ($2.5/$0.25/$15) 反推:
-      0.92 × $0.25 + 0.073 × $2.5 + 0.007 × $15 = $0.5175/M
-      $100 ÷ $0.5175 = 193M tokens/周
-      @Personuo 175M 完美命中(差 18M,在 Gemini 比例浮动范围内)。
+      2026-07-31 调价后按 Gemini 92/7.3/0.7 + gpt-5.6-terra 新定价 ($2/$0.2/$12) 反推:
+      0.92 × $0.2 + 0.073 × $2 + 0.007 × $12 = $0.414/M
+      $100 ÷ $0.414 = 241.5M tokens/周
+      调价前 Terra 193M/周 → 调价后 241.5M/周 (+25%)。
+      ⚠️ 2026-07-31 调价来自腾讯新闻/CSDN 报道,等 OpenAI 官方页确认。
       ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
 
   - measurement_id: m_2026_07_plus_model_gpt_5_6_luna
     source_kind: per_model_breakdown
     model_id: gpt-5.6-luna
-    window_weekly_tokens: 483000000     # 483M ($0.207/M × 483M = $100)
-    window_monthly_tokens: 1930000000   # 1.93B
-    cost_per_million: 0.2070
+    window_weekly_tokens: 2415000000    # 2.415B ($0.0414/M × 2415M = $100)
+    window_monthly_tokens: 9660000000   # 9.66B
+    cost_per_million: 0.0414
     credibility: medium
     notes: |
-      按 Gemini 92/7.3/0.7 + gpt-5.6-luna 定价 ($1/$0.1/$6) 反推:
-      0.92 × $0.1 + 0.073 × $1 + 0.007 × $6 = $0.207/M
-      $100 ÷ $0.207 = 483M tokens/周
+      2026-07-31 调价后按 Gemini 92/7.3/0.7 + gpt-5.6-luna 新定价 ($0.2/$0.02/$1.2) 反推:
+      0.92 × $0.02 + 0.073 × $0.2 + 0.007 × $1.2 = $0.0414/M
+      $100 ÷ $0.0414 = 2415M tokens/周
+      调价前 Luna 483M/周 → 调价后 2415M/周 (+400%)。
       Luna 是 Plus 用户最经济选择,但能力不如 Sol/Terra。
+      ⚠️ 2026-07-31 调价来自腾讯新闻/CSDN 报道,等 OpenAI 官方页确认。
       ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
 
   # Pro tier 独占 model 在 Plus 里不可用,跳过

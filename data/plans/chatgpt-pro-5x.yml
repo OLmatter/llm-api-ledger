@@ -114,21 +114,25 @@ measurements:
   - measurement_id: m_2026_07_pro_5x_model_gpt_5_6_terra
     source_kind: per_model_breakdown
     model_id: gpt-5.6-terra
-    window_weekly_tokens: 965000000      # $540 ÷ $0.5175/M = 1043M (取整 965M)
-    window_monthly_tokens: 3860000000
-    cost_per_million: 0.5175
+    window_weekly_tokens: 1304000000     # $540 ÷ $0.414/M = 1304M (取整 1.3B)
+    window_monthly_tokens: 5216000000
+    cost_per_million: 0.4140
     credibility: medium
     notes: |
-      Pro 5× = 193M × 5 = 965M tokens/周 (gpt-5.6-terra)。
+      2026-07-31 调价后:Pro 5× = 241.5M × 5 = 1207.5M tokens/周 (取整 1.3B) (gpt-5.6-terra)。
+      调价前 965M/周 → 调价后 1.3B/周 (+35%)。
+      ⚠️ 2026-07-31 调价来自腾讯新闻/CSDN 报道,等 OpenAI 官方页确认。
       ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。
 
   - measurement_id: m_2026_07_pro_5x_model_gpt_5_6_luna
     source_kind: per_model_breakdown
     model_id: gpt-5.6-luna
-    window_weekly_tokens: 2415000000     # $540 ÷ $0.207/M = 2609M (取整 2.4B)
-    window_monthly_tokens: 9660000000    # 9.66B
-    cost_per_million: 0.2070
+    window_weekly_tokens: 13043000000    # $540 ÷ $0.0414/M = 13043M (取整 13B)
+    window_monthly_tokens: 52172000000   # 52.2B
+    cost_per_million: 0.0414
     credibility: medium
     notes: |
-      Pro 5× = 483M × 5 = 2.4B tokens/周 (gpt-5.6-luna)。
+      2026-07-31 调价后:Pro 5× = 2415M × 5 = 12075M tokens/周 (取整 13B) (gpt-5.6-luna)。
+      调价前 2.4B/周 → 调价后 13B/周 (+440%)。
+      ⚠️ 2026-07-31 调价来自腾讯新闻/CSDN 报道,等 OpenAI 官方页确认。
       ⚠️ 这是标准额度，用几块钱的重置卡或者官方都会重置额度。

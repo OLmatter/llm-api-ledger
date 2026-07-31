@@ -84,22 +84,29 @@ model_pricing:
       默认最大推理强度,实测可能比 5.5 触发更多推理 token(社区吐槽"Token 刺客")。
 
   gpt-5.6-terra:
-    input: 2.50
-    cached_input: 0.25
-    output: 15.00
+    input: 2.00
+    cached_input: 0.20
+    output: 12.00
     source: https://openai.com/api/pricing/
+    source_secondary: https://new.qq.com/rain/a/20260731A05HG100
     note: |
-      2026-07-09 发布,GPT-5.6 三档均衡版(性能对标 5.5,价格一半)。
+      2026-07-09 发布,GPT-5.6 三档均衡版(性能对标 5.5)。
+      2026-07-31 调价 -20%:input $2.50→$2.00,output $15→$12,cached $0.25→$0.20。
       性价比主力,被多家媒体称为"性价比甜点"。
       @Personuo 175M/周 反推最可能 Plus 路由模型。
+      ⚠️ 2026-07-31 调价来自腾讯新闻/CSDN 报道,等 OpenAI 官方页确认。
 
   gpt-5.6-luna:
-    input: 1.00
-    cached_input: 0.10
-    output: 6.00
+    input: 0.20
+    cached_input: 0.02
+    output: 1.20
     source: https://openai.com/api/pricing/
+    source_secondary: https://new.qq.com/rain/a/20260731A05HG100
     note: |
-      2026-07-09 发布,GPT-5.6 三档经济版(价格为 Sol 的 1/5)。
+      2026-07-09 发布,GPT-5.6 三档经济版。
+      2026-07-31 调价 -80%:input $1.00→$0.20,output $6.00→$1.20,cached $0.10→$0.02。
+      Luna 是 Plus 用户最经济选择,但能力不如 Sol/Terra。
+      ⚠️ 2026-07-31 调价来自腾讯新闻/CSDN 报道,等 OpenAI 官方页确认。
 
   gpt-5.5-pro:
     input: 30.00
