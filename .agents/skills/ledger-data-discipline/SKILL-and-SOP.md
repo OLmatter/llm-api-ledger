@@ -860,6 +860,40 @@ $60 / $0.01516 = 3,958 请求 vs 官方 4,300（误差 8.6%）
 - build 输出 `with_credit.h5 = null / weekly = null / monthly = base + credit`（once 情况）
 - 前端用 `v-if` 区分 null 不显示 vs 数字显示
 
+### 铁律 26：commit + push 之前必须先截图给用户过目（2026-08-01 用户教学，2 次反馈后升级）
+
+**用户原话**：「这次你忘了先让我审核再发布了，下次注意」
+
+**事故**：本会话曾多次违反「先出图再 commit」的流程：
+1. 第一次：hero github 按钮文字不可见（`<p>` 嵌套闭合导致浏览器自动闭合外层）
+2. 第二次：hero 文字偏移（容器不同居中点）
+3. 第三次：hero 时间精度从日改到分钟时，**直接 build + commit + push 之后才截图**——这是流程性违规，commit/push 不可逆（虽然可 git revert 但 GitHub 已留记录），用户失去否决机会
+
+**铁律 24 vs 铁律 26 的区别**：
+- 铁律 24：交付前截图（覆盖「草稿」阶段、出图验收）
+- 铁律 26：**commit + push 之前**必须先截图（覆盖「不可逆」边界）
+
+**规则**（硬顺序，不能颠倒）：
+```
+改代码 → 起 dev server + 截图 → 贴给用户 → 等口头确认 → commit + push → 关 dev server
+```
+
+**反模式（错误流程，commit 在截图之前）**：
+- ❌ 改代码 → build → commit → push → 截图（push 不可逆）
+- ❌ 改代码 → build → 截图（截图在 build 之后但 commit 之前，仍给 commit 加了截图，OK，但截图和 commit 同步进行没给用户时间否决）
+- ❌ 改代码 → build → commit → push → 文字汇报（用户看不到效果）
+
+**例外（不需要用户过目）**：
+- 纯文本 typo 修正（拼写错误、注释笔误）
+- 内部 memory / feedback 记录更新（不涉及渲染输出）
+- 已 approved 范围内的 yml 字段补全（之前已明确说过怎么改）
+
+**判断标准**：任何「改了用户能看到的输出」都算可视化产物——代码、配置、build 脚本、组件 CSS、yml、json、markdown。
+
+**配合纪律**：
+- 铁律 24（截图）→ 铁律 26（截图后 commit）
+- feedback_self_close_dev_server（commit 后立即关 dev server）
+
 ### 铁律 24：交付前必须先截图给用户过目（2026-07-31 用户教学）
 
 **用户原话**：「你可以把本地榜单给我看，一般"把草稿给我过目就是这样"」
@@ -1046,6 +1080,7 @@ features:
 | 改完代码没截图直接说「好了」 | 漏交付前截图 | 铁律 24 |
 | 官方请求数与反推误差 > 15% | 缺自洽性验算 | 铁律 22 |
 | 一次性 credit 显示在 5h/周/月三列 | 漏 credit_apply 语义判断 | 铁律 25 |
+| 改完代码直接 commit + push 之后才截图 | 流程反了：截图必须在 commit 之前 | 铁律 26 |
 
 ---
 
@@ -1064,6 +1099,7 @@ features:
 - 铁律 23（跨渠道零加价）：`opencode go zai deepseek 官方 6 6 一致`
 - 铁律 24（截图交付）：`本地榜单 草稿 过目`
 - 铁律 25（一次性 credit）：`opencode go credit_apply once 一次性 5h 周 月 不能加每个窗口`
+- 铁律 26（commit 前截图）：`审核 不可逆 push 之前 先出图`
 
 ---
 
