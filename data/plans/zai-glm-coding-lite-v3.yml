@@ -26,9 +26,11 @@ limits:
     requests_official: null
     tokens_measured: null
     tokens_official_claimed: null
-    credits_weekly: 10000
+    credits_5h: 2000               # 官方「2,000 Credits/5h」(z.ai = 智谱海外版,同套餐)
     note: |
-      官方页面原话:Lite「10,000 Credits / week」。
+      5h 窗口官方积分:2,000(Lite)/12,000(Pro)/28,000(Max)。
+      周积分 = 5h × 5(官方固定倍数)。
+      来源:docs.bigmodel.cn/cn/coding-plan/overview (智谱海外版一致)
       ⚠ 只有官方宣称,无实测数据。
   window_weekly:
     requests_official: null

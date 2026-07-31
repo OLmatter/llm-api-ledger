@@ -133,6 +133,54 @@ description: 改 llm-api-ledger 项目的套餐/厂商数据前必读。触发�
 
 ---
 
+## 0.6 查询技巧选择（事实查询强制走 AI 搜索）
+
+**2026-07-31 事故**：用户问「GLM Coding Plan 5h 限额是多少」，我用 WebSearch 关键词搜，拿到一堆 CSDN 二手博客推算数字。然后我**凭印象**推算「5h = weekly/33.6」（错的，应该是 /5）。用户质问「你连查都没去查？？」，贴 Doubao/百度 AI 搜索截图，AI 直接给「周额度 = 5h × 5」官方倍数关系。本地 Chrome dump `docs.bigmodel.cn/cn/coding-plan/overview` 验证：Lite 5h=2000/周=10000（=5×），Pro 5h=12000/周=60000（=5×），Max 5h=28000/周=140000（=5×）。
+
+**根因**：事实查询（数字、日期、定义、倍数关系）**应该优先用 AI 搜索**（Doubao/百度 AI/ChatGPT with browse/智谱清言等），不是关键词 WebSearch。WebSearch 返回链接列表，需要自己读 + 二次提炼 + 推算 → 容易出错。
+
+### 5 种查询工具 + 决策树
+
+| 工具 | 适用场景 | 限制 |
+|---|---|---|
+| **AI 搜索**(Doubao/百度 AI/ChatGPT with browse) | **事实查询**（数字/日期/定义/倍数关系/官方政策） | 需要联网，部分需要账号 |
+| **WebSearch** | 找特定页/URL（关键词搜索） | 返回链接列表，需自己读；二次提炼的数字 = 二手 |
+| **WebFetch** | 抓特定 URL 内容 | 域名不在白名单时报「Unable to verify」 |
+| **本地 Chrome dump-dom** | 绕过 WebFetch 拦截；SPA 初次渲染抓全 | `chrome.exe --headless --disable-gpu --no-sandbox --dump-dom URL` |
+| **mcp__chat_scraper__auto_get / search** | 多平台并行搜（HN/Reddit/Stack Overflow/DuckDuckGo） | 海外平台为主 |
+
+### 强制规则（铁律 21，2026-07-31 新增）
+
+1. **事实查询必须先 AI 搜索**（Doubao/百度 AI/ChatGPT with browse/智谱清言）。任何「XX 是多少」「XX 倍数关系」「XX 什么时候」类问题，先发 AI 搜索 query
+2. **AI 搜索 + 本地 Chrome dump 双重验证**：AI 给的数字要 dump 官方页（`chrome.exe --headless --no-sandbox --dump-dom URL > /tmp/dump.html`）交叉核对，不一致立即报告用户
+3. **WebSearch 二次提炼的数字必须标注「二手」**：「根据 CSDN 文章 X 报」≠「官方公布 X」
+4. **不要凭印象推算数学关系**：用户原话「5h 能反推吗？」→ 应该先查官方 5h 数字，不是 weekly/33.6 瞎算
+5. **WebFetch 受限 → 本地 Chrome dump**：`Unable to verify if domain X is safe to fetch` 时用本地 Chrome，**禁止**反复 WebFetch 同一域
+6. **找不到官方页 → 明确告诉用户「没找到官方页，只找到 X 来源」**，**禁止**编造或二次推算后当成官方数据
+
+### 自检（每次事实查询前扫一遍）
+
+- [ ] 这是「数字/日期/定义」类问题吗？是 → 优先 AI 搜索
+- [ ] AI 搜索结果是否明确给出官方数据？→ 是 → 用；→ 否 → dump 官方页验证
+- [ ] 是否需要 WebSearch 找 URL？→ 用 WebSearch 找 URL，再 dump
+- [ ] 是否在凭印象推算数学关系？→ 是 → 停下来，先查
+- [ ] WebFetch 报错？→ 改本地 Chrome dump
+
+**反推合法化流程**（来自用户原话「我看没问题同意你反推到其他套餐没问题吧？」）：
+```
+用户提供 1 个实测数据点
+   ↓
+我展示：「这是数据，可以反推到 X / Y / Z 套餐，反推公式是 A」
+   ↓
+用户同意（说「没问题」「同意」「可以」等）
+   ↓
+我才能在 yml 里填 inferred_* 字段 + build 函数读它
+```
+
+**未授权反推 = 禁止**。无 inferred_* 字段时 build 输出 null（前端显示 —）。
+
+---
+
 ## 1. 18 条铁律
 
 ### 铁律 1：pricing / discount / boost 严禁混用字段
