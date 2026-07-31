@@ -56,6 +56,7 @@ const SUBSCRIBE_URLS = {
   minimax:    'https://platform.minimaxi.com/subscribe/token-plan',
   kimi:       'https://www.kimi.com/code',
   zai:        'https://z.ai/subscribe',         // 智谱海外版（USD / 海外线路）
+  opencode:   'https://opencode.ai/docs/zh-cn/go/',
 }
 
 // 各厂商的窗口换算比例
@@ -73,6 +74,8 @@ const VENDOR_RATIOS = {
   openai:     { weekly_to_5h: null, monthly_to_weekly: 4.0, monthly_is_estimate: true },
   // Anthropic:5h 是主要瓶颈,周/月 Anthropic 不公开 cap 数字(留 null,前端显示 —)
   anthropic:  { weekly_to_5h: null, monthly_to_weekly: null, monthly_is_estimate: false },
+  // opencode Go:5h/周/月三个窗口官方都直接公布($12/$30/$60 + per-model 请求数),无需任何反推
+  opencode:   { weekly_to_5h: null, monthly_to_weekly: null, monthly_is_estimate: false },
 }
 
 // 各厂商不同 tier 的倍率（基于官方产品定义）
@@ -233,7 +236,9 @@ const plans = planFiles.map(f => {
     }
   } else if (pricing.intro_monthly) {
     intro_with_aff = pricing.intro_monthly
-    intro_tag = '用邀请码'
+    // 邀请码不给被推荐人折扣时（no_user_discount），这个价是官方首单价、人人都有，
+    // 标「用邀请码」会误导成"点了链接才有"（opencode Go 首月 $5 属此类）
+    intro_tag = affActive?.no_user_discount ? '首月价' : '用邀请码'
   }
   // 季付邀请码叠加(base 优先 intro_quarterly 限时价,fallback original_quarterly 长期方案价 — Z.AI/智谱场景)
   const quarterly_with_aff_base = pricing.intro_quarterly ?? pricing.original_quarterly
@@ -361,9 +366,20 @@ const plans = planFiles.map(f => {
     // 火山/智谱/z.ai v2：次数（requests_official）
     // 智谱/z.ai v3：积分/Credits（credits_weekly，单位 = 积分 or Credits）
     // MiniMax/Kimi：tokens（官方公布 token 总量）
+    // opencode Go：美元额度（cost_limit_usd,opencode 官方原意是金额不是次数）
     claimed: (() => {
       const lim = p.limits || {}
       const isTokenVendor = p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic'
+      // opencode Go：官方窗口是「$12/$30/$60 使用额度」，不是次数也不是 token
+      const isCostDollar = p.vendor === 'opencode' && lim.window_5h?.cost_limit_usd != null
+      if (isCostDollar) {
+        return {
+          unit: '$',
+          h5: lim.window_5h.cost_limit_usd,
+          weekly: lim.window_weekly?.cost_limit_usd ?? null,
+          monthly: lim.window_monthly?.cost_limit_usd ?? null,
+        }
+      }
       // v3 积分/Credits 单位（智谱/z.ai v3 启用，单位不同）
       const hasCredits = lim.window_weekly?.credits_weekly != null
       if (hasCredits) {
@@ -392,6 +408,7 @@ const plans = planFiles.map(f => {
     })(),
     claimed_unit: (() => {
       const lim = p.limits || {}
+      if (p.vendor === 'opencode' && lim.window_5h?.cost_limit_usd != null) return '$'
       if (lim.window_weekly?.credits_weekly != null) {
         return p.vendor === 'zai' ? 'Credits' : '积分'
       }
@@ -440,6 +457,9 @@ const plans = planFiles.map(f => {
         cost_per_million: m.cost_per_million,
         credibility: m.credibility,
         notes: m.notes,
+        // 数据来源范围标注（前端在 @model 后显示小标签，例如 @glm-5.2 [Go 观测]）
+        // 用于区分"厂商 API 通用值" vs "特定客户端/场景的观察值（如 opencode Go 缓存率 98%）"
+        scope: m.scope || null,
       })),
     // 数据争议标记：任一 measurement 标 disputed=true，整个 plan 标争议
     measurements_disputed: (p.measurements || []).some(x => x.disputed === true),
@@ -452,6 +472,7 @@ const plans = planFiles.map(f => {
       code: affActive.code,
       url: affActive.url,
       discount: affActive.discount,
+      no_user_discount: affActive.no_user_discount === true,   // 纯推荐链接，被推荐人无折扣
       stackable: affActive.stackable,
       discount_note: affActive.discount_note,
       owner: affActive.owner,

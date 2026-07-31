@@ -1,0 +1,184 @@
+# OpenCode Go
+# 2026-07-31 官方文档 https://opencode.ai/docs/zh-cn/go/ (Chrome headless dump-dom)
+# 定价:首月 $5,之后 $10/月
+# 限额以「美元使用额度」定义:5h $12 / 周 $30 / 月 $60
+#
+# ⚠ 本 yml 的 limits 主字段用 GLM-5.2 口径(vendor primary_model,便于与智谱/z.ai 套餐横比)。
+#   用户指定的另一个模型 DeepSeek V4 Flash 完整写在 measurements 里,数字差 47 倍。
+#   同一套餐选不同模型能跑的量差异极大,这是 Go 的固有特性,不是数据错误。
+
+plan_id: opencode-go
+vendor: opencode
+plan_name: OpenCode Go
+plan_tier: go
+status: active
+last_verified: 2026-07-31
+
+# Go 只有单一档位,自身即 1× 基准(无同厂商其他档可比)
+tier_multiplier: 1
+
+# 5h/周/月三个窗口官方都直接给了请求数,不需要任何跨窗口/跨档反推
+tokens_inference_disabled: true
+
+pricing:
+  currency: USD
+  original_monthly: 10
+  intro_monthly: 5               # 首月 $5(官方原文「首月 5 美元,之后每月 10 美元」)
+  intro_note: 首月 $5 仅第一个月,次月起恢复 $10/月
+  auto_renew_default: true
+
+limits:
+  window_5h:
+    requests_official: 880               # GLM-5.2 口径(官方预估表)
+    cost_limit_usd: 12.00                # 官方「5 小时限制 — 12 美元使用额度」
+    tokens_measured: null
+    tokens_scenario_estimate: 46508000   # 880 × 52,850 tokens/请求
+    tokens_official_claimed: null
+    note: |
+      官方限额以美元价值定义($12/5h),不是 token 数也不是次数。
+      880 请求 = 官方基于观察到的使用模式给出的 GLM-5.2 预估值。
+      46.51M tokens = 880 × 每请求 52,850 tokens(官方 token 组成:700 输入 + 52,000 缓存 + 150 输出)。
+      ⚠ 换 DeepSeek V4 Flash 同样 $12 可跑 31,650 请求 / 2.19B tokens(见 measurements)。
+  window_weekly:
+    requests_official: 2150              # GLM-5.2 口径
+    cost_limit_usd: 30.00                # 官方「每周限制 — 30 美元使用额度」
+    tokens_measured: null
+    tokens_scenario_estimate: 113627500  # 2,150 × 52,850
+    tokens_official_claimed: null
+  window_monthly:
+    requests_official: 4300              # GLM-5.2 口径
+    cost_limit_usd: 60.00                # 官方「每月限制 — 60 美元使用额度」
+    tokens_measured: null
+    tokens_scenario_estimate: 227255000  # 4,300 × 52,850
+    tokens_official_claimed: null
+    monthly_estimated: false             # 官方直接公布月窗口,非按周推算
+
+ratio_note: |
+  ## 这是什么
+  OpenCode Go 是 opencode(SST/Anomaly)出的**低成本开源模型订阅**,与按量充值的 OpenCode Zen 是两个产品。
+  订阅后拿到 API key,以 provider 形式接入 opencode TUI 或任意 Agent。
+
+  ## 定价与额度
+  - 首月 **$5**,之后 **$10/月**
+  - 额度以**美元价值**定义:5h **$12** / 周 **$30** / 月 **$60**
+  - 官方自述:「你每月支付 $10,我们的目标是为你提供 6 倍于此的使用额度」,靠批量折扣 + 预留 GPU 容量实现
+
+  ## ⚠ 6× 乘数不是全模型统一
+  月额度 **$60** 档:GLM-5.2 / GLM-5.1 / Kimi K2.7 Code / Kimi K2.6 / MiniMax M3 / M2.7 / M2.5 /
+  Qwen3.7 Plus / Qwen3.6 Plus / Qwen3.7 Max / MiMo-V2.5 / DeepSeek V4 Flash / Hy3
+  月额度 **$15** 档:Grok 4.5 / GPT 5.6 Luna / Kimi K3 / DeepSeek V4 Pro / MiMo-V2.5-Pro
+  官方解释:这些模型尚未谈下批量折扣,或其公开价已经是折扣价。
+
+  ## 零加价已验证(2026-07-31,6/6 项一致)
+  | 模型 | Go 输入/输出/缓存($/M) | 厂商官方 | 来源 |
+  |---|---|---|---|
+  | GLM-5.2 | 1.40 / 4.40 / 0.26 | 1.4 / 4.4 / 0.26 | docs.z.ai/guides/overview/pricing |
+  | DeepSeek V4 Flash | 0.14 / 0.28 / 0.0028 | 0.14 / 0.28 / 0.0028 | api-docs.deepseek.com/quick_start/pricing |
+  Go 不在单价上加价,价值全部来自 6× 额度乘数。
+
+  ## 选模型决定能跑多少(差 47 倍)
+  同样 $60 月额度:
+  - GLM-5.2 → 4,300 请求 / 2.27 亿 tokens
+  - DeepSeek V4 Flash → 158,150 请求 / 109.23 亿 tokens
+  榜单主字段取 GLM-5.2 口径(旗舰,便于与智谱/z.ai 横比),不代表 Go 的上限。
+
+  ## 撞限之后
+  - 仍可继续使用免费模型
+  - 若 Zen 账户有余额,可在控制台开启「Use balance」,撞限后回退用 Zen 余额继续跑(不拦截请求)
+
+  ## 限制
+  每个工作空间只能有一名成员订阅 Go。官方注明使用限制可能随早期反馈调整。
+
+measurements:
+  # ── 1. 官方定价与额度(一手) ──
+  - measurement_id: m_2026_07_opencode_go_official_pricing
+    source_kind: vendor_official
+    period: 2026-07-31
+    pricing_first_month_usd: 5
+    pricing_monthly_usd: 10
+    cost_limit_5h_usd: 12
+    cost_limit_weekly_usd: 30
+    cost_limit_monthly_usd: 60
+    credibility: high
+    disputed: false
+    notes: |
+      来源:https://opencode.ai/docs/zh-cn/go/ (Chrome headless --dump-dom 抓取)
+      原文:「OpenCode Go 是一项低成本的订阅服务 —— 首月 5 美元,之后每月 10 美元」
+      「5 小时限制 — 12 美元使用额度 / 每周限制 — 30 美元使用额度 / 每月限制 — 60 美元使用额度」
+      「限制以美元价值定义。这意味着你的实际请求数取决于你所使用的模型。」
+
+  # ── 2. GLM-5.2 口径(榜单主字段来源) ──
+  - measurement_id: m_2026_07_opencode_go_glm_5_2
+    source_kind: per_model_breakdown
+    period: 2026-07-31
+    model_id: glm-5.2
+    scope: opencode-go-client    # OpenCode Go 客户端在自家使用模式下的观察值，非 API 通用值
+    requests_5h: 880
+    requests_weekly: 2150
+    requests_monthly: 4300
+    tokens_per_request: 52850          # 700 输入 + 52,000 缓存 + 150 输出
+    window_5h_tokens: 46508000
+    window_weekly_tokens: 113627500
+    window_monthly_tokens: 227255000
+    input_per_million: 1.40
+    output_per_million: 4.40
+    cached_per_million: 0.26
+    cost_per_request: 0.01516
+    cost_per_million: 0.2868           # $0.01516 ÷ 52,850 tokens × 1e6
+    model_monthly_credit_usd: 60
+    credibility: medium
+    disputed: false
+    notes: |
+      请求数与 token 组成均为官方公布(https://opencode.ai/docs/zh-cn/go/)。
+      官方 token 组成原文:「GLM-5.2/5.1 — 每次请求 700 个输入 token,52,000 个缓存 token,150 个输出 token」。
+      tokens = 官方请求数 × 官方每请求 token 数(两个独立官方数字相乘,非本项目自行反推)。
+
+      ⚠ 自洽性验算存在 8.6% 缺口,如实记录不掩盖:
+      每请求成本 = (700×$1.40 + 52,000×$0.26 + 150×$4.40) / 1e6 = $0.01516
+      按此反推 $60 月额度 = 3,958 请求,但官方标 4,300(高 8.6%);
+      $12/5h 反推 = 792 请求,官方标 880(高 11.2%)。
+      推断:GLM-5.2 在 Go 走的是厂商标价(无额外批量折扣),官方请求数为实际观察值取整,
+      两者不完全等价。榜单采用官方公布的请求数,不用反推值覆盖。
+
+      单价交叉验证:z.ai 官方 docs(docs.z.ai/guides/overview/pricing, 2026-07-31)
+      GLM-5.2 = Input $1.4 / Cached Input $0.26 / Output $4.4,与 Go 完全一致,零加价属实。
+
+  # ── 3. DeepSeek V4 Flash 口径(用户指定的第二个模型) ──
+  - measurement_id: m_2026_07_opencode_go_deepseek_v4_flash
+    source_kind: per_model_breakdown
+    period: 2026-07-31
+    model_id: deepseek-v4-flash
+    scope: opencode-go-client    # OpenCode Go 客户端观察值：80.4% 缓存命中极高(因为 cache 跨轮复用),
+    # 不是 DS V4 Flash API 在所有场景下的通用缓存率
+    requests_5h: 31650
+    requests_weekly: 79050
+    requests_monthly: 158150
+    tokens_per_request: 69070          # 790 输入 + 68,000 缓存 + 280 输出
+    window_5h_tokens: 2186065500
+    window_weekly_tokens: 5459983500
+    window_monthly_tokens: 10923420500
+    input_per_million: 0.14
+    output_per_million: 0.28
+    cached_per_million: 0.0028
+    cost_per_request: 0.0003794
+    cost_per_million: 0.005493         # $0.0003794 ÷ 69,070 tokens × 1e6
+    model_monthly_credit_usd: 60
+    credibility: high
+    disputed: false
+    notes: |
+      请求数与 token 组成均为官方公布(https://opencode.ai/docs/zh-cn/go/)。
+      官方 token 组成原文:「DeepSeek V4 Flash — 每次请求 790 个输入 token,68,000 个缓存 token,280 个输出 token」。
+
+      ✅ 自洽性验算完全通过(误差 <0.1%),credibility 定 high:
+      每请求成本 = (790×$0.14 + 68,000×$0.0028 + 280×$0.28) / 1e6 = $0.0003794
+      $12 / $0.0003794 = 31,629 请求 vs 官方 31,650 ✓
+      $30 / $0.0003794 = 79,072 请求 vs 官方 79,050 ✓
+      $60 / $0.0003794 = 158,145 请求 vs 官方 158,150 ✓
+
+      单价交叉验证:DeepSeek 官方 docs(api-docs.deepseek.com/quick_start/pricing, 2026-07-31)
+      deepseek-v4-flash = cache miss(输入) $0.14 / cache hit(缓存) $0.0028 / 输出 $0.28,
+      与 Go 完全一致,零加价属实。
+
+      ⚠ 存疑记录:opencode **Zen** 页面同一模型缓存读标 $0.028(比 Go 页和 DeepSeek 官方高 10 倍)。
+      用 $0.028 反推得 28,667 请求,对不上官方标的 158,150;用 $0.0028 才对得上。
+      判定为 Zen 页面少写一位的可能性大,**不**作为「Zen 加价」的证据,待官方澄清。

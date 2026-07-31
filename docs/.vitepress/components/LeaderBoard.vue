@@ -187,6 +187,21 @@ function fmtClaimed(plan, n) {
   return String(n)
 }
 
+// measurement.scope 标签：区分"厂商 API 通用值" vs "特定客户端/场景的观察值"
+// 例：scope='opencode-go-client' → "Go 观测" + tooltip 解释
+function scopeLabel(scope) {
+  const map = {
+    'opencode-go-client': 'Go 观测',
+  }
+  return map[scope] || scope
+}
+function scopeTooltip(scope) {
+  const map = {
+    'opencode-go-client': '数据是 OpenCode 团队在自家 Go 客户端上观察到的使用模式，不是该模型 API 在所有场景下的通用值（缓存率尤其偏高于通用 API）。',
+  }
+  return map[scope] || ''
+}
+
 // 格式化 token 数：893800000 → "894M"，1234567 → "1.2M"
 // 单位由 tokenUnit 控制：'m_b' 默认(M/B/K) | 'yi' 中文习惯(亿/万/K)
 const tokenUnit = ref('m_b')  // 'm_b' | 'yi'
@@ -455,6 +470,7 @@ function fmtTokensYi(n) {
                   <span v-if="mb.h5_tokens">{{ fmtTokens(mb.h5_tokens) }}</span>
                   <span v-else class="muted">—</span>
                   <span class="model-tag">@{{ mb.model_id }}</span>
+                  <span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
                 </div>
               </template>
               <template v-else>
@@ -468,7 +484,7 @@ function fmtTokensYi(n) {
             <td class="num tok" :class="{ disputed: row.plan.tokens.weekly_disputed }">
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
                 <div v-for="mb in row.plan.model_breakdown" :key="'w-' + mb.model_id" class="tok-row">
-                  {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span>
+                  {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
                 </div>
               </template>
               <template v-else>
@@ -485,7 +501,7 @@ function fmtTokensYi(n) {
             <td class="num tok">
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
                 <div v-for="mb in row.plan.model_breakdown" :key="'m-' + mb.model_id" class="tok-row">
-                  {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span>
+                  {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
                 </div>
               </template>
               <template v-else>
@@ -640,6 +656,19 @@ thead tr:nth-child(2) th {
   font-family: monospace;
   margin-left: 4px;
   letter-spacing: .2px;
+}
+/* 数据来源范围标签（区别于厂商 API 通用值的特殊场景）—— 橙色提醒 */
+.scope-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: #d97706;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 3px;
+  padding: 0 4px;
+  margin-left: 4px;
+  cursor: help;
+  white-space: nowrap;
 }
 
 /* hover tooltip 标记 — 红色感叹号 ! + 下方弹出 tooltip */

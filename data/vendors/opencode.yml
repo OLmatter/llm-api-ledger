@@ -1,0 +1,77 @@
+affiliate:
+  added_at: 2026-07-31
+  code: AQ0H42B676
+  discount: null                # 官方页未公布推荐码权益，铁律 16：没数据不编
+  no_user_discount: true        # 显式声明：这是纯推荐链接，被推荐人不打折（区别于"忘填 discount"）
+  discount_note: 推荐链接（种 30 天 oc_referral cookie）；官方未公布返现/送额度规则，被推荐人价格与直接购买相同
+  expires: null
+  models_highlight: GLM-5.2, DeepSeek V4 Flash, Kimi K2.7 Code, MiniMax M3
+  owner: OLmatter
+  stackable: false              # 无折扣数值，不参与叠加计算
+  url: https://opencode.ai/go?ref=AQ0H42B676
+brand_color: '#f5a623'
+docs: https://opencode.ai/docs/zh-cn/go/
+homepage: https://opencode.ai/
+last_verified: 2026-07-31
+shared_features:
+  api:
+    key_prefix: null
+    upstream: https://opencode.ai/zen/go/v1
+  clients:
+  - opencode TUI
+  - 任意支持 OpenAI/Anthropic 格式的 Agent
+  clients_note: 'Go 以「provider + API key」形式接入，TUI 里 /connect 选 OpenCode Go 粘贴密钥。
+
+    每个工作空间只能有一名成员订阅 Go。
+
+    '
+  models:
+  - GLM-5.2
+  - GLM-5.1
+  - DeepSeek V4 Flash
+  - DeepSeek V4 Pro
+  - Kimi K2.7 Code
+  - Kimi K2.6
+  - Kimi K3
+  - MiniMax M3
+  - MiniMax M2.7
+  - Qwen3.7 Max
+  - Qwen3.7 Plus
+  - Qwen3.6 Plus
+  - MiMo-V2.5
+  - MiMo-V2.5-Pro
+  - Grok 4.5
+  - GPT 5.6 Luna
+  - Hy3
+  models_note: 'Go 只收录开源/低成本编程模型，不含 Claude / Gemini / GPT 旗舰（那些要走 Zen 按量）。
+
+    单价 = 各模型厂商官方价，零加价；价值来自「$10/月 换 $60 使用额度」的 6× 乘数。
+
+    ⚠ 乘数不是全模型统一：GLM-5.2 / DeepSeek V4 Flash / Kimi K2.7 / MiniMax M3 等为 $60/月额度；
+
+    Grok 4.5 / GPT 5.6 Luna / Kimi K3 / DeepSeek V4 Pro / MiMo-V2.5-Pro 只有 $15/月额度
+
+    （官方解释：这些模型尚未谈下批量折扣，或公开价已是折扣价）。
+
+    '
+  primary_model: GLM-5.2
+  rate_limit_note: '三重限制以「美元使用额度」定义，不是 token 数也不是次数：
+
+    - 5h 滚动窗口 $12
+
+    - 周窗口 $30
+
+    - 月窗口 $60
+
+    实际能跑多少请求完全取决于选哪个模型（便宜模型跑得多）。
+
+    撞限后仍可继续用免费模型；若 Zen 账户有余额，可在控制台开「Use balance」回退到 Zen 余额继续跑。
+
+    '
+  rate_limit_tiers:
+  - 5h
+  - weekly
+  - monthly
+vendor_display: opencode
+vendor_display_en: opencode
+vendor_id: opencode

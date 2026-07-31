@@ -191,11 +191,16 @@ function checkAffiliateSchema(plan) {
   const aff = plan.affiliate
   if (aff == null) return  // null 是合法的（无邀请码）
   const pid = plan.plan_id || '(unknown)'
-  const required = ['code', 'url', 'discount']
-  for (const f of required) {
+  // code/url 恒为必填；discount 允许显式 null，但必须配 no_user_discount: true 声明
+  // （区分「忘填折扣」和「这个码本来就不给被推荐人折扣」——opencode Go 就是后者，
+  //   官方只种 referral cookie，被推荐人价格与直接购买相同）
+  for (const f of ['code', 'url']) {
     if (aff[f] == null) {
-      err(pid, '铁律7', `affiliate 缺字段 ${f}（必填：code/url/discount）`)
+      err(pid, '铁律7', `affiliate 缺字段 ${f}（必填：code/url）`)
     }
+  }
+  if (aff.discount == null && aff.no_user_discount !== true) {
+    err(pid, '铁律7', `affiliate 缺字段 discount（若该码确实不给被推荐人折扣，显式写 no_user_discount: true）`)
   }
   if (aff.discount != null) {
     if (typeof aff.discount !== 'number' || aff.discount <= 0 || aff.discount >= 1) {
