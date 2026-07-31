@@ -411,6 +411,18 @@ pricing:
 
 **实测字段留空 ≠ 0**：`tokens_measured: null` 表示"还没测"，前端展示 `—`。**不准填 0，不准填官方宣称值冒充实测**。
 
+**build 不能 fallback claim 字段当作实测**（**2026-07-31 教训**, 用户原话: 「有周算不出月？？？30/7算不懂？这不是瞬间的事？」+「本来就是啊周1b月怎么可能1.8b？想想都不可能」）:
+- `tokens_official_claimed` 是「参考数据」, build 禁止把它的值当 fallback 显示成"实测 tokens"
+- 数学推算 (weekly × 4.3 = 月) 是合法的, **官方 published cap 不是数学推算** — 两者不能混淆
+- 三种数据三种字段, build 必须区分:
+  | 来源 | 显示语义 | 字段 |
+  |---|---|---|
+  | 实测 | tokens (实测) | `tokens_measured` |
+  | 数学推算 | tokens (估算) | build 算 `weekly × ratio` |
+  | 官方 cap | **不显示** (只注释/yaml 留档) | `tokens_official_claimed` (build 不读) |
+- 例: MiniMax 1.8B M3 token 是官方 published cap (硬上限, 用户跑不到 1.8B, 实际是 1B/周 × 4周 ≈ 4B/月), build 当 fallback 显示是 1.8B 时, 数学上 4B vs 1.8B = 2.5× 矛盾, 用户一眼看穿
+- 修法: `tokens_official_claimed` 字段从 build 消费链删除 (留 yml 注释供文档), 数学推算保留 (weekly × monthly_to_weekly)
+
 ---
 
 ### 铁律 10：单样本必须标 disputed，多源聚合才能升级可信度
