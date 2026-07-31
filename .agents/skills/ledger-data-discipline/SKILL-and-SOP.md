@@ -495,6 +495,18 @@ arr.sort((a, b) => (tierRank[a.plan_tier] || 99) - (tierRank[b.plan_tier] || 99)
 arr.sort((a, b) => (a.tier_multiplier ?? 99) - (b.tier_multiplier ?? 99))
 ```
 
+**vendor 默认 vs yml override 优先级**（**2026-07-31 教训**, 用户原话: 「glm v3的三档比例不对[截图]是1、6、14」+「以后倍数这个也要考虑」）:
+- vendor 级 `TIER_RATIOS` 是 **default**, 不是 source of truth
+- 当同一 vendor 有**多代际套餐** (e.g., 智谱 v2 + v3) 比例不同时, vendor 默认会被错用
+- 例: `TIER_RATIOS.zhipu = 1:5:20` 是 v2 比例, v3 官方是 1:6:14, 不区分会让 v3 套餐显示 "×5 PRO / ×20 MAX" 错
+- 规则: build 必须**优先读 yml 字段**, vendor 默认作 fallback
+  ```javascript
+  // ✅ 正确：yml 字段优先, vendor 默认作 fallback
+  const tier_multiplier = p.tier_multiplier ?? TIER_RATIOS[p.vendor]?.[p.plan_tier]
+  ```
+- 适用范围: 不只是 `tier_multiplier`, 任何 vendor 级 config (VENDOR_RATIOS, TIER_RATIOS, primary_model, brand_color) 都遵循"yml 优先, vendor 默认 fallback"
+- 自检: 新增 yml 时, 如果跟同 vendor 旧套餐比例/参数不同, **必须显式写 yml 字段 override**, 不能依赖 vendor 默认
+
 ---
 
 ### 铁律 14：排序按钮分两类——分组型 vs 跨厂商型
