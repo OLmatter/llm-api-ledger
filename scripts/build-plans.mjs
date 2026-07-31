@@ -67,10 +67,7 @@ const SUBSCRIBE_URLS = {
 const VENDOR_RATIOS = {
   volcengine: { weekly_to_5h: 1 / 7.5, monthly_to_weekly: 2.0, monthly_is_estimate: false },
   zhipu:      { weekly_to_5h: 1 / 5.0, monthly_to_weekly: 4.3, monthly_is_estimate: true },
-  // MiniMax: 5h 实测反推周比例 1/10 保留 (Plus/Ultra 5h/周 从 Max 实测 sibling 反推)
-  // monthly_to_weekly: null — MiniMax 月度只有官方 published cap (1.8B Max / 0.6B Plus / 7.1B Ultra)
-  // 不是实测,build 不应算 weekly × 4.3 假充实测,前端显示 —
-  minimax:    { weekly_to_5h: 1 / 10.0, monthly_to_weekly: null },
+  minimax:    { weekly_to_5h: 1 / 10.0, monthly_to_weekly: 4.3, monthly_is_estimate: true },
   kimi:       { weekly_to_5h: null, monthly_to_weekly: null, monthly_is_estimate: false, monthly_unlimited: true },
   zai:        { weekly_to_5h: 1 / 5.0, monthly_to_weekly: 4.3, monthly_is_estimate: true },
   openai:     { weekly_to_5h: null, monthly_to_weekly: 4.0, monthly_is_estimate: true },
