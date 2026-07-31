@@ -104,9 +104,9 @@ function getDirectTokens(plan) {
   const lim = plan.limits || {}
   const ratio = VENDOR_RATIOS[plan.vendor]
   const direct = {
-    h5: lim.window_5h?.tokens_measured || null,
-    weekly: lim.window_weekly?.tokens_measured || null,
-    monthly: lim.window_monthly?.tokens_measured || null,
+    h5: lim.window_5h?.tokens_measured ?? lim.window_5h?.tokens_official_claimed ?? null,
+    weekly: lim.window_weekly?.tokens_measured ?? lim.window_weekly?.tokens_official_claimed ?? null,
+    monthly: lim.window_monthly?.tokens_measured ?? lim.window_monthly?.tokens_official_claimed ?? null,
     monthly_estimated: lim.window_monthly?.monthly_estimated || false,
   }
   // Kimi 特殊：周可能直接从 measurements 拿（Allegretto 社区实测 690M）

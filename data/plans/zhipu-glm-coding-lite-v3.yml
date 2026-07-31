@@ -27,7 +27,7 @@ limits:
   window_5h:
     requests_official: null
     tokens_measured: null          # v3 无实测数据(等用户实测后补)
-    tokens_official_claimed: null  # 官方未以 tokens 单位公布 5h cap
+    tokens_official_claimed: 17400000     # 87M/周 ÷ 5 (全非高峰官方估算)
     credits_5h: 2000               # 官方「2,000 积分/5h」(Lite 基础 5h 额度)
     note: |
       官方页面原话:Lite「10,000 积分/周」(基础档,Pro 6×, Max 14×)。
@@ -38,14 +38,15 @@ limits:
   window_weekly:
     requests_official: null
     tokens_measured: null
-    tokens_official_claimed: null
+    tokens_official_claimed: 87000000     # 0.87亿/周 (全非高峰官方估算, GLM-5.2 @ 90.9% 缓存)
     credits_weekly: 10000          # 官方宣称:10,000 积分/周(同 5h 字段的官方数据)
   window_monthly:
     requests_official: null
     tokens_measured: null
-    tokens_official_claimed: null
+    tokens_official_claimed: 348000000    # 0.87亿 × 4 (全非高峰 × 4 周)
     credits_monthly: 40000         # 10,000 积分/周 × 4 周(推算,标 estimated)
     credits_monthly_estimated: true
+    monthly_estimated: true
 
 ratio_note: |
   ## v2/v3 状态(2026-07-30 起)
