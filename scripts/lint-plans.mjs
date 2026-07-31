@@ -263,6 +263,29 @@ for (const plan of plans) {
   checkOriginalVsIntro(plan)
 }
 checkNoBasePrice()  // 铁律 17：检查 yml 源文件里的 base_*
+checkVendorOfficialHasEvidence()  // 铁律 28：yml 源文件级别检查
+
+// ── 铁律 28：vendor_official / anthropic_official 的 measurement 必须有 evidence_path ──
+// 没有 evidence 路径 = 声称"官方数据"但没有原始证据 → 公信力事故
+// 注意：lint 读 yml 源文件而不是 plans.json（build 不一定透传 source_kind）
+function checkVendorOfficialHasEvidence() {
+  for (const fname of ymlFiles) {
+    const text = ymlTexts[fname]
+    // 提取所有 measurement block（含 source_kind + evidence_path 检查）
+    const blocks = text.match(/-\s+measurement_id:[\s\S]*?(?=\n\s*-\s+measurement_id:|\nmeasurements_end|\Z)/g) || []
+    for (const block of blocks) {
+      const sourceKind = block.match(/source_kind:\s*(\S+)/)
+      if (!sourceKind) continue
+      const sk = sourceKind[1]
+      if (sk !== 'vendor_official' && sk !== 'anthropic_official') continue
+      const evidencePath = block.match(/evidence_path:\s*(\S+)/)
+      const mid = block.match(/measurement_id:\s*(\S+)/)?.[1] || '(unknown)'
+      if (!evidencePath) {
+        err(fname.replace('.yml', ''), '铁律28', `measurement ${mid} source_kind=${sk} 但缺 evidence_path（指向 data/evidence/<vendor>/ 下的证据文件）`)
+      }
+    }
+  }
+}
 
 // ── 输出 ──
 console.log('')

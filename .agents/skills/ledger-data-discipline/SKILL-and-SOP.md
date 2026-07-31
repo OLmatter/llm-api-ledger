@@ -893,6 +893,81 @@ $60 / $0.01516 = 3,958 请求 vs 官方 4,300（误差 8.6%）
 **配合纪律**：
 - 铁律 24（截图）→ 铁律 26（截图后 commit）
 - feedback_self_close_dev_server（commit 后立即关 dev server）
+- **铁律 27**（commit 前必跑 data-diff.mjs 看改动）—— data-diff 是"截图"在数据维度的等价物
+
+### 截图工作流（铁律 24 实操，2026-08-01 落地）
+
+**坑 1：vitepress preview 不做 base path rewrite**
+
+```bash
+# ❌ 用 vitepress preview：HTML link 写 /llm-api-ledger/assets/style.css
+#    但 preview serve 在 /assets/style.css → CSS 404 → 截出来没样式
+npx vitepress preview docs --port 4173
+
+# ✅ 用自定义 python server：去掉 base 前缀 + SPA fallback
+python scripts/_screenshot-server.py docs/.vitepress/dist  # 见 scripts/ 目录
+```
+
+**坑 2：vitepress SSR 输出 `<link rel="preload" as="style">`，headless chrome 不自动转 stylesheet**
+
+```html
+<!-- ❌ vitepress build 输出，headless 截图会"裸文本" -->
+<link rel="preload stylesheet" href="/.../style.css" as="style">
+
+<!-- ✅ 在 screenshot 前 sed 改 dist HTML（每次 build 后） -->
+for f in docs/.vitepress/dist/*.html; do
+  sed -i 's|rel="preload stylesheet" href="\([^"]*\)" as="style"|rel="stylesheet" href="\1"|g' "$f"
+done
+```
+
+**标准工作流**：
+```bash
+# 1. 起支持 base path 的 python server（替代 vitepress preview）
+python scripts/_screenshot-server.py docs/.vitepress/dist &
+
+# 2. 截大图兜底 + PIL 裁剪（chrome --screenshot= 是最稳的）
+"C:/Program Files/Google/Chrome/Application/chrome.exe" \
+  --headless=new --disable-gpu --no-sandbox --hide-scrollbars \
+  --window-size=1980,12000 \
+  --virtual-time-budget=20000 \
+  --run-all-compositor-stages-before-draw \
+  --screenshot="$WORKSPACE/.scratch/board.png" \
+  "http://127.0.0.1:4173/llm-api-ledger/#leaderboard"
+
+# 3. PIL 找最底部有内容的像素 + 裁掉底部留白
+python -c "
+from PIL import Image
+im = Image.open('.scratch/board.png')
+W, H = im.size
+pixels = im.convert('L').load()
+last_content = 0
+for y in range(H - 1, -1, -1):
+    row_min = min(pixels[x, y] for x in range(W))
+    if row_min < 250:
+        last_content = y
+        break
+im.crop((0, 0, W, last_content + 100)).save('.scratch/board.png')
+print(f'trimmed: {W}x{last_content + 100}')
+"
+
+# 4. 切 3 段方便 Read tool 加载
+python -c "
+from PIL import Image
+im = Image.open('.scratch/board.png')
+W, H = im.size
+seg_h = H // 3 + 50
+for i in range(3):
+    im.crop((0, i*seg_h, W, min((i+1)*seg_h, H))).save(f'.scratch/board_{i+1}.png')
+"
+```
+
+**反模式**（不要走）：
+- ❌ 用 CDP（`--remote-debugging-port` + ws）—— 复杂、跟用户浏览器冲突、需要 ws 依赖
+- ❌ 用 `--headless=new` + `Page.captureScreenshot` —— 在 vitepress 1.6.4 + 我的环境有 hydrate 时序问题
+- ❌ 用 chrome `--print-to-pdf` + pdf2image —— PDF 高度换算复杂、依赖 poppler
+- ❌ 把截图放在 git 里（`.scratch/` 已在 `.gitignore`）—— 截图不入仓
+
+**为什么不用 PIL 全行扫描找内容**：vitepress footer 浅灰文字（min=111）+ footer 后大段空白会**误导**算法以为 footer 是内容末端。要么手动 trim 到固定 y（用本项目 ≈5450），要么改 PIL 算法接受 footer 浅灰（阈值 min>=100 的复杂窗口算法）。
 
 ### 铁律 24：交付前必须先截图给用户过目（2026-07-31 用户教学）
 
@@ -1056,6 +1131,7 @@ features:
 - [ ] **`node scripts/lint-plans.mjs`** 通过（机械检查铁律 3/4/6/9）
 - [ ] **数字合理性**：抽查 1-2 个套餐，月 / 周 比例在 2-5×（铁律 6）
 - [ ] **`npx vitepress build docs`** 成功
+- [ ] **`node scripts/data-diff.mjs`** 跑过（铁律 27），无 `⚠️` 字段变化 / `🗑️ 消失套餐` 意外
 - [ ] **三处 UI 抽查**（如果改了显示字段）：榜单表格 / 厂商页 / 详情页
 - [ ] **M1 记忆**：改动写到 NPL（`root.project.<ledger>.task001.mem create`），含"改了什么 + 为什么 + 来源"
 
@@ -1081,6 +1157,37 @@ features:
 | 官方请求数与反推误差 > 15% | 缺自洽性验算 | 铁律 22 |
 | 一次性 credit 显示在 5h/周/月三列 | 漏 credit_apply 语义判断 | 铁律 25 |
 | 改完代码直接 commit + push 之后才截图 | 流程反了：截图必须在 commit 之前 | 铁律 26 |
+| commit 前没跑 `data-diff.mjs`，漏看 `@模型` 增删 / `tier_multiplier` 变化 | 漏铁律 27 的 commit 前体检 | 铁律 27 |
+
+### 铁律 27：commit 前必跑 `data-diff.mjs` 看改动（2026-08-01 落地）
+
+**事故**：手动 `git diff` 看 yml 改动容易漏看——特别是 measurements 数组里嵌套的 `@模型 model_id`，肉眼根本注意不到哪个 model 加了/删了/字段变了；tier 倍数从 14 改回 20 这种"看似无害"的改动也没人能立刻发现。
+
+**规则**：
+- **改完 `data/vendors/*.yml` 或 `data/plans/*.yml`，commit + push 之前必须跑一次**：
+  ```bash
+  node scripts/data-diff.mjs
+  ```
+- 默认模式报告三类重点关注字段：
+  - **价格 / 用量 / 限额 / 状态 / 邀请码**（铁律 1-11 的核心）
+  - **倍数**（`tier_multiplier` / `tier_ratio` / `rate_multipliers`）
+  - **@模型**（measurements 数组按 `model_id` 拆分，逐个 model 报告新增 / 删除 / 字段变化）
+  - **比率注释**（`ratio_note`）
+- 其他字段（注释、URL、model 名）默认静音，跑 `node scripts/data-diff.mjs --all` 看全部
+- 输出含 `🆕 新增套餐` / `🗑️ 消失套餐` / `⚠️ 套餐字段变化` / `🔧 厂商字段变化` 四类
+- `--json` 模式输出结构化数据，给 pre-commit hook / CI 消费
+- **退出码 1 = build 失败 或 ref 不存在**：yml 写错导致 `plans.json` 跑不出来，**必须修好再 commit**；ref 不存在则提示可用形式
+- **`--base=<ref>` 支持任意 git ref**：HEAD / main / HEAD~N / HEAD@{N} / tag / commit-sha 都能拿来对比——**改 yml 前先查历史上某个时刻的状态，commit 后悔了可以指定那个 commit 复查"当时 vs 现在"**
+
+**反 mode**：
+- ❌ 改完 yml 直接 commit 不跑 data-diff（漏看 @模型增删）
+- ❌ 看到警告觉得"应该没事"硬 commit（公信力自杀）
+- ❌ 只跑 `--all` 看噪音但忽略默认模式的警告（默认模式的字段已经过滤过，重点关注）
+
+**How to apply**：
+- 改 yml 流程：`改字段 → node scripts/data-diff.mjs → 看输出 → 确认无误 → 截图给用户 → commit + push`
+- 配合铁律 26（commit + push 之前先截图）—— data-diff 输出本身就是"截图"的补充
+- 不在项目根目录时：`cd /path/to/llm-api-ledger && node scripts/data-diff.mjs`
 
 ---
 
@@ -1100,6 +1207,7 @@ features:
 - 铁律 24（截图交付）：`本地榜单 草稿 过目`
 - 铁律 25（一次性 credit）：`opencode go credit_apply once 一次性 5h 周 月 不能加每个窗口`
 - 铁律 26（commit 前截图）：`审核 不可逆 push 之前 先出图`
+- 铁律 27（commit 前 data-diff）：`data-diff commit 前 model_id 增删 tier_multiplier 肉眼漏看`
 
 ---
 

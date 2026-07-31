@@ -93,6 +93,9 @@ measurements:
   # ── 1. 官方定价与额度(一手) ──
   - measurement_id: m_2026_07_opencode_go_official_pricing
     source_kind: vendor_official
+    source_url: https://opencode.ai/docs/zh-cn/go/
+    evidence_path: data/opencode/official/2026-07-31_opencode_go_official.md
+    captured_at: 2026-07-31
     period: 2026-07-31
     pricing_first_month_usd: 5
     pricing_monthly_usd: 10
