@@ -29,7 +29,7 @@ limits:
   window_5h:
     requests_official: null
     tokens_measured: null
-    tokens_official_claimed: 105200000    # 526M/周 ÷ 5 (全非高峰官方估算)
+    tokens_scenario_estimate: 105200000    # 526M/周 ÷ 5 (全非高峰官方估算)
     credits_5h: 12000              # 官方「12,000 积分/5h」(Pro 基础 5h 额度)
     note: |
       5h 窗口官方积分:2,000(Lite)/12,000(Pro)/28,000(Max)。
@@ -39,12 +39,12 @@ limits:
   window_weekly:
     requests_official: null
     tokens_measured: null
-    tokens_official_claimed: 526000000    # 5.26亿/周 (全非高峰官方估算, GLM-5.2 @ 90.9% 缓存)
+    tokens_scenario_estimate: 526000000    # 5.26亿/周 (全非高峰官方估算, GLM-5.2 @ 90.9% 缓存)
     credits_weekly: 60000
   window_monthly:
     requests_official: null
     tokens_measured: null
-    tokens_official_claimed: 2104000000   # 5.26亿 × 4 (全非高峰 × 4 周)
+    tokens_scenario_estimate: 2104000000   # 5.26亿 × 4 (全非高峰 × 4 周)
     credits_monthly: 240000        # 60,000 × 4
     credits_monthly_estimated: true
     monthly_estimated: true

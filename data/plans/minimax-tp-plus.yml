@@ -27,8 +27,10 @@ limits:
     tokens_measured: null       # 按 Max 周 / 3 反推
   window_monthly:
     requests_official: null
-    # 注:官方公布 0.6B (6 亿 M3 token) 月度 cap,但这是 published cap 不是实测,
-    # build 兜底会把 cap 当成"实测用量"显示,会误导用户,故不写 tokens_official_claimed 字段
+    # tokens_official_claimed: 0.6B (6 亿 M3 token) 官方月度 published cap
+    # build 不会把此值作 fallback 显示成"实测"
+    # 但此字段保留在 yml 给 "claimed" 列输出 (0.6B) + ratio_note 文档参考
+    tokens_official_claimed: 600000000
     tokens_measured: null
 
 ratio_note: |

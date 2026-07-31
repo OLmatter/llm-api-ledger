@@ -107,9 +107,9 @@ function getDirectTokens(plan) {
   // 之前只 gate 了外层 inferTokensFromSibling,内层 monthly = weekly × 4.3 仍会跑出"看起来像实测"的数字
   const inferenceDisabled = plan.tokens_inference_disabled === true
   const direct = {
-    h5: lim.window_5h?.tokens_measured ?? lim.window_5h?.tokens_official_claimed ?? null,
-    weekly: lim.window_weekly?.tokens_measured ?? lim.window_weekly?.tokens_official_claimed ?? null,
-    monthly: lim.window_monthly?.tokens_measured ?? lim.window_monthly?.tokens_official_claimed ?? null,
+    h5: lim.window_5h?.tokens_measured ?? lim.window_5h?.tokens_scenario_estimate ?? null,
+    weekly: lim.window_weekly?.tokens_measured ?? lim.window_weekly?.tokens_scenario_estimate ?? null,
+    monthly: lim.window_monthly?.tokens_measured ?? lim.window_monthly?.tokens_scenario_estimate ?? null,
     monthly_estimated: lim.window_monthly?.monthly_estimated || false,
   }
   // Kimi 特殊：周可能直接从 measurements 拿（Allegretto 社区实测 690M）
