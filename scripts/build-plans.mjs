@@ -265,7 +265,10 @@ const plans = planFiles.map(f => {
     yaml.load(readFileSync(join(root, 'data', 'plans', pf), 'utf-8'))
   )
   let tokens = getDirectTokens(p)
-  if (tokens.weekly == null) {
+  // SOP 铁律 18：yml 显式标记 tokens_inference_disabled: true 时，禁止 sibling 反推
+  // 用于 v3 等"还没实测数据"的套餐，避免 build 偷偷反推同厂商其他档位的实测
+  const inferenceDisabled = p.tokens_inference_disabled === true
+  if (tokens.weekly == null && !inferenceDisabled) {
     const inferred = inferTokensFromSibling(p, allPlans)
     // 反推只补 null 字段，不覆盖已有真实值（如 yml 里写的 monthly）
     // 之前的 bug：直接 tokens = inferred 会把 Allegro 的 monthly(30亿) 丢成 null

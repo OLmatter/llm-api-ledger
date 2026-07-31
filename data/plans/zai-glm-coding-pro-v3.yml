@@ -10,6 +10,9 @@ plan_tier: pro
 status: active
 last_verified: 2026-07-31
 
+# SOP 铁律 18：v3 暂无论测数据，禁止 build 从 sibling 反推实测
+tokens_inference_disabled: true
+
 pricing:
   currency: USD
   original_monthly: 80
