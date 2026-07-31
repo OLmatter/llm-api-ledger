@@ -355,11 +355,22 @@ const plans = planFiles.map(f => {
     },
 
     // 宣称用量（厂商公布的官方值，单位跟随厂商）
-    // 火山/智谱：次数（requests_official）
+    // 火山/智谱/z.ai v2：次数（requests_official）
+    // 智谱/z.ai v3：积分/Credits（credits_weekly，单位 = 积分 or Credits）
     // MiniMax/Kimi：tokens（官方公布 token 总量）
     claimed: (() => {
       const lim = p.limits || {}
       const isTokenVendor = p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic'
+      // v3 积分/Credits 单位（智谱/z.ai v3 启用，单位不同）
+      const hasCredits = lim.window_weekly?.credits_weekly != null
+      if (hasCredits) {
+        return {
+          unit: p.vendor === 'zai' ? 'Credits' : '积分',
+          h5: null,
+          weekly: lim.window_weekly.credits_weekly ?? null,
+          monthly: lim.window_monthly?.credits_monthly ?? null,
+        }
+      }
       if (isTokenVendor) {
         return {
           unit: 'tokens',
@@ -368,7 +379,7 @@ const plans = planFiles.map(f => {
           monthly: lim.window_monthly?.tokens_official_claimed || null,
         }
       }
-      // 火山/智谱：次数
+      // 火山/智谱/z.ai v2：次数
       return {
         unit: '次',
         h5: lim.window_5h?.requests_official ?? null,
@@ -376,7 +387,13 @@ const plans = planFiles.map(f => {
         monthly: lim.window_monthly?.requests_official ?? null,
       }
     })(),
-    claimed_unit: (p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic') ? 'tokens' : '次',
+    claimed_unit: (() => {
+      const lim = p.limits || {}
+      if (lim.window_weekly?.credits_weekly != null) {
+        return p.vendor === 'zai' ? 'Credits' : '积分'
+      }
+      return (p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic') ? 'tokens' : '次'
+    })(),
 
     // 实测 tokens（反推到 100% 满额）
     tokens: {
