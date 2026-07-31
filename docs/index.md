@@ -18,7 +18,17 @@ hero:
     - theme: alt
       text: ⭐ Star on GitHub
       link: https://github.com/OLmatter/llm-api-ledger
+
+# 显眼显示 GitHub URL（截图分享时能搜到 repo 名字, 不只是显示名）
+# 不用 link 形式, 用纯文字 + monospace 字体让 URL 本身可读
 ---
+
+<div style="text-align: center; margin: -1.5rem 0 2rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.1rem; color: var(--vp-c-text-2);">
+
+**🔗 github.com/[OLmatter](https://github.com/OLmatter)/[llm-api-ledger](https://github.com/OLmatter/llm-api-ledger)**
+
+</div>
+
 
 # 榜单 {#leaderboard}
 
