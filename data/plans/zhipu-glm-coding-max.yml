@@ -4,7 +4,7 @@
 
 plan_id: zhipu-glm-coding-max
 vendor: zhipu                # → data/vendors/zhipu.yml
-plan_name: GLM Coding Plan Max
+plan_name: GLM Coding Plan Max (v2)
 plan_tier: max
 status: active
 last_verified: 2026-07-22
