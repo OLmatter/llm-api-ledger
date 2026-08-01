@@ -15,7 +15,7 @@ hero:
       link: https://github.com/OLmatter/llm-api-ledger
     # 第三个无 link 的按钮, 显示「最新更新」时间, build 脚本自动从 git log 取日期填进来
     - theme: alt
-      text: '📅 最新更新 2026-08-01 04:20'
+      text: '📅 最新更新 2026-08-01 15:16'
 ---
 
 # 榜单 {#leaderboard}

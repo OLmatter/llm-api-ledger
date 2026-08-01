@@ -92,7 +92,7 @@ const TIER_RATIOS = {
   minimax:    { plus: 1, max: 3, ultra: 11.8 },
   kimi:       { andante: 1, moderato: 4, allegretto: 20, allegro: 60 },
   zai:        { lite: 1, pro: 5, max: 20 },
-  openai:     { plus: 1, 'pro-5x': 5, 'pro-20x': 20 },
+  openai:     { go: 0.4, plus: 1, 'pro-5x': 5, 'pro-20x': 20, business: 1.25, enterprise: 30 },
   anthropic:  { pro: 1, 'max-5x': 5, 'max-20x': 20 },
 }
 

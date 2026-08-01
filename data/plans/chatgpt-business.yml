@@ -1,0 +1,93 @@
+# ChatGPT Business Plan (团队订阅,$25/user/month,2+ 用户起)
+# 2026-07-31:基于 chatgpt.com/pricing 页面 (Playwright stealth) + WebSearch 多源印证
+
+plan_id: chatgpt-business
+vendor: openai
+plan_name: ChatGPT Business
+plan_tier: business
+status: active
+last_verified: 2026-07-31
+
+# tier_multiplier:Business 单价 $25 vs Plus $20,但 2+ 用户共享 workspace,实际 1.25× per user
+tier_multiplier: 1.25
+
+pricing:
+  currency: USD
+  original_monthly: 25             # per user/month
+  yearly_total: null              # 年付价格官方未单独公布
+  yearly_monthly_equivalent: null
+  yearly_note: 年付选项对 Business 和 Enterprise 开放,具体折扣需联系 sales
+  auto_renew_default: true
+  per_user: true
+  min_users: 2
+
+# Codex 配额倍率:Business 用户共享 workspace 配额,具体数字未独立公布
+codex_multiplier: 1.5            # 估算约为 Plus 1× 的 1.5×(团队共享 + admin console)
+
+limits:
+  window_5h:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      Business 5h/周/月 限额未官方公布。基于"扩展 + 32K context"(chatgpt.com/pricing 比 Plus 略高)
+  window_weekly:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      等实测后填入。
+
+ratio_note: |
+  Business ($25/user/month) = ChatGPT 团队订阅档,2+ 用户起。
+
+  **价值定位**:面向中小企业团队,提供 admin console + SAML SSO + 数据隔离 + SOC 2 合规。
+
+  **与 Plus 对比**:价格高 25% ($25 vs $20) 但获得企业管理能力。
+  **与 Enterprise 对比**:便宜很多,Enterprise 提供 128K context + SCIM + Data analytics + API credits。
+
+  包含 features:
+  - SAML SSO + 统一账单 + 专属 workspace
+  - GPTs analytics + 管理
+  - Admin console + 批量成员管理 + 管理员角色
+  - SOC 2 Type 2 合规
+  - 基础用户分析
+  - Domain verification
+  - ISO 27001/27017/27018/27701 认证
+  - SCIM(Enterprise only)
+  - 数据不用于训练 (data excluded from training)
+
+  **Nonprofits 75% 折扣**:OpenAI for Nonprofits 项目提供 Business/Enterprise 75% off。
+
+measurements:
+  # ── 1. 官方页面 (chatgpt.com/pricing) Playwright stealth 抓取 ──
+  - measurement_id: m_2026_07_chatgpt_business_official_page
+    source_kind: anthropic_official
+    source_url: https://chatgpt.com/pricing
+    evidence_path: data/openai/official/2026-07-31_chatgpt_subscription_pricing.md
+    captured_at: 2026-07-31
+    period: 2026-07-31
+    pricing_monthly_per_user_usd: 25
+    min_users: 2
+    credibility: high
+    disputed: false
+    notes: |
+      chatgpt.com/pricing Playwright stealth 抓取。
+      包含: SAML SSO, Unified billing, Dedicated workspace, GPTs analytics, Admin console,
+      Bulk member management, Admin roles, SOC 2 Type 2, Basic user analytics,
+      Domain verification, ISO 27001/27017/27018/27701, SCIM。
+      FAQ: "Business plans are available starting at 2 users"。
+
+  # ── 2. WebSearch 印证 Business $25/user/月 ──
+  - measurement_id: m_2026_07_chatgpt_business_price_websearch
+    source_kind: community_news
+    source_url: https://openai.com/chatgpt/pricing/
+    source_url_2: https://openai.com/chatgpt/enterprise/
+    period: 2026
+    pricing_monthly_per_user_usd: 25
+    credibility: high
+    disputed: false
+    notes: |
+      WebSearch 多源印证 ChatGPT Business $25/user/month。
+      Business 32K context window, custom GPTs, data excluded from training, SSO/MFA, admin console, file uploads。
+      Enterprise 联系销售(custom pricing),包含 128K context, unlimited GPT-4o, SCIM, 数据分析, 专属客户经理, API credits。

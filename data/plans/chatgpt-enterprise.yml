@@ -1,0 +1,107 @@
+# ChatGPT Enterprise Plan (大企业订阅,联系销售 custom pricing)
+# 2026-07-31:基于 chatgpt.com/pricing 页面 (Playwright stealth) + WebSearch
+# ⚠ Enterprise 无公开价格,只能联系 OpenAI sales
+
+plan_id: chatgpt-enterprise
+vendor: openai
+plan_name: ChatGPT Enterprise
+plan_tier: enterprise
+status: active
+last_verified: 2026-07-31
+
+# tier_multiplier:Enterprise 无公开价格,基于"无 cap + unlimited"特性,估算为最高档 30×
+tier_multiplier: 30
+
+pricing:
+  currency: USD
+  original_monthly: 0              # 0 = 无公开价格(联系销售),仅占位满足 schema
+  original_monthly_in_cny: 0
+  intro_monthly: null              # 无公开价格,联系销售
+  yearly_total: null
+  yearly_monthly_equivalent: null
+  yearly_note: 年付选项对 Business 和 Enterprise 开放,具体折扣需联系 sales
+  auto_renew_default: null         # 销售合同
+  per_user: true
+  min_users: null                  # 联系 sales 谈
+  pricing_note: |
+    联系 OpenAI sales (custom pricing, 公开无标价)。
+    original_monthly=0 仅占位满足 schema,不代表 0 价格。
+    contact_sales_url: https://openai.com/chatgpt/enterprise/
+  contact_sales_url: https://openai.com/chatgpt/enterprise/
+
+# Codex 配额倍率:Enterprise 无明确 cap (unlimited * abuse guardrails)
+codex_multiplier: null            # 无明确 cap
+
+limits:
+  window_5h:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      Enterprise unlimited (subject to abuse guardrails)
+  window_weekly:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      Enterprise unlimited
+  window_monthly:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      Enterprise unlimited
+
+ratio_note: |
+  Enterprise (contact sales) = ChatGPT 大企业订阅档。
+
+  **价值定位**:面向大型组织,提供 Enterprise-grade 安全 + 合规 + 数据分析 + API credits。
+
+  **与 Business 对比**:包含一切 Business + 以下:
+  - 128K context window (vs Business 32K)
+  - Enterprise Key Management
+  - Granular GPT controls & group permissions
+  - Role-based access controls
+  - Analytics dashboard
+  - Compliance API Logs Platform
+  - IP allowlisting
+  - Data residency (US/EU/UK/JP/CA/KR/SG/IN/AU/UAE)
+  - Intune for iOS
+  - Branded workspace
+  - Global admin console
+  - Connector registry
+  - Dedicated onboarding + Ongoing account management
+  - Custom security review
+  - API credits
+
+  **Nonprofits 75% 折扣**:OpenAI for Nonprofits 项目提供 Business/Enterprise 75% off。
+
+  公开无标价 → AIDASH 榜单上 Enterprise 显示「联系 sales」
+
+measurements:
+  # ── 1. 官方页面 (chatgpt.com/pricing) Playwright stealth 抓取 ──
+  - measurement_id: m_2026_07_chatgpt_enterprise_official_page
+    source_kind: anthropic_official
+    source_url: https://chatgpt.com/pricing
+    evidence_path: data/openai/official/2026-07-31_chatgpt_subscription_pricing.md
+    captured_at: 2026-07-31
+    period: 2026-07-31
+    pricing_monthly_per_user_usd: null
+    pricing_note: "联系 OpenAI sales(custom pricing)"
+    credibility: high
+    disputed: false
+    notes: |
+      chatgpt.com/pricing Playwright stealth 抓取。
+      FAQ: "For ChatGPT Enterprise, please contact sales for alternative payment options such as invoicing"。
+      Business 2+ 用户起,Enterprise 起购量由 sales 谈。
+
+  # ── 2. WebSearch 印证 Enterprise 特性 ──
+  - measurement_id: m_2026_07_chatgpt_enterprise_features_websearch
+    source_kind: community_news
+    source_url: https://openai.com/chatgpt/enterprise/
+    period: 2026
+    credibility: high
+    disputed: false
+    notes: |
+      WebSearch 印证 Enterprise 包含 unlimited GPT-4o + 128K context + SCIM + 数据分析 + 专属客户经理 + API credits。
+      价格无公开,需联系 sales。

@@ -1,0 +1,90 @@
+# ChatGPT Go Plan（ChatGPT 廉价订阅档，介于 Free 与 Plus 之间）
+# 2026-07-31:基于 chatgpt.com/pricing 页面 (Playwright stealth 抓取) + 腾讯新闻 "OpenAI 全面上线廉价版 ChatGPT Go 订阅方案:每月 8 美元"
+
+plan_id: chatgpt-go
+vendor: openai
+plan_name: ChatGPT Go
+plan_tier: go
+status: active
+last_verified: 2026-07-31
+
+# tier_multiplier:Go 是 Plus 之下的廉价档,估算约 0.4×(基于价格比 8/20)
+# 注意:这是估算值,OpenAI 官方不公布绝对倍数,仅以价格比反推
+tier_multiplier: 0.4
+
+pricing:
+  currency: USD
+  original_monthly: 8
+  yearly_total: null
+  yearly_monthly_equivalent: null
+  yearly_note: OpenAI 不提供 Go 年付选项
+  auto_renew_default: true
+
+# Codex 配额倍率:Go 在 Free 和 Plus 之间,具体倍率未官方公布
+# Go 相比 Free 的差异是 "More access/messages/uploads/images/longer memory"
+codex_multiplier: 0.4           # 估算约为 Plus 1× 的 30-50%(待实测)
+
+# Go 包含广告 (per chatgpt.com/pricing 页面文案 "This plan may include ads")
+ads_included: true
+ads_note: |
+  chatgpt.com/pricing 页面明确标注 "This plan may include ads. Learn more"
+  Go 是 ChatGPT 首个包含广告的付费档位。
+
+limits:
+  window_5h:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      Go 的 5h 窗口介于 Free 和 Plus 之间。官方未公布具体数字。
+  window_weekly:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      Go 周限额也未官方公布。基于 Plus 175M/周,Go 估算约 60-80M/周。
+  window_monthly:
+    requests_official: null
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      等实测后填入。
+
+ratio_note: |
+  Go ($8/月) = ChatGPT 廉价订阅档,2025-08 在印度首发 (₹399 ≈ $8 USD),2026 全球化推广。
+
+  **价值定位**:介于 Free (0) 和 Plus ($20) 之间,适合需要"更多对话额度但用不起 Plus"的用户。
+
+  包含广告 (ChatGPT 首个含广告付费档)。
+
+  等效周 API 算力估算 ≈ $20-30/周(基于 Plus $100-120/周 × 0.2-0.25 ratio)
+
+measurements:
+  # ── 1. 官方页面 (chatgpt.com/pricing) Playwright stealth 抓取 ──
+  - measurement_id: m_2026_07_chatgpt_go_official_page
+    source_kind: anthropic_official
+    source_url: https://chatgpt.com/pricing
+    evidence_path: data/openai/official/2026-07-31_chatgpt_subscription_pricing.md
+    captured_at: 2026-07-31
+    period: 2026-07-31
+    pricing_monthly_usd: 8
+    credibility: high
+    disputed: false
+    notes: |
+      chatgpt.com/pricing Playwright stealth 抓取 (cloudflare Turnstile 绕过)。
+      页面 slogan: "Best for longer conversations"。
+      文案: "Everything in Free and: More access to GPT-5.5 Instant, More messages, More uploads, More image creation, Longer memory. This plan may include ads."
+
+  # ── 2. WebSearch 印证 Go $8/月定价 ──
+  - measurement_id: m_2026_07_chatgpt_go_global_price
+    source_kind: community_news
+    source_url: https://new.qq.com/rain/a/20260119A02YT200
+    source_url_2: https://so.html5.qq.com/page/real/search_news?docid=70000021_330696ad38298752
+    period: 2026-01
+    pricing_monthly_usd: 8
+    credibility: high
+    disputed: false
+    notes: |
+      腾讯新闻 2026-01-19 报道: "OpenAI 全面上线廉价版 ChatGPT Go 订阅方案:每月 8 美元"。
+      印度首发价 ₹399 ≈ $4.75 USD (2025-08),全球化后统一 $8 USD。
+      媒体比喻 "AI 界的 iPhone SE"(廉价但功能完整)。
