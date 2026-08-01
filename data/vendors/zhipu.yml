@@ -66,3 +66,58 @@ rate_multipliers:
     含义：同样跑 100 tokens，ZCode 在非高峰期只扣 67 的额度。
     如果全程非高峰，可用实际 tokens ≈ 名义额度 × 1.5。
     ⚠️ 限时活动：2026-07-31 截止（无延期公告则恢复正常计费倍率）。
+
+# 智谱 API 按量定价 (per million tokens, 2026-07-31 智谱海外版 docs.z.ai CDP 抓取)
+# z.ai = 智谱海外版,同模型池同计费 → 国内 zhipu 数据与 zai 完全一致
+model_pricing:
+  glm-5.2:
+    input: 1.40
+    cached_input: 0.26
+    output: 4.40
+    source: https://docs.z.ai/guides/overview/pricing
+    source_cn: https://docs.bigmodel.cn/cn/coding-plan/overview
+    evidence_path: data/zhipu/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31
+    note: |
+      credit coefficient (套餐抵扣): 6.9/1.7/24 per 10000 tokens。
+
+  glm-5-turbo:
+    input: 1.20
+    cached_input: 0.24
+    output: 4.00
+    source: https://docs.z.ai/guides/overview/pricing
+    source_cn: https://docs.bigmodel.cn/cn/coding-plan/overview
+    evidence_path: data/zhipu/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31
+    note: |
+      credit coefficient (套餐抵扣): 5.7/1.5/21 per 10000 tokens。
+
+  glm-4.7:
+    input: 0.60
+    cached_input: 0.11
+    output: 2.20
+    source: https://docs.z.ai/guides/overview/pricing
+    source_cn: https://docs.bigmodel.cn/cn/coding-plan/overview
+    evidence_path: data/zhipu/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31
+    note: |
+      经济版主力,智谱国内版 Coding Plan 性价比首选。
+      credit coefficient (套餐抵扣): 4.6/1.2/16 per 10000 tokens。
+
+  glm-4.5-air:
+    input: 0.20
+    cached_input: 0.03
+    output: 1.10
+    source: https://docs.z.ai/guides/overview/pricing
+    source_cn: https://docs.bigmodel.cn/cn/coding-plan/overview
+    evidence_path: data/zhipu/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31
+
+  glm-4.7-flashx:
+    input: 0.07
+    cached_input: 0.01
+    output: 0.40
+    source: https://docs.z.ai/guides/overview/pricing
+    source_cn: https://docs.bigmodel.cn/cn/coding-plan/overview
+    evidence_path: data/zhipu/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31

@@ -148,3 +148,19 @@ measurements:
       AIDASH 榜单上 v3 会显示「—」(因为 tokens_measured=null)。
       等用户实测后补充 tokens_measured 字段。
       积分 → tokens 换算公式官方未公布,v2 反推 50M tokens/周 不一定准确。
+
+  # ── 官方 API $/M 定价 (智谱海外版 docs.z.ai 2026-07-31 CDP 抓取) ──
+  - measurement_id: m_2026_07_zhipu_api_pricing_official
+    source_kind: anthropic_official
+    source_url: https://docs.z.ai/guides/overview/pricing
+    source_cn: https://docs.bigmodel.cn/cn/coding-plan/overview
+    evidence_path: data/zhipu/official/2026-07-31_glm_coding_v3_official.md
+    captured_at: 2026-07-31
+    period: 2026-07-31
+    pricing_api_glm_5_2: { input: 1.40, cached: 0.26, output: 4.40 }
+    pricing_api_glm_5_turbo: { input: 1.20, cached: 0.24, output: 4.00 }
+    pricing_api_glm_4_7: { input: 0.60, cached: 0.11, output: 2.20 }
+    credibility: high
+    disputed: false
+    notes: |
+      Lite 2,000 credits/5h × $0.00203/credit = $4.06 worth of GLM-5.2 input/5h(单模型上限)。

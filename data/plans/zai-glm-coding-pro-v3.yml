@@ -123,3 +123,19 @@ measurements:
       https://docs.bigmodel.cn/cn/coding-plan/overview
       「编程场景(90.9% 缓存命中)官方换算:Pro 周可 2.63–5.26 亿 tokens」
       ⚠ 官方场景估算,非实测。普通用户在高峰期混合跑只会到下限 2.63 亿。
+
+  # ── 官方 API $/M 定价 (docs.z.ai/guides/overview/pricing 2026-07-31) ──
+  - measurement_id: m_2026_07_zai_api_pricing_official
+    source_kind: anthropic_official
+    source_url: https://docs.z.ai/guides/overview/pricing
+    evidence_path: data/zai/official/2026-07-31_zai_api_pricing.md
+    captured_at: 2026-07-31
+    period: 2026-07-31
+    pricing_api_glm_5_2: { input: 1.40, cached: 0.26, output: 4.40 }
+    pricing_api_glm_5_turbo: { input: 1.20, cached: 0.24, output: 4.00 }
+    pricing_api_glm_4_7: { input: 0.60, cached: 0.11, output: 2.20 }
+    credibility: high
+    disputed: false
+    notes: |
+      来源:docs.z.ai/guides/overview/pricing (2026-07-31 Chrome CDP 抓取)。
+      Pro 12,000 credits/5h × $0.00203/credit = $24.35 worth of GLM-5.2 input/5h。
