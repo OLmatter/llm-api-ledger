@@ -15,12 +15,26 @@ hero:
       link: https://github.com/OLmatter/llm-api-ledger
     # 第三个无 link 的按钮, 显示「最新更新」时间, build 脚本自动从 git log 取日期填进来
     - theme: alt
-      text: '📅 最新更新 2026-08-01 15:16'
+      text: '📅 最新更新 2026-08-01 15:59'
 ---
 
 # 榜单 {#leaderboard}
 
 <LeaderBoard />
+
+## 加入交流群 {#community}
+
+<div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; margin: 1rem 0 2rem;">
+
+![Coding AI 交流群微信群二维码](/wechat-qr.png){width=220}
+
+<div>
+<p style="margin-top: 0;"><strong>📱 微信群：Coding AI 交流群</strong></p>
+<p>扫码加入,聊大模型套餐选型、把自己的真实使用量报上来帮助更多人。</p>
+<p style="color: #888; font-size: 0.9em;">⚠ 二维码 7 天内有效（2026-08-08 前），过期后群内将更新。</p>
+<p>另有 <a href="https://t.me/+s1flX6cpUZ1kM2M1">Telegram 群</a>(glm-coding-helper 用户群)。</p>
+</div>
+</div>
 
 ## 为什么做这个 {#why-this}
 
