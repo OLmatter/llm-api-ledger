@@ -15,12 +15,32 @@ hero:
       link: https://github.com/OLmatter/llm-api-ledger
     # 第三个无 link 的按钮, 显示「最新更新」时间, build 脚本自动从 git log 取日期填进来
     - theme: alt
-      text: '📅 最新更新 2026-08-01 16:07'
+      text: '📅 最新更新 2026-08-01 16:12'
 ---
 
 # 榜单 {#leaderboard}
 
 <LeaderBoard />
+
+## 🚀 想贡献数据？直接提 PR 到仓库 {#how-to-contribute}
+
+> 数据榜单一手素材来自社区。**GitHub PR 流程已经自带贡献归属**——你的头像会自动出现在 Contributors 列表、commit 历史、contribution graph 里。**项目不维护任何 in-app 贡献者 credit / badge 系统**。
+
+下面按"实际最常见 → 少见"排列，PR 要交到仓库哪些目录一目了然：
+
+| 你手上有什么 | 提交到哪里 | PR 标题示例 |
+|---|---|---|
+| 🛒 **你买的套餐 + 你的真实用量**（账单截图 / monitor API 页面 / CSV 导出） | `data/<vendor_id>/scraped/` | `[self-report] 我买了 zhipu-glm-coding-pro-v3 用了一个月` |
+| 📷 **官方一手材料**（厂商定价页 / 文档摘录 / 公告） | `data/<vendor_id>/official/` | `[evidence] zhipu GLM Coding Plan v3 overview 2026-07-31` |
+| 🔍 **社区观察 / 第三方博客 / 浏览器记录** | `data/<vendor_id>/scraped/` | `[scraped] kimi allegretto 社区推算 2026-08-01` |
+| 🆕 **新厂商 / 新套餐** | 同时加 `data/vendors/<id>.yml` + `data/plans/<id>.yml` + `data/<id>/official/` | `[new vendor] <vendor_id>` 或 `[new plan] <vendor_id>/<plan_id>` |
+| 📊 **跑探针 ≥ 7 天的脱敏月报** | `data/reports/<vendor_id>/<plan_id>/<user-hash>-<date>.md` | `[report] <vendor_id>/<plan_id> <YYYY-MM>` |
+
+**估计大多数人都是「我买了 X 套餐，用了多少」**——这就是第一行，最常见也最低门槛。**截图或导出发票扔进 PR**，维护者会按证据建表。
+
+**`<vendor_id>` 怎么看**：去 [`data/vendors/`](https://github.com/OLmatter/llm-api-ledger/tree/main/data/vendors) 里找现成的小写标识（`zhipu`、`openai`、`zai`、`volcengine`、`kimi`、`minimax`、`anthropic`、`opencode`、`chatgpt`）；没收录就按"新厂商"行开 PR。
+
+**完整规范**：[`data/README.md`](https://github.com/OLmatter/llm-api-ledger/blob/main/data/README.md)（evidence frontmatter 必填字段 / 命名 / 什么时候必须建 evidence 文件） · [PR 模板](https://github.com/OLmatter/llm-api-ledger/blob/main/.github/PULL_REQUEST_TEMPLATE.md)（按贡献类型勾选） · [贡献指南](/contributing)（4 种路径详解）
 
 ## 加入交流群 {#community}
 
