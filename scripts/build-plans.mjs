@@ -84,6 +84,8 @@ const VENDOR_RATIOS = {
 // minimax: Plus:Max:Ultra = 1:3:11.8
 // kimi: Andante:Moderato:Allegretto:Allegro = 1:4:20:60
 // zai: Lite:Pro:Max = 1:5:20（跟国内智谱完全对齐）
+// tencent: Coding Plan lite:pro=1:5; Token Plan lite:standard:pro:max=1:2:5:20
+//   (pro=5 两条产品线相同档,排序靠 plan_id 字典序兜底)
 // openai: Plus:Pro-5x:Pro-20x = 1:5:20
 // anthropic: Pro:Max-5x:Max-20x = 1:5:20 (Claude Code 倍率,跟 OpenAI ChatGPT Codex 同档)
 const TIER_RATIOS = {
@@ -92,6 +94,7 @@ const TIER_RATIOS = {
   minimax:    { plus: 1, max: 3, ultra: 11.8 },
   kimi:       { andante: 1, moderato: 4, allegretto: 20, allegro: 60 },
   zai:        { lite: 1, pro: 5, max: 20 },
+  tencent:    { lite: 1, standard: 2, pro: 5, max: 20 },
   openai:     { go: 0.4, plus: 1, 'pro-5x': 5, 'pro-20x': 20, business: 1.25, enterprise: 30 },
   anthropic:  { pro: 1, 'max-5x': 5, 'max-20x': 20 },
 }
@@ -340,6 +343,23 @@ const plans = planFiles.map(f => {
       intro_with_affiliate: intro_with_aff,
       intro_tag: intro_tag,                                  // 主 tag（向后兼容）
       intro_tags: intro_tags,                                // 多 tag 数组（用户原话「多加一个 tag 也可以」——首月优惠 + 邀请码 可叠加显示）
+      // 优惠多阶段结构（用户 2026-08-04：优惠生命周期是「首月 + 首次续费」2 阶段）
+      intro_stages: (pricing.intro_stages && Array.isArray(pricing.intro_stages))
+        ? pricing.intro_stages.map(s => ({
+            stage: s.stage,
+            name: s.name,
+            duration_months: s.duration_months ?? null,
+            price: s.price ?? null,
+            discount_rate: s.discount_rate ?? null,
+            condition: s.condition ?? null,
+          }))
+        : null,
+      // 首次续费价（兼容旧前端：直接读 ¥20 / ¥100）
+      intro_renewal_price: (() => {
+        if (!pricing.intro_stages || !Array.isArray(pricing.intro_stages)) return null
+        const renewal = pricing.intro_stages.find(s => s.stage === 2)
+        return renewal?.price ?? null
+      })(),
       intro_quarterly: pricing.intro_quarterly || null,
       intro_quarterly_with_affiliate: intro_quarterly_with_aff,    // 季付邀请码叠加
       yearly_monthly_equivalent: yearly_monthly,
@@ -388,7 +408,9 @@ const plans = planFiles.map(f => {
     // opencode Go：美元额度（cost_limit_usd,opencode 官方原意是金额不是次数）
     claimed: (() => {
       const lim = p.limits || {}
-      const isTokenVendor = p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic'
+      // isTokenVendor: 套餐按 token 数计费的厂商
+      // minimax/kimi/anthropic 直接公布 tokens；tencent Token Plan 也是 token 单位
+      const isTokenVendor = p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic' || p.vendor === 'tencent'
       // opencode Go：官方窗口是「$12/$30/$60 使用额度」，不是次数也不是 token
       const isCostDollar = p.vendor === 'opencode' && lim.window_5h?.cost_limit_usd != null
       if (isCostDollar) {
@@ -439,11 +461,13 @@ const plans = planFiles.map(f => {
     })(),
     claimed_unit: (() => {
       const lim = p.limits || {}
+      // yml 顶层显式声明的 claimed_unit 优先（铁律 18 不擅改默认逻辑）
+      if (p.claimed_unit) return p.claimed_unit
       if (p.vendor === 'opencode' && lim.window_5h?.cost_limit_usd != null) return '$'
       if (lim.window_weekly?.credits_weekly != null) {
         return p.vendor === 'zai' ? 'Credits' : '积分'
       }
-      return (p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic') ? 'tokens' : '次'
+      return (p.vendor === 'minimax' || p.vendor === 'kimi' || p.vendor === 'anthropic' || p.vendor === 'tencent') ? 'tokens' : '次'
     })(),
 
     // 实测 tokens（反推到 100% 满额）

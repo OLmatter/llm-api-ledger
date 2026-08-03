@@ -139,8 +139,35 @@ evidence_path: data/alibaba/official/2026-08-04_bailian_coding_plan_official.md
 | Lite 数据 | ❌ | 官方已下架，网络流传"Lite ¥40/1200/9000/18000"全是 CSDN 二手推算 |
 | tokens_official_claimed | ❌ | 官方明示"无法查看 Token 消耗"，必须 null |
 | tokens_measured | ❌ | 无探针数据 |
+| **context_length_tokens**（新增） | ✅ | 用模型 context_length 兜底作为"宣称 tokens 用量"（用户认可）：7 个模型 196K-1M tokens |
+| **intro_stages**（新增） | ⚠️ | 2 阶段结构：阶段 1 = 首月 6.25 折 ¥125（控制台实测）；阶段 2 = 恢复 ¥200 待核实 |
 | 邀请码 | ❌ | 未发现 Coding Plan 专属推荐返现 |
 | 并发上限 | ❌ | 官方只说"动态调整"，无 RPM/RPS 公布 |
+
+### tokens 宣称用量兜底（用户认可方案）
+
+套餐按"调用次数"扣费，**无法直接拿 tokens**。但用户认可用**模型 context_length** 作为"宣称 tokens 用量"参考——这是模型参数（不是套餐限额），但能给榜单用户提供"每次请求最多可消耗多少 tokens"的上限参考。
+
+| 模型 | context_length（tokens） |
+|---|---|
+| qwen3.5-plus | 1,000,000 |
+| qwen3-coder-next | 262,144 |
+| qwen3-coder-plus | 1,000,000 |
+| glm-5 | 202,752 |
+| glm-4.7 | 202,752 |
+| kimi-k2.5 | 262,144 |
+| MiniMax-M2.5 | 196,608 |
+
+### 优惠 2 阶段结构（用户提醒）
+
+控制台只显示首月优惠，**阶段 2 待核实**。当前 yml 用 `intro_stages` 数组建模：
+
+| 阶段 | 名 | 持续 | 价格 | 折扣 | 来源 |
+|---|---|---|---|---|---|
+| 1 | 新用户首购 | 1 个月 | ¥125 | 0.625 | 控制台 2026-08-04 实测 |
+| 2 | 恢复原价 | 永久 | ¥200 | null | 默认（FAQ 提到 5 折已结束） |
+
+**lint 建议**：`intro_stages[0].price` 必须 ≤ `intro_stages[1].price`，且 `discount_rate` 在 (0, 1) 区间。
 
 ## 5. 自洽性验算（铁律 22）
 

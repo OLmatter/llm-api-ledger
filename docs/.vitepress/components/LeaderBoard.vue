@@ -403,13 +403,17 @@ function fmtTokensYi(n) {
               </div>
             </td>
 
-            <!-- 包月：原价 + 用邀请码子行 -->
+            <!-- 包月：原价 + 首月价（用邀请码）+ 首次续费子行 -->
             <td class="num">
               {{ sym(row.plan) }}{{ pickPrice(row.plan, 'original_monthly') }}<span class="unit">/月</span>
               <div v-if="currencyUnit === 'native' && row.plan.pricing.original_monthly_cny != null" class="cny-equiv">≈ ¥{{ row.plan.pricing.original_monthly_cny }}</div>
               <div v-if="pickPrice(row.plan, 'intro_with_affiliate') != null" class="intro-aff">
                 <span class="intro-aff-label" title="邀请码首单优惠（少付钱），跟 ZCode 1.5x 额度加成独立，可同时享受。">{{ row.plan.pricing.intro_tag }}</span>
                 <span class="intro">{{ sym(row.plan) }}{{ pickPrice(row.plan, 'intro_with_affiliate') }}</span>
+              </div>
+              <div v-if="row.plan.pricing.intro_renewal_price != null" class="intro-aff" title="首次续费（自动续费场景下第一个续费周期的价格）">
+                <span class="intro-aff-label">首次续费</span>
+                <span class="intro">{{ sym(row.plan) }}{{ row.plan.pricing.intro_renewal_price }}</span>
               </div>
             </td>
 

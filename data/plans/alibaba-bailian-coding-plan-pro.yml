@@ -34,13 +34,36 @@ pricing:
   intro_tag: "首月 6.25 折"         # 显式覆盖默认"用邀请码"标签（用户原话：优惠 ≠ 邀请码）
   intro_source: "data/alibaba/official/2026-08-04_user_console_screenshot.png"
   intro_source_url: "https://bailian.console.aliyun.com/cn-beijing/?tab=plan#/efm/subscription/coding-plan"
+  # ── 优惠多阶段结构（用户 2026-08-04：优惠生命周期是「首月 + 首次续费」2 阶段）──
+  # 不是「首月特价 → 恢复原价」的折扣过渡，而是订阅生命周期的两个阶段
+  intro_stages:
+    - stage: 1
+      name: "首月（新用户首购）"
+      duration_months: 1
+      price: 125                    # ¥200 × 0.625
+      discount_rate: 0.625
+      condition: "新用户首购（每个百炼账号仅可享受一次，30 天）"
+      source: "data/alibaba/official/2026-08-04_user_console_screenshot.png"
+    - stage: 2
+      name: "首次续费（5 折历史活动已结束）"
+      duration_months: null          # 续费周期
+      price: 200                    # 当前续费 = ¥200（5 折活动已结束于 2026-04-01）
+      discount_rate: null
+      condition: "首次续费；历史曾有 5 折活动已于 2026-04-01 结束，当前无续费优惠"
+      source: "data/alibaba/official/2026-08-04_bailian_coding_plan_official.md (FAQ)"
+      historical_note: |
+        ⚠ 历史活动（已结束）：FAQ 写"首次续费 5 折活动已于 2026-04-01 结束"。
+        控制台 2026-08-04 未显示续费优惠 → 当前续费恢复 ¥200 原价。
+        若官方另发续费活动，会再加 stage 3。
   intro_discount_note: |
     ⚠ 来源差异：
     - 用户控制台实测 2026-08-04 显示"新手优惠 30 天 6.25 折"（用户亲口确认）
     - 官方帮助文档 2026-07-16 写"限时优惠活动已结束"
-    - 官方帮助文档 FAQ 写"首次续费 5 折活动已于 2026-04-01 结束"
+    - 官方帮助文档 FAQ 写"**首次续费 5 折活动已于 2026-04-01 结束**"
     → 当前以控制台为准写入；官方文档可能未同步最新活动
-    → 30 天首购后自动恢复原价 ¥200（非续费 5 折）
+    → 优惠生命周期 2 阶段：
+        1. **首月**（新用户首购）：6.25 折 ¥125，30 天
+        2. **首次续费**：5 折历史活动已结束，当前续费 = ¥200 原价
   auto_renew_default: true
   price_warning: |
     不支持退款、不支持降配；数据用于模型训练与优化。
@@ -120,13 +143,26 @@ measurements:
     requests_5h: 6000
     requests_weekly: 45000
     requests_monthly: 90000
-    # 注意：以下为官方页面公布的次数字段，不放 tokens 数字（铁律 4/20）
+    # ── tokens 宣称用量（用户 2026-08-04 认可：拿模型 context_length 兜底）──
+    # 注意：套餐按"模型调用次数"扣费，不是 tokens
+    # 但榜单要展示"每次请求最多可消耗多少 tokens"作为参考上限（铁律 4 / 16）
+    # context_length_tokens 是模型能处理的最大 tokens，不是套餐限额
+    # 用户原话："可以啊，就拿 tokens 当宣称用量啊"
+    context_length_tokens:
+      qwen3.5-plus: 1000000        # 1M tokens
+      qwen3-coder-next: 262144     # 256K tokens
+      qwen3-coder-plus: 1000000    # 1M tokens（控制台未列出，从官方文档补）
+      glm-5: 202752                # ≈200K tokens
+      glm-4.7: 202752
+      kimi-k2.5: 262144
+      MiniMax-M2.5: 196608
     credibility: high
     disputed: false
     notes: |
       来源：help.aliyun.com/zh/model-studio/coding-plan Chrome dump-dom + 官方 .md 导出端点双重验证。
       原文："Pro 高级套餐 价格 ¥ 200/月 用量限制：每 5 小时 6,000 次请求 / 每周 45,000 次请求 / 每月 90,000 次请求"。
       ⚠ claimed only, 无 measured（tokens_measured: null，前端展示 —）。
+      ⚠ 套餐按"调用次数"扣费，tokens_official_claimed 字段无法填；context_length_tokens 是模型参数兜底。
 
   - measurement_id: m_2026_08_04_alibaba_pro_user_console_verification
     source_kind: anthropic_official
@@ -141,6 +177,7 @@ measurements:
     recommended_model_primary: qwen3.5-plus
     availability_observed: limited_quota
     new_user_discount_observed: "30天6.25折"
+    intro_stages_observed: 2  # 用户原话：小心优惠有 2 阶段
     credibility: high
     disputed: false
     notes: |
@@ -148,4 +185,5 @@ measurements:
       验证官方文档与控制台实测数字 100% 一致。
       ⚠ 多源差异：控制台推荐模型列首位 = qwen3.5-plus，官方文档 2026-07-16 版本 = qwen3.7-plus。
         → yml primary_model 取控制台实测（用户实际下单界面）。
-      ⚠ 控制台显示"新手优惠 30 天 6.25 折"，官方文档说"已结束"，待用户拍板是否写入 intro_*。
+      ⚠ 控制台显示"新手优惠 30 天 6.25 折"，官方文档说"已结束"，但用户亲口确认，控制台为准。
+      ⚠ 用户提醒：优惠可能有 2 阶段，控制台首月 6.25 折后阶段 2 待核实（默认无续费优惠）。

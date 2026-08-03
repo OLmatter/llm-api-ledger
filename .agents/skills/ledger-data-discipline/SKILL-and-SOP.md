@@ -1191,6 +1191,72 @@ features:
 
 ---
 
+### 铁律 28：availability 字段必填 + 随时会变需重新验证（2026-08-04 落地）
+
+**事故背景**：阿里云百炼 Coding Plan Pro 控制台红字"**每日 09:30 限量补货**""**售完即不可订阅**"——`availability` 是**决定用户能否订阅**的字段，比价格还关键。但智谱 v3 上线时限量，**几个月后变不限量**——`availability` 状态随时可变，旧值不刷新等于隐性假数据。
+
+**规则**：
+
+1. **每个 `plan.yml` 必填 `availability` 字段**，至少含以下子字段：
+
+   ```yaml
+   availability:
+     status: limited_quota          # enum: unlimited / limited_quota / waitlist
+     restock_schedule: "每日 09:30 UTC+8"   # status=limited_quota 必填
+     restock_method: "先到先得"            # status=limited_quota 必填
+     fail_open_behavior: "售罄即不可订阅（fail-closed）"  # 不可降级到 waitlist
+     last_verified: 2026-08-04       # 必填 YYYY-MM-DD
+     source: "控制台官方页面截图"       # 必填（URL 或截图路径）
+   ```
+
+2. **`status` 三态 enum 严格**：
+   - `unlimited`：库存充足，无需抢购
+   - `limited_quota`：限量抢购，需 `restock_schedule` + `restock_method`
+   - `waitlist`：售罄不可直接订阅，需候补名单
+
+3. **`availability.last_verified` 30 天过期机制**：
+   - `last_verified` 与当天差 > 30 天 → lint 报 warning（"请重新验证 availability 状态"）
+   - 与当天差 > 90 天 → lint 报 error（强制要求新 evidence）
+   - 过期值**不允许作为权威**——用户看榜单时必须能区分"今天验证过" vs "30 天前验证过"
+
+4. **状态变更历史必须留痕**：从 `limited_quota` → `unlimited` 的演进（如智谱 v3）必须在 plan.yml 留 evidence：
+   ```yaml
+   availability_history:
+     - status: limited_quota
+       period: "2026-XX 至 2026-YY"
+       evidence_path: data/zhipu/official/2026-XX-XX_xxx.md
+     - status: unlimited
+       since: 2026-ZZ
+       evidence_path: data/zhipu/official/2026-ZZ-ZZ_xxx.md
+   ```
+
+5. **lint 检查**：
+   - 每个 `status: active` 的 plan 必须有 `availability` 字段（铁律 28 必填）
+   - `availability.status` 必须是三个 enum 之一
+   - `availability.last_verified` 必须是合法日期
+   - `status: limited_quota` 时 `restock_schedule` 和 `restock_method` 必须存在
+   - `last_verified` 距今 > 30 天 → warning；> 90 天 → error
+
+**反模式**：
+- ❌ 把限量抢购埋在 `risk_flags` 数组里（不可见，关键约束被淹没）
+- ❌ 写 `availability: true` 或 `availability: "limited"` 不带 `status` enum
+- ❌ `last_verified` 用 30 天前日期但不验证
+- ❌ 复用旧 evidence 当 availability 状态变更依据（必须新抓）
+- ❌ 把 `availability: unlimited` 当永久事实写死（智谱 v3 实例证伪）
+
+**事故实例（智谱 v3）**：
+- 早期 `availability: limited_quota`（上线时限量抢购）
+- 数月后官方改不限量，但 yml 没刷新 → 用户看榜单以为还需抢购 → 决策失误
+- **修复**：availability_history 留两个时间点 + 双 evidence 引用
+
+**How to apply**：
+- 改/新增 plan.yml 时 `availability` 是必填字段，不可省略
+- 抓 evidence 时**重新核对 availability 状态**，不只是价格/限额
+- 如果发现 availability 变更，更新 plan.yml + 留 `availability_history` 痕迹
+- 配合铁律 11（限时活动过期机制）：availability 比 intro_monthly 更基础，必须先验证 availability 再验证 intro
+
+---
+
 ## 6. 历史事故索引（供溯源）
 
 每条铁律对应的真实事故，详见 NPL 记忆（关键词搜）：
