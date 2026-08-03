@@ -226,6 +226,7 @@ const plans = planFiles.map(f => {
   // - 年付折月：yearly_monthly_equivalent
   let intro_with_aff = null
   let intro_tag = null
+  let intro_tags = []                  // 多 tag 数组：可叠加显示（铁律 1 三类严格分离 + 用户原话「多加一个 tag 也可以」）
   if (affActive?.stackable && affActive.discount) {
     const base = pricing.intro_monthly ?? pricing.original_monthly
     if (base != null) {
@@ -233,12 +234,29 @@ const plans = planFiles.map(f => {
       // 统一改名「用邀请码」（之前是「首单+邀请码」/「首单 9 折」，不直接）
       // 紧迫感来自「用」字 + 红色按钮 + 损失对照，不在 tag 文字本身
       intro_tag = '用邀请码'
+      intro_tags.push('用邀请码')
     }
   } else if (pricing.intro_monthly) {
     intro_with_aff = pricing.intro_monthly
     // 邀请码不给被推荐人折扣时（no_user_discount），这个价是官方首单价、人人都有，
     // 标「用邀请码」会误导成"点了链接才有"（opencode Go 首月 $5 属此类）
-    intro_tag = affActive?.no_user_discount ? '首月价' : '用邀请码'
+    // 用户原话 2026-08-04：优惠 ≠ 邀请码，无邀请码时默认 tag = "首月价"
+    intro_tag = '首月价'
+    // 如果 yml 没有显式 intro_tag，build 默认把"首月价" push 进去（保持向后兼容）
+    if (!pricing.intro_tag && !intro_tags.includes(intro_tag)) {
+      intro_tags.push(intro_tag)
+    }
+  }
+  // yml 显式声明的 intro_tag 覆盖默认值（铁律 18 不擅改默认逻辑，只在显式声明时覆盖）
+  if (pricing.intro_tag) {
+    intro_tag = pricing.intro_tag
+    // intro_tags 数组去重：yml 显式值应排第一位
+    intro_tags = intro_tags.filter(t => t !== intro_tag)
+    intro_tags.unshift(intro_tag)
+  }
+  // yml 显式声明的 affiliate_tag（独立于 intro_tag，邀请码折扣的展示文本）
+  if (pricing.affiliate_tag && !intro_tags.includes(pricing.affiliate_tag)) {
+    intro_tags.push(pricing.affiliate_tag)
   }
   // 季付邀请码叠加(base 优先 intro_quarterly 限时价,fallback original_quarterly 长期方案价 — Z.AI/智谱场景)
   const quarterly_with_aff_base = pricing.intro_quarterly ?? pricing.original_quarterly
@@ -320,7 +338,8 @@ const plans = planFiles.map(f => {
       // 优惠价(只有真优惠,标准长期方案不算)
       intro_monthly: pricing.intro_monthly || null,
       intro_with_affiliate: intro_with_aff,
-      intro_tag: intro_tag,
+      intro_tag: intro_tag,                                  // 主 tag（向后兼容）
+      intro_tags: intro_tags,                                // 多 tag 数组（用户原话「多加一个 tag 也可以」——首月优惠 + 邀请码 可叠加显示）
       intro_quarterly: pricing.intro_quarterly || null,
       intro_quarterly_with_affiliate: intro_quarterly_with_aff,    // 季付邀请码叠加
       yearly_monthly_equivalent: yearly_monthly,

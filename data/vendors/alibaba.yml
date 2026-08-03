@@ -1,0 +1,101 @@
+# 阿里云百炼 Aliyun Bailian（多模型聚合站）
+# Coding Plan 套餐订阅页：https://www.aliyun.com/benefit/scene/codingplan
+# 官方帮助文档：https://help.aliyun.com/zh/model-studio/coding-plan
+# 控制台：https://bailian.console.aliyun.com/
+# 抓取日期：2026-08-04
+
+vendor_id: alibaba
+vendor_display: 阿里云百炼
+vendor_display_en: Alibaba Cloud Model Studio / Bailian
+brand_color: "#FF6A00"               # 阿里橙，待截图校准
+homepage: https://bailian.console.aliyun.com/
+docs: https://help.aliyun.com/zh/model-studio/
+last_verified: 2026-08-04
+
+# 邀请码：未发现 Coding Plan 专属推荐返现
+affiliate: null
+
+# v2/v3 历史：本目录暂无 Lite v1 套餐数据（已 deprecated，官方已下架）
+v2_v3_transition_note: |
+  Lite 套餐 v1（¥40/月，1200/9000/18000 次/5h/周/月）官方已下架：
+  - 2026-03-20 00:00 UTC+8 停止新购
+  - 2026-04-13 18:00 UTC+8 停止续费与升级
+  - 网络流传的"Lite ¥40/1200/9000/18000"数字全部来自 CSDN/博客园二手推算，未在 aliyun.com 官方页面找到
+  - 唯一当前在售档位：Pro ¥200/月
+
+# 厂商公共特性
+shared_features:
+  # 主力模型（榜单对比基准）
+  # 注意：官方帮助文档（2026-07-16）推荐列首位 = qwen3.7-plus
+  #       但控制台购买页（2026-08-04 实测）推荐列首位 = qwen3.5-plus
+  #       当前写 yml 用控制台实测（用户实际下单界面）
+  primary_model: qwen3.5-plus
+  models:
+    # 推荐列（5 个，控制台实测）
+    - qwen3.5-plus
+    - qwen3-coder-next
+    - glm-5
+    - kimi-k2.5
+    - MiniMax-M2.5
+    # 更多模型列（控制台实测 2 个）
+    - qwen3-coder-plus
+    - glm-4.7
+  models_note: |
+    控制台实测 7 个模型白名单。官方帮助文档还有 qwen3.6-plus / qwen3-max-2026-01-23 等，
+    但控制台当前未列出 → yml 只列控制台展示的 7 个，避免"宣传有但买不到"。
+  clients:
+    - OpenClaw
+    - Claude Code
+    - Qwen Code
+    - Cline
+    - Cursor
+    - OpenCode
+    - Codex
+    - Hermes Agent
+    - Qoder
+    - Cherry Studio
+    - Chatbox
+  clients_note: |
+    Coding Plan 仅限交互式编程工具使用，严禁 API 调用（自动化脚本/批量调用违规封号）。
+  rate_limit_tiers: [5h, weekly, monthly]
+  rate_limit_note: |
+    三窗口独立额度：5h 滚动恢复 / 周一 00:00 UTC+8 重置 / 订阅日次月对应日 00:00 UTC+8 重置。
+    月度 = 周度 × 2（整数倍硬封顶，与火山方舟同型）。
+
+# 阿里云百炼 API 按量定价 (per million tokens, 2026-08-04 官方帮助文档)
+# 注：这是按量 API 定价，不是 Coding Plan 套餐抵扣
+# Coding Plan 套餐只按"模型调用次数"扣费，无法查看 token 消耗
+model_pricing:
+  qwen3.7-plus:
+    input: null                     # 官方未公布单次按量价
+    cached_input: null
+    output: null
+    source: https://help.aliyun.com/zh/model-studio/coding-plan
+    evidence_path: data/alibaba/official/2026-08-04_bailian_coding_plan_official.md
+    captured_at: 2026-08-04
+    note: |
+      Coding Plan 不公布按 model 拆分的 token 消耗单价。
+      控制台明示"额度消耗与 Token 消耗无关，只与模型调用次数有关"。
+
+  qwen3.5-plus:
+    input: null
+    cached_input: null
+    output: null
+    source: https://help.aliyun.com/zh/model-studio/coding-plan
+    evidence_path: data/alibaba/official/2026-08-04_bailian_coding_plan_official.md
+    captured_at: 2026-08-04
+    note: "Coding Plan 不公布按 model 拆分的 token 消耗单价"
+
+# 使用限制（铁律 18 零修改：以下只列 master-report 里已确认的官方事实）
+rate_multipliers: null              # Coding Plan 无高峰/非高峰倍率机制
+
+# 数据状态
+data_status_note: |
+  收录时状态（2026-08-04）：
+  - 价格（¥200/月）：官方文档 + 控制台实测一致 ✅
+  - 三窗口额度（6,000/45,000/90,000 次）：官方文档 + 控制台实测一致 ✅
+  - 模型白名单（7 个）：控制台实测为权威源 ⚠️（官方文档含 qwen3.6-plus / qwen3.7-plus 但控制台未显示）
+  - tokens_measured：无探针实测 = null
+  - tokens_official_claimed：官方明示"无法查看 token 消耗" = null
+  - availability：限量抢购（limited_quota）
+  - 新手优惠 30 天 6.25 折：控制台可见但官方文档说"已结束"，待用户拍板是否写入

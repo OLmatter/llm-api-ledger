@@ -1,0 +1,151 @@
+# 阿里云百炼 Coding Plan Pro 高级套餐
+# 2026-08-04 官方帮助文档 + 控制台实测
+# 价格：¥200/月
+# 三窗口：5h 6,000 次 / 周 45,000 次 / 月 90,000 次（次=模型调用次数，不是 token）
+# ⚠ tokens_measured = null（无探针实测），tokens_official_claimed = null（官方明示无法查看）
+# ⚠ availability = limited_quota（每日 09:30 UTC+8 限量补货）
+
+plan_id: alibaba-bailian-coding-plan-pro
+vendor: alibaba
+plan_name: Coding Plan Pro 高级套餐
+plan_tier: pro
+status: active                   # 限量抢购中（铁律 28）
+last_verified: 2026-08-04
+
+# Pro 是阿里云百炼 Coding Plan 唯一在售档位，tier_multiplier = 1（基础档）
+tier_multiplier: 1
+
+# SOP 铁律 18：无探针实测，禁止 build 从 sibling 反推
+tokens_inference_disabled: true
+
+pricing:
+  currency: CNY
+  original_monthly: 200
+  original_quarterly: null         # 官方未公布（仅按月订阅）
+  original_yearly: null            # 官方明示"暂无年付套餐"
+  # ── intro_* 字段（铁律 8 + 11：限时特惠，不是 affiliate 推荐返现）──
+  # 来源：用户控制台购买页实测 2026-08-04 显示"新手优惠 30 天 6.25 折"
+  # 注意：官方帮助文档 2026-07-16 写"限时优惠已结束"，文档与控制台存在时差
+  # → 以控制台实测为准（用户实际下单界面是最权威的实时数据）
+  intro_monthly: 125               # 200 × 0.625（30 天 6.25 折）
+  intro_duration_months: 1         # 30 天首购
+  intro_condition: "新用户首购（每个百炼账号仅可享受一次）"
+  intro_end_hint: null             # 官方未公布活动截止日；30 天后自动恢复 ¥200
+  intro_tag: "首月 6.25 折"         # 显式覆盖默认"用邀请码"标签（用户原话：优惠 ≠ 邀请码）
+  intro_source: "data/alibaba/official/2026-08-04_user_console_screenshot.png"
+  intro_source_url: "https://bailian.console.aliyun.com/cn-beijing/?tab=plan#/efm/subscription/coding-plan"
+  intro_discount_note: |
+    ⚠ 来源差异：
+    - 用户控制台实测 2026-08-04 显示"新手优惠 30 天 6.25 折"（用户亲口确认）
+    - 官方帮助文档 2026-07-16 写"限时优惠活动已结束"
+    - 官方帮助文档 FAQ 写"首次续费 5 折活动已于 2026-04-01 结束"
+    → 当前以控制台为准写入；官方文档可能未同步最新活动
+    → 30 天首购后自动恢复原价 ¥200（非续费 5 折）
+  auto_renew_default: true
+  price_warning: |
+    不支持退款、不支持降配；数据用于模型训练与优化。
+    新用户可享 30 天 6.25 折首购（¥125），30 天后自动恢复 ¥200/月。
+
+limits:
+  window_5h:
+    requests_official: 6000        # 滚动恢复，每分钟释放 5h 前额度
+    tokens_measured: null           # 无探针实测
+    tokens_official_claimed: null   # 官方明示"无法查看 Token 消耗"
+    note: |
+      来源：help.aliyun.com/zh/model-studio/coding-plan
+      "每 5 小时 6,000 次请求。滚动恢复，每分钟自动释放 5 小时前的额度。"
+      单位是"模型调用次数"，不是 tokens（铁律 4 / 铁律 20）。
+  window_weekly:
+    requests_official: 45000       # 周一 00:00 UTC+8 重置
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      来源：help.aliyun.com/zh/model-studio/coding-plan
+      "每周 45,000 次请求。每周一 00:00:00 (UTC+8) 重置。"
+  window_monthly:
+    requests_official: 90000       # 订阅日次月对应日 00:00 UTC+8 重置
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      来源：help.aliyun.com/zh/model-studio/coding-plan
+      "每月 90,000 次请求。在下一个月订阅日的 00:00:00 (UTC+8) 重置。"
+      月 = 周 × 2（铁律 6 通过，与火山方舟同型硬封顶）。
+      用户控制台实测 2026-08-04：订购时长 1 个月，自动续费至 2026-09-01。
+
+# 铁律 4 / 铁律 20：单位是"模型调用次数"，不是 tokens
+claimed_unit: "次"
+
+# 铁律 28：availability 是决定性约束（能否订阅），不能藏在 risk_flags 数组里
+availability:
+  status: limited_quota
+  restock_schedule: "每日 09:30 UTC+8"
+  restock_method: "先到先得"
+  fail_open_behavior: "售罄即不可订阅（fail-closed）"
+  last_verified: 2026-08-04
+  source: "data/alibaba/official/2026-08-04_user_console_screenshot.png"
+
+risk_flags:
+  - 严禁 API 调用（仅限交互式编程工具，违规封号）
+  - 不支持退款
+  - 禁止账号共享（检测到 Key 公开泄露自动禁用）
+  - 数据用于模型训练与优化
+  - 不可降配（Pro → Lite）
+  - 单一订阅（每账号只能持有 1 个 Coding Plan）
+  - API Key 专属：sk-sp-xxxxx，Base URL 必须含 coding.dashscope.aliyuncs.com（误用通用 Key/URL 走按量计费）
+  - 服务周期按自然月（2 月开通可能只有 28 天）
+
+ratio_note: |
+  ## 限量抢购细节（控制台实测 2026-08-04）
+  - 每日 09:30（UTC+8）限量补货
+  - 售完即不可订阅（fail-closed，无降级到 waitlist）
+  - 抢购页面：https://www.aliyun.com/benefit/scene/codingplan
+
+  ## 单位口径（铁律 4 / 铁律 20）
+  - 套餐按"模型调用次数"扣费，不是 tokens
+  - 简单任务约消耗 5-10 次，复杂任务约 10-30+ 次
+  - 官方明示"额度消耗与 Token 消耗无关"且"暂无法查看 Token 消耗"
+
+  ## 数据状态
+  - 实测（measured）：无数据（无探针运行）
+  - 宣称（claimed）：6,000/45,000/90,000 次/月 — 铁律 9 留 null
+
+measurements:
+  - measurement_id: m_2026_08_04_alibaba_pro_official_pricing
+    source_kind: anthropic_official
+    source_url: https://help.aliyun.com/zh/model-studio/coding-plan
+    evidence_path: data/alibaba/official/2026-08-04_bailian_coding_plan_official.md
+    captured_at: 2026-08-04
+    period: 2026-08-04
+    pricing_monthly_cny: 200
+    requests_5h: 6000
+    requests_weekly: 45000
+    requests_monthly: 90000
+    # 注意：以下为官方页面公布的次数字段，不放 tokens 数字（铁律 4/20）
+    credibility: high
+    disputed: false
+    notes: |
+      来源：help.aliyun.com/zh/model-studio/coding-plan Chrome dump-dom + 官方 .md 导出端点双重验证。
+      原文："Pro 高级套餐 价格 ¥ 200/月 用量限制：每 5 小时 6,000 次请求 / 每周 45,000 次请求 / 每月 90,000 次请求"。
+      ⚠ claimed only, 无 measured（tokens_measured: null，前端展示 —）。
+
+  - measurement_id: m_2026_08_04_alibaba_pro_user_console_verification
+    source_kind: anthropic_official
+    source_url: https://bailian.console.aliyun.com/cn-beijing/?tab=plan#/efm/subscription/coding-plan
+    evidence_path: data/alibaba/official/2026-08-04_user_console_screenshot.png
+    captured_at: 2026-08-04
+    period: 2026-08-04
+    pricing_monthly_cny: 200
+    requests_5h: 6000
+    requests_weekly: 45000
+    requests_monthly: 90000
+    recommended_model_primary: qwen3.5-plus
+    availability_observed: limited_quota
+    new_user_discount_observed: "30天6.25折"
+    credibility: high
+    disputed: false
+    notes: |
+      来源：阿里云控制台购买页（用户已登录实测截图）。
+      验证官方文档与控制台实测数字 100% 一致。
+      ⚠ 多源差异：控制台推荐模型列首位 = qwen3.5-plus，官方文档 2026-07-16 版本 = qwen3.7-plus。
+        → yml primary_model 取控制台实测（用户实际下单界面）。
+      ⚠ 控制台显示"新手优惠 30 天 6.25 折"，官方文档说"已结束"，待用户拍板是否写入 intro_*。
