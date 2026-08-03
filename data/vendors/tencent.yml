@@ -1,0 +1,104 @@
+# 腾讯云（Tencent Cloud）— 混元大模型 + 多模型聚合 Coding Plan + Token Plan
+# Coding Plan 订阅页：https://cloud.tencent.com/act/pro/codingplan
+# 混元产品主页：https://cloud.tencent.com/product/hunyuan
+# 官方文档：https://cloud.tencent.com/document/product/1729
+# 抓取日期：2026-08-04
+
+vendor_id: tencent
+vendor_display: 腾讯云混元
+vendor_display_en: Tencent Cloud Hunyuan
+brand_color: "#0078FF"               # 腾讯蓝，待截图校准
+homepage: https://cloud.tencent.com/product/hunyuan
+docs: https://cloud.tencent.com/document/product/1729
+last_verified: 2026-08-04
+
+# 邀请码：未发现
+affiliate: null
+
+# 产品线说明：腾讯云有两条独立的 Coding 订阅产品线
+# 1. Coding Plan — 按请求数计费（混元/GLM/Kimi/MiniMax 多模型聚合）
+# 2. 通用 Token Plan — 按 token 数计费（GLM-5/5.1/Kimi/MiniMax）
+# 两线不能互替，也不能同账号各持 1 档叠加（Coding Plan 限购 1 档 + Token Plan 限购 1 档）
+product_line_note: |
+  腾讯云提供两条独立的订阅产品线：
+  - Coding Plan（按请求数计费）：Lite ¥40/月（18000 次） + Pro ¥200/月（90000 次）
+  - 通用 Token Plan（按 token 数计费）：4 档 ¥39/99/299/599 — 月度 35M/100M/320M/650M tokens
+  - Hy Token Plan（按 token 计费，仅混元模型）：4 档 ¥28/78/238/468 — 月度限额未公布，暂不收录
+  - Hunyuan 后付费 API（按 token 后付费）：非订阅，不属 Coding Plan 类
+  每个主账号限购 1 档 Coding Plan + 1 档通用 Token Plan（可与 Hy Token Plan 叠加）
+
+# 厂商公共特性
+shared_features:
+  primary_model: hunyuan-a13b      # 混元主力模型
+  models:
+    # 混元自研
+    - hunyuan-a13b
+    - hunyuan-role-latest
+    - hunyuan-translation
+    - hunyuan-translation-lite
+    # Coding Plan 多模型聚合
+    - GLM-5
+    - GLM-5.1
+    - Kimi-K2.5
+    - MiniMax-M2.5
+    - MiniMax-M2.7
+  models_note: |
+    Coding Plan 含 Tencent HY 2.0 Instruct / GLM-5 / Kimi-K2.5 / MiniMax-M2.5 四模型（subagent 报告）
+    通用 Token Plan 含 GLM-5 / GLM-5.1 / Kimi-K2.5 / MiniMax-M2.5 / MiniMax-M2.7
+    Hy Token Plan 限混元自研模型
+  clients:
+    # Coding Plan 首发工具
+    - CodeBuddy
+    - OpenClaw
+    - Claude Code
+    - Cline
+    - Cursor
+    # 通用 Token Plan 工具
+    - CodeBuddy Code
+    - OpenCode
+    - Codex
+    - Kilo CLI
+    - Kilo Code IDE 插件
+  rate_limit_tiers: [5h, monthly]   # Coding Plan 仅给月度限额
+  rate_limit_note: |
+    Coding Plan 官方页面**只公布月度总请求数**，5h / 周限额未公布
+    通用 Token Plan 同 — 只给月度 token 数
+    ⚠ 月 = 周 × 4-5× 经验式无法验算（无 weekly 数据）
+
+# 腾讯云按量 API 定价 (per million tokens, 2026-06-26 文档)
+# 注：这是混元生文按量 API 价，不是 Coding Plan / Token Plan 抵扣
+model_pricing:
+  hunyuan-a13b:
+    input: 0.5
+    cached_input: null
+    output: 2.0
+    source: https://cloud.tencent.com/document/product/1729/97731
+    evidence_path: data/tencent/official/2026-08-04_billing_overview.md
+    captured_at: 2026-08-04
+    note: |
+      混元主力模型。input/output 比 = 4× 合理。
+      ⚠ 此为按量 API 价，Token Plan 按"预付包月"计费不适用。
+
+  hunyuan-role-latest:
+    input: 2.4
+    output: 9.6
+    source: https://cloud.tencent.com/document/product/1729/97731
+    evidence_path: data/tencent/official/2026-08-04_billing_overview.md
+    captured_at: 2026-08-04
+
+  hunyuan-translation:
+    input: 1.2
+    output: 3.6
+    source: https://cloud.tencent.com/document/product/1729/97731
+    evidence_path: data/tencent/official/2026-08-04_billing_overview.md
+    captured_at: 2026-08-04
+
+# 数据状态
+data_status_note: |
+  收录时状态（2026-08-04）：
+  - Coding Plan 价格 + 月度额度：✅（官方文章 + 第三方授权发布）
+  - 通用 Token Plan 价格 + token 限额：✅（自洽性验算 0.5% 误差）
+  - 5h / 周限额：❌ 官方未公布（铁律 16 留 null）
+  - Hy Token Plan 月度限额：❌ 官方未公布（铁律 16 留 null）
+  - tokens_measured：无探针实测 = null
+  - availability：subagent 报告"每天 10:00-24:00 限量"，待用户/控制台实测复核

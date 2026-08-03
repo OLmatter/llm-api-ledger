@@ -1,0 +1,75 @@
+# 腾讯云 通用 Token Plan Standard
+# 月度 100,000,000 tokens，月费 ¥99，单价 0.99 元/百万
+
+plan_id: tencent-token-plan-standard
+vendor: tencent
+plan_name: 通用 Token Plan Standard
+plan_tier: standard
+status: active
+last_verified: 2026-08-04
+
+tier_multiplier: 2               # Token Plan standard = lite × 2.86（兜底 2）
+
+tokens_inference_disabled: true
+
+pricing:
+  currency: CNY
+  original_monthly: 99
+  intro_monthly: null
+  auto_renew_default: true
+
+limits:
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: 100000000    # 1 亿 tokens（铁律 9：官方宣称列）
+    tokens_measured: null
+    note: |
+      来源：cloud.tencent.com/developer/article/2675766
+      "基础 Standard 1 亿" 月度 token 限额
+  window_5h:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null
+    note: "官方文章未公布 5h 限额"
+  window_weekly:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null
+    note: "官方文章未公布 weekly 限额"
+
+claimed_unit: "tokens"
+
+availability:
+  status: waitlist
+  last_verified: 2026-08-04
+  source: "data/tencent/official/2026-08-04_token_plan_4tiers.md"
+  note: "⚠ 待用户控制台实测复核"
+
+risk_flags:
+  - 不支持退款 / 不支持降配
+  - 每个主账号限购 1 档
+  - 仅 AI 工具中调用
+
+ratio_note: |
+  ## 自洽性验算
+  99 元 ÷ 100M tokens = 0.99 元/百万 ✓
+
+  ## 价格梯度（铁律 6）
+  Standard/Lite = 99/39 ≈ 2.54×（token 100M/35M = 2.86×）
+  单价递减合理
+
+measurements:
+  - measurement_id: m_2026_08_04_tencent_token_standard_official
+    source_kind: vendor_official
+    source_url: https://cloud.tencent.com/developer/article/2675766
+    evidence_path: data/tencent/official/2026-08-04_token_plan_4tiers.md
+    captured_at: 2026-08-04
+    period: 2026-05
+    pricing_monthly_cny: 99
+    tokens_monthly: 100000000
+    unit_price_per_million: 0.99
+    credibility: high
+    disputed: false
+    notes: "来源：腾讯云开发者社区，社区作者 gavin1024 授权发布。"
+
+evidence_path: data/tencent/official/2026-08-04_token_plan_4tiers.md

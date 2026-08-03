@@ -1,0 +1,127 @@
+# 腾讯云 Coding Plan Pro
+# 2026-03-12 上架介绍
+# 刊例价 ¥200/月，首购首月 ¥39.9（每天 10:00-24:00 限量），首次续费 ¥100（5 折）
+# 5h 6000 次 / 周 45000 次 / 月 90000 次
+# 来源：用户控制台高清截图 2026-08-04（已存 data/tencent/official/2026-08-04_coding_plan_pricing_detail.png）
+
+plan_id: tencent-coding-pro
+vendor: tencent
+plan_name: Coding Plan Pro
+plan_tier: pro
+status: active
+last_verified: 2026-08-04
+
+tier_multiplier: 5               # Coding Plan Pro = Lite × 5（18000 → 90000 次/月）
+
+# SOP 铁律 18：无探针实测
+tokens_inference_disabled: true
+
+pricing:
+  currency: CNY
+  original_monthly: 200
+  intro_monthly: 39.9            # 首购首月 ¥39.9
+  intro_duration_months: 1
+  intro_end_hint: null
+  intro_condition: "新用户首购"
+  intro_tag: "首月 39.9 元"
+  # ── 优惠多阶段结构（用户 2026-08-04 高清截图证实：2 阶段 = 首购首月 + 首次续费 5 折）──
+  intro_stages:
+    - stage: 1
+      name: "首购首月（新用户首购）"
+      duration_months: 1
+      price: 39.9
+      discount_rate: 0.1995    # 39.9 / 200 = 0.1995（≈ 2 折）
+      condition: "新用户首购（每天 10:00-24:00 限量）"
+      source: "data/tencent/official/2026-08-04_coding_plan_intro.md"
+    - stage: 2
+      name: "首次续费（5 折）"
+      duration_months: 1
+      price: 100
+      discount_rate: 0.5       # 100 / 200 = 0.5（5 折）
+      condition: "首次续费按 5 折 ¥100；用户控制台截图证实"
+      source: "data/tencent/official/2026-08-04_coding_plan_pricing_detail.png"
+      note: |
+        2026-08-04 用户控制台高清截图证实：
+        "首次续费 ¥100 ¥200"（5 折）。
+        第 2 次续费起默认恢复 ¥200 刊例价（截图未显示后续阶段，按官方文档逻辑推断）。
+  auto_renew_default: true
+
+limits:
+  window_5h:
+    requests_official: 6000      # 用户控制台截图 2026-08-04 证实
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      来源：data/tencent/official/2026-08-04_coding_plan_pricing_detail.png
+      "用量限制：6000 次请求/5 小时"
+  window_weekly:
+    requests_official: 45000     # 用户控制台截图 2026-08-04 证实
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      来源：data/tencent/official/2026-08-04_coding_plan_pricing_detail.png
+      "用量限制：45000 次请求/周"
+  window_monthly:
+    requests_official: 90000     # 月度总请求数（官方公布）
+    tokens_measured: null
+    tokens_official_claimed: null
+    note: |
+      来源：data/tencent/official/2026-08-04_coding_plan_intro.md
+      "Pro 套餐仅需 39.9 元 / 月，畅享 90000 次 请求"
+
+claimed_unit: "次"
+
+availability:
+  status: limited_quota
+  restock_schedule: "每天 10:00-24:00 UTC+8"
+  restock_method: "先到先得，新客专享"
+  fail_open_behavior: "售罄即不可订阅（fail-closed），切换刊例价 ¥200"
+  last_verified: 2026-08-04
+  source: "data/tencent/official/2026-08-04_coding_plan_intro.md"
+
+risk_flags:
+  - 限量抢购（每天 10:00-24:00，售罄切刊例价）
+  - 不支持退款
+  - 不支持降配
+
+ratio_note: |
+  ## 数据状态（2026-08-04 更新）
+  - 实测（measured）：无数据
+  - 宣称（claimed，权威截图）：
+    - 首购首月：¥39.9（约 2 折）
+    - **首次续费：¥100（5 折）**
+    - 刊例价：¥200/月
+    - 5h：6000 次 | 周：45000 次 | 月：90000 次
+
+  ## Pro / Lite 比例
+  - 限额：90000 / 18000 = 5×（与官方宣称一致）
+  - 价格：200 / 40 = 5×（与官方宣称一致）
+
+measurements:
+  - measurement_id: m_2026_08_04_tencent_coding_pro_official
+    source_kind: vendor_official
+    source_url: https://cloud.tencent.com/developer/article/2638167
+    evidence_path: data/tencent/official/2026-08-04_coding_plan_intro.md
+    captured_at: 2026-08-04
+    period: 2026-03-12
+    pricing_monthly_cny: 200
+    pricing_intro_monthly_cny: 39.9
+    pricing_first_renewal_cny: 100
+    requests_5h: 6000
+    requests_weekly: 45000
+    requests_monthly: 90000
+    context_length_tokens:
+      Tencent-HY-2.0-Instruct: null
+      GLM-5: 202752
+      Kimi-K2.5: 262144
+      MiniMax-M2.5: 196608
+    credibility: high
+    disputed: false
+    notes: |
+      来源 1：腾讯云开发者社区官方账号发布（cloud.tencent.com/developer/article/2638167）
+      来源 2：用户控制台高清截图 2026-08-04（data/tencent/official/2026-08-04_coding_plan_pricing_detail.png）
+      → 揭示了完整的「首购首月 + 首次续费」2 阶段定价 + 5h/周限额
+      5h/周/月 限额：6000 / 45000 / 90000 次
+      折扣梯度：首购首月 39.9 (≈2 折) → 首次续费 100 (5 折) → 刊例价 200
+
+evidence_path: data/tencent/official/2026-08-04_coding_plan_intro.md

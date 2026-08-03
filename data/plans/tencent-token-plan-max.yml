@@ -1,0 +1,84 @@
+# 腾讯云 通用 Token Plan Max
+# 月度 650,000,000 tokens，月费 ¥599，单价 0.92 元/百万
+
+plan_id: tencent-token-plan-max
+vendor: tencent
+plan_name: 通用 Token Plan Max
+plan_tier: max
+status: active
+last_verified: 2026-08-04
+
+tier_multiplier: 20              # Token Plan max = lite × 18.57（兜底 20，跟智谱/zai max 对齐）
+
+tokens_inference_disabled: true
+
+pricing:
+  currency: CNY
+  original_monthly: 599
+  intro_monthly: null
+  auto_renew_default: true
+
+limits:
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: 650000000    # 6.5 亿 tokens（铁律 9：官方宣称列 — 用户问的"6 点几亿"就是这）
+    tokens_measured: null
+    note: |
+      来源：cloud.tencent.com/developer/article/2675766
+      "专业 Max 6.5 亿" 月度 token 限额
+  window_5h:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null
+    note: "官方文章未公布 5h 限额"
+  window_weekly:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null
+    note: "官方文章未公布 weekly 限额"
+
+claimed_unit: "tokens"
+
+availability:
+  status: waitlist
+  last_verified: 2026-08-04
+  source: "data/tencent/official/2026-08-04_token_plan_4tiers.md"
+  note: "⚠ 待用户控制台实测复核"
+
+risk_flags:
+  - 不支持退款 / 不支持降配
+  - 每个主账号限购 1 档
+  - 仅 AI 工具中调用
+
+ratio_note: |
+  ## 自洽性验算
+  599 元 ÷ 650M tokens = 0.922 元/百万 ≈ 官方 0.92 ✓（0.2% 误差）
+
+  ## 价格梯度
+  Max/Pro = 599/299 ≈ 2.0×（token 650M/320M = 2.03×）
+  单价递减合理
+
+  ## 4 档总览
+  | 档位 | 月费 | tokens | 单价 |
+  |---|---|---|---|
+  | Lite | ¥39 | 35M | 1.11 |
+  | Standard | ¥99 | 100M | 0.99 |
+  | Pro | ¥299 | 320M | 0.93 |
+  | Max | ¥599 | 650M | 0.92 |
+  → 单价梯度递减，token 数量梯度递增，符合"规模效应"规律
+
+measurements:
+  - measurement_id: m_2026_08_04_tencent_token_max_official
+    source_kind: vendor_official
+    source_url: https://cloud.tencent.com/developer/article/2675766
+    evidence_path: data/tencent/official/2026-08-04_token_plan_4tiers.md
+    captured_at: 2026-08-04
+    period: 2026-05
+    pricing_monthly_cny: 599
+    tokens_monthly: 650000000
+    unit_price_per_million: 0.92
+    credibility: high
+    disputed: false
+    notes: "来源：腾讯云开发者社区，社区作者 gavin1024 授权发布。"
+
+evidence_path: data/tencent/official/2026-08-04_token_plan_4tiers.md

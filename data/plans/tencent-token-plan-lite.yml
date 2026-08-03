@@ -1,0 +1,87 @@
+# 腾讯云 通用 Token Plan Lite
+# 2026-05（subagent 报告）— 社区作者 gavin1024 授权发布于 cloud.tencent.com/developer
+# 月度 35,000,000 tokens，月费 ¥39，单价 1.11 元/百万
+
+plan_id: tencent-token-plan-lite
+vendor: tencent
+plan_name: 通用 Token Plan Lite
+plan_tier: lite
+status: active
+last_verified: 2026-08-04
+
+tier_multiplier: 1               # Token Plan lite = 1（基准）
+
+tokens_inference_disabled: true
+
+pricing:
+  currency: CNY
+  original_monthly: 39
+  intro_monthly: null
+  auto_renew_default: true
+
+limits:
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: 35000000     # 35M tokens（铁律 9：官方宣称列，与 measured 分开）
+    tokens_measured: null
+    note: |
+      来源：cloud.tencent.com/developer/article/2675766
+      "体验 Lite 3,500 万" 月度 token 限额
+  window_5h:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null
+    note: "官方文章未公布 5h 限额"
+  window_weekly:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null
+    note: "官方文章未公布 weekly 限额"
+
+claimed_unit: "tokens"
+
+# 铁律 28：Token Plan 未明确限量抢购公告（不像 Coding Plan 那样"每天 10-24"）
+# 但限购 1 档（同主账号），可视为 availability = waitlist-conditional
+availability:
+  status: waitlist                # 待用户控制台实测；subagent 报告未明确限量
+  restock_schedule: null
+  restock_method: null
+  fail_open_behavior: "每个主账号限购 1 档"
+  last_verified: 2026-08-04
+  source: "data/tencent/official/2026-08-04_token_plan_4tiers.md"
+  note: "⚠ waitlist 是保守假设；用户控制台登录实测可能显示 unlimited / limited_quota"
+
+risk_flags:
+  - 不支持退款
+  - 不支持降配
+  - 仅 AI 工具中调用（禁用自动化脚本/批量）
+  - 每个主账号限购 1 档通用 Token Plan + 1 档 Hy Token Plan
+  - 共用 1 个 API Key
+
+ratio_note: |
+  ## 自洽性验算（铁律 22）
+  39 元 ÷ 35M tokens = 1.114 元/百万 ≈ 官方公布 1.11 ✓（0.4% 误差）
+
+  ## Token Plan vs Coding Plan
+  - Token Plan 按 token 数扣费（不限模型）
+  - Coding Plan 按"模型调用次数"扣费
+  - 不能互替也不能同档叠加
+
+measurements:
+  - measurement_id: m_2026_08_04_tencent_token_lite_official
+    source_kind: vendor_official
+    source_url: https://cloud.tencent.com/developer/article/2675766
+    evidence_path: data/tencent/official/2026-08-04_token_plan_4tiers.md
+    captured_at: 2026-08-04
+    period: 2026-05
+    pricing_monthly_cny: 39
+    tokens_monthly: 35000000
+    unit_price_per_million: 1.11
+    credibility: high
+    disputed: false
+    notes: |
+      来源：腾讯云开发者社区，社区作者 gavin1024 授权发布。
+      ⚠ 文章作者是社区作者（不是腾讯云官方账号），但发布于 cloud.tencent.com/developer/ 官方域名。
+      视为"官方授权发布的二手分析"，credibility: high。
+
+evidence_path: data/tencent/official/2026-08-04_token_plan_4tiers.md
