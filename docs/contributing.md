@@ -1,6 +1,8 @@
 # 贡献指南
 
-LLM API Ledger 的所有数据来自社区贡献。我们不维护私有数据集，**贡献归属完全依赖 GitHub PR 流程** —— 你的 PR 作者会自动出现在仓库 Contributors 列表、commit 历史和 GitHub contribution graph 里，**项目不会单独维护 in-app 贡献者 credit / badge 系统**。
+**现在的厂商越来越坑，甚至我们只有联合起来才能有看清！假如你有数据！欢迎加入项目的贡献者！**
+
+**假如你有 agent 的话，直接把你知道的信息告诉它，它看了 `.agents/skills/contributions-data-routing/SKILL-and-SOP.md` 就会自动提 PR 了。**
 
 下面按门槛从低到高列出三种贡献路径。任选一种即可，不必都做。
 

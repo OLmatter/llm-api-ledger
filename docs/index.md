@@ -15,16 +15,18 @@ hero:
       link: https://github.com/OLmatter/llm-api-ledger
     # 第三个无 link 的按钮, 显示「最新更新」时间, build 脚本自动从 git log 取日期填进来
     - theme: alt
-      text: '📅 最新更新 2026-08-01 16:12'
+      text: '📅 最新更新 2026-08-03 05:22'
 ---
 
 # 榜单 {#leaderboard}
 
 <LeaderBoard />
 
-## 🚀 想贡献数据？直接提 PR 到仓库 {#how-to-contribute}
+## 🚀 现在的厂商越来越坑，甚至我们只有联合起来才能有看清！假如你有数据！欢迎加入项目的贡献者！{#how-to-contribute}
 
-> 数据榜单一手素材来自社区。**GitHub PR 流程已经自带贡献归属**——你的头像会自动出现在 Contributors 列表、commit 历史、contribution graph 里。**项目不维护任何 in-app 贡献者 credit / badge 系统**。
+**假如你有 agent 的话，直接把你知道的信息告诉它，它看了 `.agents/skills/contributions-data-routing/SKILL-and-SOP.md` 就会自动提 PR 了。**
+
+不会用 agent？按下面表格手动提 PR：
 
 下面按"实际最常见 → 少见"排列，PR 要交到仓库哪些目录一目了然：
 
