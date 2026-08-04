@@ -1,0 +1,778 @@
+# LLM API 厂商注册表 v2（2026-08-04 整理）
+# 用途：
+#   - 记录所有已知 LLM API 厂商（含追踪、未追踪）
+#   - 后续榜单收录（挪到 data/vendors/ + data/plans/）从此表挑
+#   - 提供处理友好的元数据（slug、source、priority、collection_difficulty）
+
+# ──────────────────────────────────────────────────────
+# 数据源
+# ──────────────────────────────────────────────────────
+sources:
+  - id: berriai_litellm
+    name: BerriAI/litellm model_prices_and_context_window.json
+    url: https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json
+    models_count: 2986
+    captured_at: 2026-08-04
+    coverage: 全模型按 token 单价；按 brand 识别厂商
+
+  - id: simonw_llm_prices
+    name: simonw/llm-prices
+    url: https://github.com/simonw/llm-prices
+    coverage: LLM token 价格追踪（HTML）
+
+  - id: wmpeng_codingplan
+    name: wmpeng/codingplan + codingplan.fyi
+    url: https://github.com/wmpeng/codingplan
+    coverage: 国内 31 平台为主，含 Cursor / Claude / Gemini / Mistral / Perplexity 海外订阅
+
+  - id: cloud_vendor_official
+    name: 厂商官网 / 控制台实测
+    coverage: 用户控制台截图、官方订阅页、价格 API
+
+# ──────────────────────────────────────────────────────
+# 字段说明
+# ──────────────────────────────────────────────────────
+# vendor_id        : 全局唯一 slug（小写，无空格），用于文件名和跨表 join
+# name             : 英文显示名
+# name_zh          : 中文显示名（可选）
+# region           : us / eu / cn / cn_global / jp / kr / global（多区域）
+# service_type     : subscription_api / coding_plan / api_provider / aggregator / gpu_cloud
+# has_subscription : bool，是否有月度订阅档
+# has_coding_plan  : bool，是否有"Coding Plan / Token Plan"型订阅
+# known_subscriptions : 已知订阅档（含价格）
+# known_models     : 主要模型家族
+# status           : tracked（已收录）/ candidate（待收录）/ archive（已归档）/ skip（明确跳过）
+# priority         : high / medium / low（收录优先级）
+# data_source      : 已收录厂商指向 data/vendors/<id>.yml
+# discovered_from  : 从哪些 source 发现此厂商
+# discovered_at    : 首次入库日期
+# collection_difficulty : easy（公开数据足够）/ medium（需要控制台）/ hard（需用户主动提供）
+# evidence_required : 收录此厂商需要的证据类型
+# parent_vendor    : 子厂商的母公司（如 aws_bedrock.parent=aws）
+# blocked_reasons  : 明确跳过的原因（如合规、闭源、仅企业内购）
+# notes            : 自由备注
+
+# ──────────────────────────────────────────────────────
+# 已追踪厂商（10 家，36 套餐）
+# ──────────────────────────────────────────────────────
+tracked:
+  - vendor_id: alibaba
+    name: Alibaba Bailian
+    name_zh: 阿里云百炼
+    region: cn
+    service_type: coding_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions: [Coding Plan Pro ¥200/月, intro ¥125/月]
+    known_models: [qwen3.5-plus, qwen3-coder-plus, glm-5, glm-4.7, kimi-k2.5, MiniMax-M2.5]
+    status: tracked
+    priority: high
+    data_source: data/vendors/alibaba.yml
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    plans_count: 1
+    evidence_required: [control_panel_screenshot]
+    notes: Coding Plan Pro 唯一在售档位；用户控制台实测 2026-08-04
+
+  - vendor_id: tencent
+    name: Tencent Cloud Hunyuan
+    name_zh: 腾讯云混元
+    region: cn
+    service_type: coding_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions:
+      - Coding Plan Lite ¥40/月 (首购 ¥7.9，续费 ¥20)
+      - Coding Plan Pro ¥200/月 (首购 ¥39.9，续费 ¥100)
+      - Token Plan Lite ¥39/月 (35M tokens)
+      - Token Plan Standard ¥99/月 (100M tokens)
+      - Token Plan Pro ¥299/月 (320M tokens)
+      - Token Plan Max ¥599/月 (650M tokens)
+    known_models: [Tencent HY 2.0 Instruct, GLM-5, Kimi-K2.5, MiniMax-M2.5]
+    status: tracked
+    priority: high
+    data_source: data/vendors/tencent.yml
+    discovered_from: [cloud_vendor_official]
+    discovered_at: 2026-08-04
+    collection_difficulty: medium
+    plans_count: 6
+    evidence_required: [official_article, control_panel_screenshot]
+    notes: 双产品线（Coding Plan 按请求 + Token Plan 按 token）；用户高清截图证实首购首月 + 首次续费 5 折
+
+  - vendor_id: volcengine
+    name: Volcano Engine
+    name_zh: 火山方舟
+    region: cn
+    service_type: coding_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions: [Coding Plan Lite, Coding Plan Pro]
+    status: tracked
+    priority: high
+    data_source: data/vendors/volcengine.yml
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    plans_count: 2
+
+  - vendor_id: zhipu
+    name: Zhipu AI
+    name_zh: 智谱 AI
+    region: cn
+    service_type: coding_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions: [GLM Coding Lite / Pro / Max × v3 + normal]
+    status: tracked
+    priority: high
+    data_source: data/vendors/zhipu.yml
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    plans_count: 6
+
+  - vendor_id: zai
+    name: Z.AI (GLM International)
+    name_zh: 智谱国际
+    region: cn_global
+    service_type: coding_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions: [GLM Coding Lite / Pro / Max × v3 + normal]
+    status: tracked
+    priority: high
+    data_source: data/vendors/zai.yml
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    plans_count: 6
+
+  - vendor_id: kimi
+    name: Kimi (Moonshot)
+    name_zh: 月之暗面 Kimi
+    region: cn
+    service_type: coding_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions: [Code Andante, Moderato, Allegretto, Allegro]
+    status: tracked
+    priority: high
+    data_source: data/vendors/kimi.yml
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    plans_count: 4
+
+  - vendor_id: minimax
+    name: MiniMax
+    name_zh: MiniMax
+    region: cn
+    service_type: token_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions: [Token Plan Plus, Max, Ultra]
+    status: tracked
+    priority: high
+    data_source: data/vendors/minimax.yml
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    plans_count: 3
+
+  - vendor_id: openai
+    name: OpenAI
+    region: us
+    service_type: subscription_api
+    has_subscription: true
+    has_coding_plan: false
+    known_subscriptions: [ChatGPT Go / Plus / Pro 5x / Pro 20x / Business / Enterprise]
+    status: tracked
+    priority: high
+    data_source: data/vendors/openai.yml
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    plans_count: 7
+
+  - vendor_id: anthropic
+    name: Anthropic
+    region: us
+    service_type: subscription_api
+    has_subscription: true
+    has_coding_plan: false
+    known_subscriptions: [Claude Code Pro]
+    status: tracked
+    priority: high
+    data_source: data/vendors/anthropic.yml
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    plans_count: 1
+
+  - vendor_id: opencode
+    name: OpenCode
+    region: us
+    service_type: coding_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions: [OpenCode Go $10/月]
+    status: tracked
+    priority: medium
+    data_source: data/vendors/opencode.yml
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    plans_count: 1
+
+# ──────────────────────────────────────────────────────
+# 候选厂商：海外订阅型
+# ──────────────────────────────────────────────────────
+overseas_subscription_candidates:
+  - vendor_id: cursor
+    name: Cursor
+    region: us
+    service_type: coding_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions:
+      - Hobby $20/月
+      - Pro $20/月
+      - Business $40/用户/月
+      - Ultra $200/月
+    known_models: [GPT-5, Claude Sonnet 4.5, Cursor 自研模型]
+    status: candidate
+    priority: high
+    discovered_from: [wmpeng_codingplan, codingplan_fyi]
+    discovered_at: 2026-08-04
+    collection_difficulty: medium
+    evidence_required: [control_panel_screenshot, official_pricing_page]
+    source_url: https://cursor.com/
+    notes: AI 编辑器订阅代表，定价以席位 + 模型请求计费
+
+  - vendor_id: github_copilot
+    name: GitHub Copilot
+    region: us
+    service_type: coding_plan
+    has_subscription: true
+    has_coding_plan: true
+    known_subscriptions:
+      - Free $0
+      - Pro $10/月 或 $100/年
+      - Business $19/用户/月
+      - Enterprise $39/用户/月
+    status: candidate
+    priority: high
+    discovered_from: [wmpeng_codingplan, codingplan_fyi]
+    discovered_at: 2026-08-04
+    collection_difficulty: medium
+    evidence_required: [official_pricing_page]
+    source_url: https://github.com/features/copilot
+    notes: 席位 + 高级模型请求数双轨计费
+
+  - vendor_id: perplexity
+    name: Perplexity AI
+    region: us
+    service_type: subscription_api
+    has_subscription: true
+    has_coding_plan: false
+    known_subscriptions:
+      - Pro $20/月 或 $200/年
+      - Enterprise
+    known_models: [Sonar, 自研 + 多模型路由]
+    status: candidate
+    priority: high
+    discovered_from: [wmpeng_codingplan, berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: medium
+    evidence_required: [official_pricing_page]
+    source_url: https://www.perplexity.ai/
+
+  - vendor_id: xai
+    name: xAI (Grok)
+    region: us
+    service_type: subscription_api
+    has_subscription: true
+    has_coding_plan: false
+    known_subscriptions: [X Premium / Premium+ 内含 Grok; API 按量付费]
+    known_models: [Grok-4, Grok Code Fast 1]
+    status: candidate
+    priority: medium
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: medium
+    evidence_required: [official_pricing_page]
+    source_url: https://x.ai/
+
+  - vendor_id: google_gemini
+    name: Google AI (Gemini)
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按量付费为主（AI Studio / Vertex AI）]
+    known_models: [Gemini 3 Pro, Gemini 3 Flash, Gemini 2.5 Pro]
+    status: candidate
+    priority: medium
+    discovered_from: [berriai_litellm, codingplan_fyi]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://ai.google.dev/
+    notes: 无标准订阅型 Coding Plan，按量计费为主；与 Coding Plan 类型不完全匹配
+
+  - vendor_id: mistral
+    name: Mistral AI
+    region: eu
+    service_type: subscription_api
+    has_subscription: true
+    has_coding_plan: false
+    known_subscriptions: [La Plateforme 按 token; Le Chat Pro]
+    known_models: [Mistral Large 3, Codestral, Mixtral]
+    status: candidate
+    priority: medium
+    discovered_from: [berriai_litellm, wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://mistral.ai/
+
+# ──────────────────────────────────────────────────────
+# 候选厂商：海外 API 型（中转站 / 模型 API）
+# ──────────────────────────────────────────────────────
+overseas_api_candidates:
+  - vendor_id: openrouter
+    name: OpenRouter
+    region: us
+    service_type: aggregator
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费，聚合 100+ 模型; BYOK 也可]
+    status: candidate
+    priority: high
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://openrouter.ai/
+    notes: LLM API 中转站之首，模型覆盖最广
+
+  - vendor_id: deepseek_intl
+    name: DeepSeek (International)
+    region: cn_global
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费；极低价]
+    known_models: [DeepSeek V3.2, V4 Pro, V4 Flash]
+    status: candidate
+    priority: high
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://platform.deepseek.com/
+    notes: 国际版 DeepSeek；如上榜应注明与国内 DeepSeek 同源不同账户
+
+  - vendor_id: together
+    name: Together AI
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费; Dedicated GPU 集群]
+    known_models: [Llama, DeepSeek, Qwen, Mistral 开源]
+    status: candidate
+    priority: medium
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://www.together.ai/
+
+  - vendor_id: groq
+    name: Groq
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费; LPU 推理（超快）]
+    known_models: [Llama 3.3 70B, Mixtral, DeepSeek 等开源]
+    status: candidate
+    priority: medium
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://groq.com/
+    notes: 推理速度是核心卖点
+
+  - vendor_id: fireworks
+    name: Fireworks AI
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://fireworks.ai/
+    notes: litellm 收录 251 个模型，开源模型推理优化
+
+  - vendor_id: deepinfra
+    name: DeepInfra
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://deepinfra.com/
+
+  - vendor_id: novita
+    name: Novita AI
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费; GPU 云 + 模型 API]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://novita.ai/
+
+  - vendor_id: cerebras
+    name: Cerebras
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费; 超快推理]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://cerebras.net/
+
+  - vendor_id: anyscale
+    name: Anyscale
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费; Ray 生态]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://www.anyscale.com/
+
+  - vendor_id: replicate
+    name: Replicate
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按运行时间（GPU 秒）计费]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://replicate.com/
+    notes: 1000+ 开源模型，Cog 部署
+
+  - vendor_id: lambda_labs
+    name: Lambda Labs
+    region: us
+    service_type: gpu_cloud
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [GPU 云租赁 + 模型 API]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://lambda.ai/
+
+  - vendor_id: cohere
+    name: Cohere
+    region: ca
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费; 企业 Trial]
+    known_models: [Command R+, Embed v3]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://cohere.com/
+
+  - vendor_id: aws_bedrock
+    name: AWS Bedrock
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token / 请求数计费（多模型）]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: medium
+    evidence_required: [official_pricing_page, aws_account]
+    source_url: https://aws.amazon.com/bedrock/
+    notes: AWS 上托管 Claude / Llama / Mistral / Cohere 等；定价需 AWS 账号
+
+  - vendor_id: azure_openai
+    name: Azure OpenAI Service
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费（OpenAI 模型在 Azure 上）]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: medium
+    evidence_required: [official_pricing_page, azure_subscription]
+    source_url: https://azure.microsoft.com/en-us/products/ai-services/openai-service
+    notes: 企业合规首选
+
+  - vendor_id: meta_llama
+    name: Meta Llama API
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费（通过 meta.ai 或合作伙伴）]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://llama.meta.com/
+    notes: 主要通过 AWS / Together / Groq 等分发
+
+  - vendor_id: nvidia_nim
+    name: NVIDIA NIM (Nemotron)
+    region: us
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://build.nvidia.com/
+
+  - vendor_id: yi_01ai
+    name: 01.AI (零一万物)
+    region: cn_global
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费]
+    known_models: [Yi 系列]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://www.01.ai/
+
+  - vendor_id: writer
+    name: Writer (Palmyra)
+    region: us
+    service_type: enterprise_api
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [企业 API + 自部署]
+    status: candidate
+    priority: low
+    discovered_from: [berriai_litellm]
+    discovered_at: 2026-08-04
+    collection_difficulty: medium
+    evidence_required: [official_pricing_page]
+    source_url: https://writer.com/
+
+# ──────────────────────────────────────────────────────
+# 候选厂商：国内未收录
+# ──────────────────────────────────────────────────────
+domestic_candidates:
+  - vendor_id: deepseek_cn
+    name: DeepSeek (国内)
+    name_zh: 深度求索
+    region: cn
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费；极低价]
+    known_models: [DeepSeek V3.2, V4 Pro, V4 Flash]
+    status: candidate
+    priority: high
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://www.deepseek.com/
+    notes: 国内 DeepSeek；如上榜与 deepseek_intl 区分
+
+  - vendor_id: doubao
+    name: ByteDance Doubao
+    name_zh: 字节豆包
+    region: cn
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费（火山方舟/豆包大模型）]
+    known_models: [Doubao Pro, Seed 系列]
+    status: candidate
+    priority: high
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://www.volcengine.com/product/doubao
+    notes: 字节豆包大模型；与 volcengine（火山方舟）品牌需区分
+
+  - vendor_id: iflytek_spark
+    name: iFlytek Spark
+    name_zh: 科大讯飞星火
+    region: cn
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费; 也有 Coding Plan 类订阅]
+    known_models: [Spark V4, Spark Pro]
+    status: candidate
+    priority: medium
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://www.iflytek.com/
+
+  - vendor_id: sensetime
+    name: SenseTime
+    name_zh: 商汤日日新
+    region: cn
+    service_type: api_provider
+    has_subscription: false
+    has_coding_plan: false
+    known_subscriptions: [按 token 计费]
+    known_models: [日日新 V5, 多模态模型]
+    status: candidate
+    priority: low
+    discovered_from: [wmpeng_codingplan]
+    discovered_at: 2026-08-04
+    collection_difficulty: easy
+    evidence_required: [official_pricing_page]
+    source_url: https://www.sensetime.com/
+
+# ──────────────────────────────────────────────────────
+# 明确跳过（合规 / 闭源 / 仅企业内购）
+# ──────────────────────────────────────────────────────
+archived:
+  - vendor_id: baidu_qianfan
+    name: Baidu Qianfan
+    name_zh: 百度智能云千帆
+    region: cn
+    status: archive
+    archive_reason: |
+      2026-06-25 起 Coding Plan 停止续费；Token Plan 个人版 4 档
+      具体价格 / 限额需控制台，用户不愿提供控制台截图，
+      故不再收录（2026-08-04 用户决策 aidash.task001.m1_0173）。
+    archived_at: 2026-08-04
+    source_url: https://cloud.baidu.com/product/qianfan
+
+# ──────────────────────────────────────────────────────
+# 统计汇总
+# ──────────────────────────────────────────────────────
+stats:
+  total_vendors_known: 33
+  tracked: 10
+  overseas_subscription_candidates: 6
+  overseas_api_candidates: 14
+  domestic_candidates: 4
+  archived: 1
+
+  by_region:
+    cn: 6      # alibaba + tencent + volcengine + zhipu + kimi + minimax（已追踪）
+    cn_global: 4   # zai + deepseek_intl + yi_01ai + deepseek_cn
+    us: 21     # openai + anthropic + cursor + ...（含已追踪 2 + 候选 19）
+    eu: 1      # mistral
+    ca: 1      # cohere
+
+  by_service_type:
+    coding_plan: 6
+    token_plan: 1
+    subscription_api: 5
+    api_provider: 16
+    aggregator: 1
+    enterprise_api: 1
+    gpu_cloud: 1
+
+  by_priority:
+    high: 5
+    medium: 5
+    low: 19
+
+# ──────────────────────────────────────────────────────
+# 上榜规则
+# ──────────────────────────────────────────────────────
+inclusion_rules:
+  data_completeness:
+    - 月费 / 首购价 / 续费价至少 2 项已知
+    - 月限额 / 5h / 周限额至少 1 项已知（铁律 16）
+    - 单位明确（tokens / 次 / Credits / USD）
+    - 模型清单已知
+  evidence:
+    - 官方订阅页或价格页（公开）
+    - 用户控制台截图（订阅型）
+    - 官方 API pricing 文档（API 型）
+  validation:
+    - 铁律 16：不编造官方未公布数据
+    - 铁律 22：自洽性验算（Token Plan 类必须）
+    - 铁律 28：availability 字段必填
+  dedup:
+    - 与已有厂商不重复（如 deepseek_cn vs deepseek_intl 必须区分）
+    - 火山方舟 vs 字节豆包是同源不同账户，需明确归属
+
+# ──────────────────────────────────────────────────────
+# 处理脚本提示
+# ──────────────────────────────────────────────────────
+# 后续可写 scripts/registry.mjs：
+# - 列出所有 priority=high 的候选厂商
+# - 对每个候选，检查 evidence_required 是否齐全
+# - 缺哪个就生成对应抓取任务（webfetch / chromedump）
+# - 数据齐全后，从本表生成 data/vendors/<id>.yml + data/plans/<id>-*.yml
+# - 然后从本表删除该 entry（避免重复追踪）
