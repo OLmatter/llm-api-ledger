@@ -1,0 +1,11 @@
+model,pool,included_rows,input_cache_write_tokens,input_uncached_tokens,cache_read_tokens,output_tokens,total_tokens,uncached_input_usd_per_million,cache_write_usd_per_million,cache_read_usd_per_million,output_usd_per_million,retail_cost_recomputed_usd_at_2026_08_04_rates
+claude-opus-4-8-thinking-max,other_models,3,491345,144,9688557,164446,10344492,5,6.25,0.5,25,12.02705
+claude-opus-4-8-thinking-xhigh,other_models,10,1632654,276408,19338941,305192,21553195,5,6.25,0.5,25,28.88540
+composer-2.5,cursor_models,133,0,8321270,76169235,685892,85176397,0.5,0.5,0.2,2.5,21.10921
+composer-2.5-fast,cursor_models,9,0,584812,3415872,93455,4094139,3,3,0.5,15,4.86420
+cursor-grok-4.5-high,cursor_models,309,0,25759421,252453760,1811003,280024184,2,2,0.5,6,188.61174
+cursor-grok-4.5-high-fast,cursor_models,154,0,12973838,129067456,1088571,143129865,4,4,1,18,200.55709
+gpt-5.6-terra-max,other_models,3,222822,174701,7887307,47514,8332344,2,2.5,0.2,12,3.05409
+gpt-5.6-terra-xhigh,other_models,3,263782,66,1203802,18666,1486316,2,2.5,0.2,12,1.12434
+grok-4.5-xhigh,other_models,5,0,198276,5739520,81887,6019683,2,2,0.5,6,3.75763
+kimi-k3-max,other_models,2,0,402339,574464,8212,985015,3,3,0.3,15,1.50254

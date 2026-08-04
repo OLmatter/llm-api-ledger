@@ -1,0 +1,76 @@
+# Cursor individual subscription metadata.
+# Official pricing/model pages captured on 2026-08-04; measured quota is a single-user self-report.
+
+vendor_id: cursor
+vendor_display: Cursor
+vendor_display_en: Cursor
+brand_color: "#F5F5F5"
+homepage: https://cursor.com
+docs: https://cursor.com/docs
+last_verified: 2026-08-04
+
+affiliate: null
+
+shared_features:
+  primary_model: grok-4.5
+  models:
+    - grok-4.5
+    - grok-4.5-fast
+    - composer-2.5
+    - composer-2.5-fast
+    - third-party-frontier-models
+  models_note: |
+    Cursor Pro uses two independent monthly pools:
+    - Cursor Models: Grok 4.5 and Composer 2.5, including Fast variants.
+    - Other Models: third-party models charged against the pool at API-equivalent rates.
+    The official page does not publish an exact dollar cap for the Cursor Models pool.
+  clients:
+    - Cursor Editor
+    - Cursor CLI
+  rate_limit_tiers: [monthly]
+  rate_limit_note: |
+    Both usage pools reset with the monthly billing cycle. The dashboard reports token totals and
+    spend-equivalent usage, but included CSV rows replace per-request dollar cost with "Included".
+  api:
+    upstream: null
+
+# Repository-wide coding-workload ratio used for model-equivalent capacity calculations.
+programming_ratios_default:
+  cache_hit_rate: 92
+  new_input_rate: 7.3
+  output_rate: 0.7
+  source: data/cursor/official/2026-08-04_cursor_models_and_pricing.md
+
+# USD per million tokens, captured from Cursor's model/pricing data on 2026-08-04.
+model_pricing:
+  grok-4.5:
+    input: 2.00
+    cached_input: 0.50
+    output: 6.00
+    source: https://cursor.com/docs/models-and-pricing
+    evidence_path: data/cursor/official/2026-08-04_cursor_models_and_pricing.md
+    captured_at: 2026-08-04
+
+  grok-4.5-fast:
+    input: 4.00
+    cached_input: 1.00
+    output: 18.00
+    source: https://cursor.com/docs/models-and-pricing
+    evidence_path: data/cursor/official/2026-08-04_cursor_models_and_pricing.md
+    captured_at: 2026-08-04
+
+  composer-2.5:
+    input: 0.50
+    cached_input: 0.20
+    output: 2.50
+    source: https://cursor.com/docs/models-and-pricing
+    evidence_path: data/cursor/official/2026-08-04_cursor_models_and_pricing.md
+    captured_at: 2026-08-04
+
+  composer-2.5-fast:
+    input: 3.00
+    cached_input: 0.50
+    output: 15.00
+    source: https://cursor.com/docs/models-and-pricing
+    evidence_path: data/cursor/official/2026-08-04_cursor_models_and_pricing.md
+    captured_at: 2026-08-04
