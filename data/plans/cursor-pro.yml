@@ -1,0 +1,126 @@
+# Cursor Pro
+# Official plan/model facts plus one June 30-July 30, 2026 single-user billing-cycle report.
+
+plan_id: cursor-pro
+vendor: cursor
+plan_name: Cursor Pro
+plan_tier: pro
+status: active
+last_verified: 2026-08-04
+
+tier_multiplier: 1
+tokens_inference_disabled: true
+
+pricing:
+  currency: USD
+  original_monthly: 20
+  yearly_total: null
+  yearly_monthly_equivalent: null
+  yearly_note: No annual price was used for this measurement.
+  auto_renew_default: true
+  source_url: https://cursor.com/pricing
+  evidence_path: data/cursor/official/2026-08-04_cursor_pro_pricing.md
+  captured_at: 2026-08-04
+
+# Cursor has two monthly dollar-denominated pools and model-dependent token costs.
+# A single plan-wide token cap would be misleading, so the main fields stay null.
+limits:
+  window_5h:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null
+  window_weekly:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null
+  window_monthly:
+    requests_official: null
+    tokens_official_claimed: null
+    tokens_measured: null
+    note: |
+      Official docs confirm two monthly pools but do not publish one plan-wide token cap.
+      Token capacity changes materially with model, Fast mode, cache mix, and output ratio.
+      See model_breakdown measurements for low-credibility single-user estimates.
+
+ratio_note: |
+  Official baseline:
+  - Cursor Pro standard monthly price: $20.
+  - Other Models pool: at least $20/month according to Cursor documentation.
+  - Cursor Models pool: Grok 4.5 + Composer 2.5; exact dollar cap is not officially published.
+
+  Single-user report for 2026-06-30 through 2026-07-30:
+  - Dashboard: 562M total tokens, $341.73 included spend-equivalent, $0 on-demand.
+  - Clean subscription-included CSV: 561,145,630 tokens across 631 rows.
+  - Excluded from the clean total: 388,818 User API Key tokens, 886,583 free tokens,
+    and three errored/no-charge rows with no token count.
+  - Cursor Models rows: 512,424,585 tokens; Other Models rows: 48,721,045 tokens.
+
+  The contributor observed only a low-single-digit percentage remaining in the Cursor Models pool
+  and inferred roughly $300 of Cursor Models capacity. The exact remaining percentage is not present
+  in the submitted screenshots, so the $300 figure and all derived model-equivalent token caps are
+  disputed single-sample estimates, not official claims.
+
+measurements:
+  - measurement_id: m_2026_07_cursor_pro_single_user_cycle
+    source_kind: community_report
+    source_url: https://cursor.com/dashboard/usage
+    evidence_path: data/cursor/scraped/2026-08-04_cursor_pro_my_usage.md
+    captured_at: 2026-08-04
+    period_start: 2026-06-30
+    period_end: 2026-07-30
+    included_rows: 631
+    dashboard_total_tokens: 562421031
+    monthly_used_tokens: 561145630
+    dashboard_total_spend_usd: 341.73
+    on_demand_spend_usd: 0
+    cursor_models_used_tokens: 512424585
+    other_models_used_tokens: 48721045
+    cursor_models_pool_estimated_usd_approx: 300
+    other_models_pool_estimated_usd_approx: 48
+    other_models_recomputed_usd_at_2026_08_04_rates: 50.35105
+    credibility: low
+    disputed: true
+    notes: |
+      Single account and one billing cycle. The dashboard rounds 562,421,031 raw tokens to 562M.
+      The raw export includes BYOK/free rows that do not consume the paid subscription pools;
+      those rows were excluded from monthly_used_tokens and from the sanitized CSV.
+      The CSV records included cost as a label instead of per-row dollars, so the two pool caps
+      cannot be reconstructed exactly from the export alone.
+
+  - measurement_id: m_2026_07_cursor_pro_model_grok_4_5
+    source_kind: per_model_breakdown
+    model_id: grok-4.5
+    window_5h_tokens: null
+    window_weekly_tokens: null
+    window_monthly_tokens: 462962963
+    model_monthly_credit_usd: 300
+    cost_per_million: 0.648
+    input_per_million: 2.00
+    cached_per_million: 0.50
+    output_per_million: 6.00
+    credibility: low
+    disputed: true
+    scope: 单用户估算
+    evidence_path: data/cursor/scraped/2026-08-04_cursor_pro_my_usage.md
+    notes: |
+      Scenario estimate only. Effective $/M = 0.92×$0.50 + 0.073×$2 + 0.007×$6 = $0.648.
+      $300 ÷ $0.648/M = 462.96M tokens; contributor conservatively summarized this as about 450M.
+
+  - measurement_id: m_2026_07_cursor_pro_model_composer_2_5
+    source_kind: per_model_breakdown
+    model_id: composer-2.5
+    window_5h_tokens: null
+    window_weekly_tokens: null
+    window_monthly_tokens: 1260504202
+    model_monthly_credit_usd: 300
+    cost_per_million: 0.238
+    input_per_million: 0.50
+    cached_per_million: 0.20
+    output_per_million: 2.50
+    credibility: low
+    disputed: true
+    scope: 单用户估算
+    evidence_path: data/cursor/scraped/2026-08-04_cursor_pro_my_usage.md
+    notes: |
+      Scenario estimate only. Effective $/M = 0.92×$0.20 + 0.073×$0.50 + 0.007×$2.50 = $0.238.
+      $300 ÷ $0.238/M = 1.2605B tokens; contributor conservatively summarized this as about 1.2B.
