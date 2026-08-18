@@ -216,14 +216,27 @@ const currencyUnit = ref('native')  // 'native' | 'cny'
 const showDSEquiv = ref(false)      // DS V4 按量等价换算开关
 const dsVariant = ref('flash')      // 'flash' | 'pro'
 const dsCacheRate = ref(0.95)       // DS V4 等价换算的缓存命中率（默认 95%）
-// DS V4 官网原价（元/百万 tokens）
+const dsPeakMode = ref('offpeak')   // 'offpeak' | 'peak'（默认非高峰期，DS 2026-08-14 新增分峰/非峰）
+// DS V4 官网原价（元/百万 tokens，2026-08-14 抓取，按 1 USD ≈ 7.15 CNY 折算）
+// DS V4 Flash 在 2026-08-14 改分峰/非峰：input cache miss $0.22/$0.44 / cache hit $0.007/$0.014 / output $0.66/$1.32
+// DS V4 Pro 同样分峰/非峰：input cache miss $0.66/$1.32 / cache hit $0.022/$0.044 / output $1.98/$3.96
+// source_url: https://api-docs.deepseek.com/quick_start/pricing (2026-08-14 Chrome headless dump-dom)
+// 取整策略：人民币 = USD × 7.15，按"对用户偏保守"取整（让等价的 tokens 偏小一档，即 DS 价偏高一档）：
+// - 0.1573 → 0.16（向上）、0.3146 → 0.31（向下）—— 这两个故意选"对用户更不划算"的取整，让排序不被取整误差劫持
+// - 其他 10 个数（input/output 各档）按 round-half-to-nearest 取整
 const DS_V4_PRICES = {
-  flash: { input: 1.0, output: 2.0, cache_read: 0.02 },
-  pro:   { input: 3.0, output: 6.0, cache_read: 0.025 },
+  flash: {
+    offpeak: { input: 1.57, output: 4.72, cache_read: 0.05 },  // $0.22/$0.66/$0.007 × 7.15 = 1.573/4.719/0.050
+    peak:    { input: 3.15, output: 9.44, cache_read: 0.10 },  // $0.44/$1.32/$0.014 × 7.15 = 3.146/9.438/0.100
+  },
+  pro: {
+    offpeak: { input: 4.72, output: 14.16, cache_read: 0.16 }, // $0.66/$1.98/$0.022 × 7.15 = 4.719/14.157/0.157（向上取 0.16）
+    peak:    { input: 9.44, output: 28.31, cache_read: 0.31 }, // $1.32/$3.96/$0.044 × 7.15 = 9.438/28.314/0.315（向下取 0.31）
+  },
 }
 // 剩余非缓存部分按 input:output = 8.8:1.2 分（来自 MiniMax 实测分布）
-function dsV4MixedPricePerM(variant, cacheRate) {
-  const p = DS_V4_PRICES[variant]
+function dsV4MixedPricePerM(variant, cacheRate, peakMode) {
+  const p = DS_V4_PRICES[variant][peakMode || 'offpeak']
   const nonCache = 1 - cacheRate
   const inRatio = nonCache * 0.88
   const outRatio = nonCache * 0.12
@@ -236,7 +249,7 @@ function dsEquivForPlan(plan) {
         ? plan.pricing.original_monthly * (plan.pricing.fx_rate || 7.15)
         : plan.pricing.original_monthly)
   if (!monthlyCny) return null
-  const price = dsV4MixedPricePerM(dsVariant.value, dsCacheRate.value)
+  const price = dsV4MixedPricePerM(dsVariant.value, dsCacheRate.value, dsPeakMode.value)
   return Math.round(monthlyCny / price * 1e6)
 }
 const dsCacheOptions = [0.5, 0.7, 0.85, 0.95, 0.99]
@@ -317,8 +330,22 @@ function fmtTokensYi(n) {
       <button
         :class="['sort-btn', { active: showDSEquiv && dsVariant === 'pro' }]"
         @click="dsVariant = 'pro'; showDSEquiv = true"
-        title="DeepSeek V4 Pro 非高峰期按量等价（3 倍价）"
+        title="DeepSeek V4 Pro 按量等价（当前 peak mode 价）"
       >DS Pro</button>
+      <span v-if="showDSEquiv" class="bar-divider">·</span>
+      <span v-if="showDSEquiv" class="sort-label">时段：</span>
+      <template v-if="showDSEquiv">
+        <button
+          :class="['sort-btn', { active: dsPeakMode === 'offpeak' }]"
+          @click="dsPeakMode = 'offpeak'"
+          title="DS V4 非高峰期价格（20h/24h, UTC: 其他所有时段；当前默认）"
+        >非高峰</button>
+        <button
+          :class="['sort-btn', { active: dsPeakMode === 'peak' }]"
+          @click="dsPeakMode = 'peak'"
+          title="DS V4 高峰期价格（4h/24h, UTC: 01:00-04:00 + 06:00-10:00；比非高峰贵 2×）"
+        >高峰</button>
+      </template>
       <span v-if="showDSEquiv" class="bar-divider">·</span>
       <span v-if="showDSEquiv" class="sort-label">缓存命中：</span>
       <template v-if="showDSEquiv">
@@ -327,7 +354,7 @@ function fmtTokensYi(n) {
           :key="opt"
           :class="['sort-btn', { active: Math.abs(dsCacheRate - opt) < 0.001 }]"
           @click="dsCacheRate = opt"
-          :title="`缓存命中率 ${Math.round(opt*100)}%：越高 DS 等价越大（缓存 ¥0.02/M 几乎免费）`"
+          :title="`缓存命中率 ${Math.round(opt*100)}%：越高 DS 等价越大（缓存价几乎免费）`"
         >{{ Math.round(opt*100) }}%</button>
       </template>
       <span class="count">{{ plans.length }} 个套餐 · {{ plansData.vendors_count }} 个厂商</span>
@@ -546,7 +573,7 @@ function fmtTokensYi(n) {
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_monthly) }}</span>
               </div>
               <div v-if="showDSEquiv" class="ds-equiv">
-                <span class="ds-label">DS V4 {{ dsVariant === 'pro' ? 'Pro' : 'Flash' }} 等价</span>
+                <span class="ds-label">DS V4 {{ dsVariant === 'pro' ? 'Pro' : 'Flash' }} {{ dsPeakMode === 'offpeak' ? '非高峰' : '高峰' }} 等价</span>
                 <span class="ds-val">{{ dsEquivForPlan(row.plan) != null ? fmtTokens(dsEquivForPlan(row.plan)) : '—' }}</span>
               </div>
             </td>

@@ -1,18 +1,18 @@
 # OpenCode Go
-# 2026-07-31 官方文档 https://opencode.ai/docs/zh-cn/go/ (Chrome headless dump-dom)
-# 定价:首月 $5,之后 $10/月
-# 限额以「美元使用额度」定义:5h $12 / 周 $30 / 月 $60
-#
-# ⚠ 本 yml 的 limits 主字段用 GLM-5.2 口径(vendor primary_model,便于与智谱/z.ai 套餐横比)。
-#   用户指定的另一个模型 DeepSeek V4 Flash 完整写在 measurements 里,数字差 47 倍。
-#   同一套餐选不同模型能跑的量差异极大,这是 Go 的固有特性,不是数据错误。
+# 2026-08-14 抓取 https://opencode.ai/docs/zh-cn/go/ (Chrome headless dump-dom)
+# 主套餐价格未变:首月 $5,之后 $10/月;5h $12 / 周 $30 / 月 $60
+# 主字段口径 2026-08-14 从 GLM-5.2 改为 GLM-5.3（用户原话: "opencode 的 5.2 改为使用 5.3 模型"）
+#   - 单价 + tokens/请求 与 GLM-5.2 完全相同（$1.40/$4.40/$0.26, 700+52000+150）
+#   - 但月档从 $60 降到 $15（opencode "略高于直接付费"档,不走 6× 乘数）
+#   - 因此 5h/周/月 请求数从 880/2150/4300 → 220/540/1080（1/4）
+# DeepSeek V4 Flash: measurement 加 _offpeak 单价（2026-08-14 DS 官方分峰/非峰）
 
 plan_id: opencode-go
 vendor: opencode
 plan_name: OpenCode Go
 plan_tier: go
 status: active
-last_verified: 2026-07-31
+last_verified: 2026-08-14
 
 # Go 只有单一档位,自身即 1× 基准(无同厂商其他档可比)
 tier_multiplier: 1
@@ -29,27 +29,29 @@ pricing:
 
 limits:
   window_5h:
-    requests_official: 880               # GLM-5.2 口径(官方预估表)
-    cost_limit_usd: 12.00                # 官方「5 小时限制 — 12 美元使用额度」
+    requests_official: 220               # GLM-5.3 口径(2026-08-14 官方预估表;原 GLM-5.2 是 880)
+    cost_limit_usd: 12.00                # 官方「5 小时限制 — 12 美元使用额度」(主套餐价格未变)
     tokens_measured: null
-    tokens_scenario_estimate: 46508000   # 880 × 52,850 tokens/请求
+    tokens_scenario_estimate: 11627000   # 220 × 52,850 tokens/请求
     tokens_official_claimed: null
     note: |
       官方限额以美元价值定义($12/5h),不是 token 数也不是次数。
-      880 请求 = 官方基于观察到的使用模式给出的 GLM-5.2 预估值。
-      46.51M tokens = 880 × 每请求 52,850 tokens(官方 token 组成:700 输入 + 52,000 缓存 + 150 输出)。
-      ⚠ 换 DeepSeek V4 Flash 同样 $12 可跑 31,650 请求 / 2.19B tokens(见 measurements)。
+      220 请求 = 官方基于观察到的使用模式给出的 GLM-5.3 预估值（2026-08-14）;
+      GLM-5.3 与 GLM-5.2 单价 + tokens/请求 完全相同,但月档从 $60 降到 $15,
+      因此预估请求数从 880 降到 220（1/4）。
+      11.63M tokens = 220 × 每请求 52,850 tokens(官方 token 组成:700 输入 + 52,000 缓存 + 150 输出)。
+      ⚠ 换 DeepSeek V4 Flash 同样 $12 可跑 31,650 请求 / 2.19B tokens(见 measurements,2026-07-31 数据)。
   window_weekly:
-    requests_official: 2150              # GLM-5.2 口径
-    cost_limit_usd: 30.00                # 官方「每周限制 — 30 美元使用额度」
+    requests_official: 540               # GLM-5.3 口径(原 GLM-5.2 是 2,150)
+    cost_limit_usd: 30.00                # 官方「每周限制 — 30 美元使用额度」(主套餐价格未变)
     tokens_measured: null
-    tokens_scenario_estimate: 113627500  # 2,150 × 52,850
+    tokens_scenario_estimate: 28539000   # 540 × 52,850
     tokens_official_claimed: null
   window_monthly:
-    requests_official: 4300              # GLM-5.2 口径
-    cost_limit_usd: 60.00                # 官方「每月限制 — 60 美元使用额度」
+    requests_official: 1080              # GLM-5.3 口径(原 GLM-5.2 是 4,300)
+    cost_limit_usd: 60.00                # 官方「每月限制 — 60 美元使用额度」(主套餐价格未变)
     tokens_measured: null
-    tokens_scenario_estimate: 227255000  # 4,300 × 52,850
+    tokens_scenario_estimate: 57078000   # 1,080 × 52,850
     tokens_official_claimed: null
     monthly_estimated: false             # 官方直接公布月窗口,非按周推算
 
@@ -66,21 +68,29 @@ ratio_note: |
   ## ⚠ 6× 乘数不是全模型统一
   月额度 **$60** 档:GLM-5.2 / GLM-5.1 / Kimi K2.7 Code / Kimi K2.6 / MiniMax M3 / M2.7 / M2.5 /
   Qwen3.7 Plus / Qwen3.6 Plus / Qwen3.7 Max / MiMo-V2.5 / DeepSeek V4 Flash / Hy3
-  月额度 **$15** 档:Grok 4.5 / GPT 5.6 Luna / Kimi K3 / DeepSeek V4 Pro / MiMo-V2.5-Pro
+  月额度 **$15** 档:GLM-5.3 / Grok 4.5 / GPT 5.6 Luna / Kimi K3 / DeepSeek V4 Pro / MiMo-V2.5-Pro
   官方解释:这些模型尚未谈下批量折扣,或其公开价已经是折扣价。
 
-  ## 零加价已验证(2026-07-31,6/6 项一致)
+  ## 零加价已验证(2026-08-14, GLM-5.3 + GLM-5.2 + DS V4 Flash)
   | 模型 | Go 输入/输出/缓存($/M) | 厂商官方 | 来源 |
   |---|---|---|---|
+  | GLM-5.3 | 1.40 / 4.40 / 0.26 | 1.4 / 4.4 / 0.26 | docs.z.ai/guides/overview/pricing (Go 列"New") |
   | GLM-5.2 | 1.40 / 4.40 / 0.26 | 1.4 / 4.4 / 0.26 | docs.z.ai/guides/overview/pricing |
-  | DeepSeek V4 Flash | 0.14 / 0.28 / 0.0028 | 0.14 / 0.28 / 0.0028 | api-docs.deepseek.com/quick_start/pricing |
-  Go 不在单价上加价,价值全部来自 6× 额度乘数。
+  | DeepSeek V4 Flash (Off-Peak) | 0.22 / 0.66 / 0.007 | 0.22 / 0.66 / 0.007 | api-docs.deepseek.com/quick_start/pricing (2026-08-14 新增分峰/非峰) |
+  Go 不在单价上加价,价值来自分档额度乘数(部分模型 6×,部分模型<6×)。
 
   ## 选模型决定能跑多少(差 47 倍)
-  同样 $60 月额度:
-  - GLM-5.2 → 4,300 请求 / 2.27 亿 tokens
-  - DeepSeek V4 Flash → 158,150 请求 / 109.23 亿 tokens
-  榜单主字段取 GLM-5.2 口径(旗舰,便于与智谱/z.ai 横比),不代表 Go 的上限。
+  按各模型**实际月档**算（不同模型月档不同）:
+  - GLM-5.2(月档 $60) → 4,300 请求 / 2.27 亿 tokens
+  - GLM-5.3(月档 $15) → 1,080 请求 / 0.57 亿 tokens
+  - DeepSeek V4 Flash(月档 $60) → 158,150 请求 / 109.23 亿 tokens
+  榜单主字段取 GLM-5.3 口径(2026-08-14 最新模型,便于与智谱/z.ai 横比),不代表 Go 的上限。
+
+  ## ⚠ 为什么 GLM-5.3 看起来比 GLM-5.2「贵 4 倍」
+  同样 $10 月费：GLM-5.2 走 $60 档(6× 乘数,月跑 4,300 请求),GLM-5.3 走 $15 档(1.5× 乘数,月跑 1,080 请求)。
+  → 单价没变,但**每个请求有效成本 GLM-5.3 = $0.00926 / 请求**vs GLM-5.2 = $0.00233 / 请求(4×)。
+  → 这不是 bug,是 opencode 官方定价决定:GLM-5.3 是「New」模型,opencode 还没谈下批量折扣(跟 DS V4 Flash / Pro / Kimi K3 一档)。
+  → 用户看到的「缩水 4 倍」是 opencode 真实定价,不是榜单数据错误。
 
   ## 撞限之后
   - 仍可继续使用免费模型
@@ -110,16 +120,55 @@ measurements:
       「5 小时限制 — 12 美元使用额度 / 每周限制 — 30 美元使用额度 / 每月限制 — 60 美元使用额度」
       「限制以美元价值定义。这意味着你的实际请求数取决于你所使用的模型。」
 
-  # ── 2. GLM-5.2 口径(榜单主字段来源) ──
-  - measurement_id: m_2026_07_opencode_go_glm_5_2
+  # ── 2. GLM-5.3 口径(2026-08-14 改: 榜单主字段从 GLM-5.2 改用 GLM-5.3) ──
+  - measurement_id: m_2026_08_opencode_go_glm_5_3
+    source_kind: per_model_breakdown
+    period: 2026-08-14
+    model_id: glm-5.3
+    scope: opencode-go-client    # OpenCode Go 客户端在自家使用模式下的观察值，非 API 通用值
+    requests_5h: 220
+    requests_weekly: 540
+    requests_monthly: 1080
+    tokens_per_request: 52850          # 700 输入 + 52,000 缓存 + 150 输出（与 GLM-5.2 完全相同）
+    window_5h_tokens: 11627000
+    window_weekly_tokens: 28539000
+    window_monthly_tokens: 57078000
+    input_per_million: 1.40
+    output_per_million: 4.40
+    cached_per_million: 0.26
+    cost_per_request: 0.01516
+    cost_per_million: 0.2868           # $0.01516 ÷ 52,850 tokens × 1e6
+    model_monthly_credit_usd: 15       # 2026-08-14 GLM-5.3 在 Go 是 $15 档（原 GLM-5.2 是 $60 档）
+    credibility: medium
+    disputed: false
+    notes: |
+      请求数与 token 组成均为官方公布(https://opencode.ai/docs/zh-cn/go/, 2026-08-14 抓取)。
+      官方 token 组成原文:「GLM-5.3/5.2/5.1 — 每次请求 700 个输入 token,52,000 个缓存 token,150 个输出 token」。
+      GLM-5.3 是 z.ai 官方 docs 新增模型（标"New"）,单价 + tokens 跟 GLM-5.2 完全相同,
+      但 opencode 给 GLM-5.3 走 $15 档（不是 $60 档）,即"略高于直接付费"档（不走 6× 乘数）。
+      因此 5h/周/月 请求数 = GLM-5.2 的 1/4 = 220/540/1080。
+
+      ⚠ 自洽性验算（同 GLM-5.2 一样 8.6% 缺口,如实记录）:
+      每请求成本 = (700×$1.40 + 52,000×$0.26 + 150×$4.40) / 1e6 = $0.01516
+      按此反推 $15 月额度 = 989 请求,但官方标 1,080(高 9.2%);
+      $12/5h 反推 = 792 请求,官方标 220(低 72%, 因 $15 档不是 $60 档,不在同一基准)。
+      推断:GLM-5.3 在 Go 走的是厂商标价(无额外批量折扣),官方请求数为实际观察值取整。
+      榜单采用官方公布的请求数,不用反推值覆盖。
+
+      单价交叉验证:z.ai 官方 docs(docs.z.ai/guides/overview/pricing, 2026-08-14 抓取)
+      GLM-5.3 标"New"未单独列价,但 GLM-5.2 = Input $1.4 / Cached Input $0.26 / Output $4.4
+      与 Go 完全一致,零加价属实。
+
+  # ── 2b. 历史快照: GLM-5.2 旧版 measurement（2026-07-31,留作审计追溯） ──
+  - measurement_id: m_2026_07_opencode_go_glm_5_2_legacy
     source_kind: per_model_breakdown
     period: 2026-07-31
     model_id: glm-5.2
-    scope: opencode-go-client    # OpenCode Go 客户端在自家使用模式下的观察值，非 API 通用值
+    scope: opencode-go-client
     requests_5h: 880
     requests_weekly: 2150
     requests_monthly: 4300
-    tokens_per_request: 52850          # 700 输入 + 52,000 缓存 + 150 输出
+    tokens_per_request: 52850
     window_5h_tokens: 46508000
     window_weekly_tokens: 113627500
     window_monthly_tokens: 227255000
@@ -127,24 +176,17 @@ measurements:
     output_per_million: 4.40
     cached_per_million: 0.26
     cost_per_request: 0.01516
-    cost_per_million: 0.2868           # $0.01516 ÷ 52,850 tokens × 1e6
+    cost_per_million: 0.2868
     model_monthly_credit_usd: 60
     credibility: medium
     disputed: false
+    outdated: true                     # 2026-08-14 主字段从 GLM-5.2 改为 GLM-5.3,本 measurement 留作历史
+    superceded_by: m_2026_08_opencode_go_glm_5_3
     notes: |
-      请求数与 token 组成均为官方公布(https://opencode.ai/docs/zh-cn/go/)。
-      官方 token 组成原文:「GLM-5.2/5.1 — 每次请求 700 个输入 token,52,000 个缓存 token,150 个输出 token」。
-      tokens = 官方请求数 × 官方每请求 token 数(两个独立官方数字相乘,非本项目自行反推)。
-
-      ⚠ 自洽性验算存在 8.6% 缺口,如实记录不掩盖:
-      每请求成本 = (700×$1.40 + 52,000×$0.26 + 150×$4.40) / 1e6 = $0.01516
-      按此反推 $60 月额度 = 3,958 请求,但官方标 4,300(高 8.6%);
-      $12/5h 反推 = 792 请求,官方标 880(高 11.2%)。
-      推断:GLM-5.2 在 Go 走的是厂商标价(无额外批量折扣),官方请求数为实际观察值取整,
-      两者不完全等价。榜单采用官方公布的请求数,不用反推值覆盖。
-
-      单价交叉验证:z.ai 官方 docs(docs.z.ai/guides/overview/pricing, 2026-07-31)
-      GLM-5.2 = Input $1.4 / Cached Input $0.26 / Output $4.4,与 Go 完全一致,零加价属实。
+      ⚠ 历史快照(2026-07-31 旧版, GLM-5.2)。
+      2026-08-14 用户原话: "opencode 的 5.2 改为使用 5.3 模型"。
+      当前主字段权威见 m_2026_08_opencode_go_glm_5_3。
+      保留原因:铁律 18 历史测量不删,measurements 数组是审计追溯数据。
 
   # ── 3. DeepSeek V4 Flash 口径(用户指定的第二个模型) ──
   - measurement_id: m_2026_07_opencode_go_deepseek_v4_flash

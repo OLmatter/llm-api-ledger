@@ -32,7 +32,7 @@ affiliate:
     - 用量额度不变（月 $60 等,跟直接购买相同）
     - 区别仅在「未来某次撞 limit 时,credit 可降低下次使用成本」
   expires: null
-  models_highlight: GLM-5.2, DeepSeek V4 Flash, Kimi K2.7 Code, MiniMax M3
+  models_highlight: GLM-5.3, DeepSeek V4 Flash, Kimi K2.7 Code, MiniMax M3
   owner: OLmatter
   stackable: false              # 不是价格折扣,不参与价格叠加计算
   url: https://opencode.ai/go?ref=AQ0H42B676
@@ -53,6 +53,7 @@ shared_features:
 
     '
   models:
+  - GLM-5.3
   - GLM-5.2
   - GLM-5.1
   - DeepSeek V4 Flash
@@ -74,14 +75,14 @@ shared_features:
 
     单价 = 各模型厂商官方价，零加价；价值来自「$10/月 换 $60 使用额度」的 6× 乘数。
 
-    ⚠ 乘数不是全模型统一：GLM-5.2 / DeepSeek V4 Flash / Kimi K2.7 / MiniMax M3 等为 $60/月额度；
+    ⚠ 乘数不是全模型统一：GLM-5.2 / GLM-5.1 / DeepSeek V4 Flash / Kimi K2.7 / MiniMax M3 等为 $60/月额度；
 
-    Grok 4.5 / GPT 5.6 Luna / Kimi K3 / DeepSeek V4 Pro / MiMo-V2.5-Pro 只有 $15/月额度
+    Grok 4.5 / GPT 5.6 Luna / GLM-5.3 / Kimi K3 / DeepSeek V4 Pro / MiMo-V2.5-Pro 只有 $15/月额度
 
     （官方解释：这些模型尚未谈下批量折扣，或公开价已是折扣价）。
 
     '
-  primary_model: GLM-5.2
+  primary_model: GLM-5.3
   rate_limit_note: '三重限制以「美元使用额度」定义，不是 token 数也不是次数：
 
     - 5h 滚动窗口 $12
