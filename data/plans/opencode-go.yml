@@ -93,7 +93,7 @@ ratio_note: |
   按各模型**实际月档**算（不同模型月档不同）:
   - GLM-5.2(月档 $60) → 4,300 请求 / 2.27 亿 tokens
   - GLM-5.3(月档 $15) → 1,080 请求 / 0.57 亿 tokens
-  - DeepSeek V4 Flash(月档 $30,2026-08-17 调价后) → 谷价 35,943 请求 / 24.8 亿 tokens(峰价减半)
+  - DeepSeek V4 Flash(月档 $30,2026-08-17 调价后) → 谷价 35,945 请求 / 24.83 亿 tokens(峰价减半)
   榜单主字段取 GLM-5.3 口径(2026-08-14 最新模型,便于与智谱/z.ai 横比),不代表 Go 的上限。
 
   ## ⚠ 为什么 GLM-5.3 看起来比 GLM-5.2「贵 4 倍」
@@ -248,13 +248,13 @@ measurements:
     period: 2026-08-28
     model_id: deepseek-v4-flash
     scope: opencode-go-client
-    requests_5h: 14377
-    requests_weekly: 35943
-    requests_monthly: 35943              # 月额度 $30(费率卡) = 周上限,月 cap 由它决定
+    requests_5h: 14378
+    requests_weekly: 35945
+    requests_monthly: 35945              # 月额度 $30(费率卡) = 周上限,月 cap 由它决定
     tokens_per_request: 69070            # 790 输入 + 68,000 缓存 + 280 输出(官方口径不变)
-    window_5h_tokens: 993000000          # 谷价;峰价减半
-    window_weekly_tokens: 2482600000     # 谷价;峰价减半
-    window_monthly_tokens: 2482600000    # 月额度 $30 封顶,与周同值
+    window_5h_tokens: 993088460          # 谷价;峰价减半
+    window_weekly_tokens: 2482721150     # 谷价;峰价减半
+    window_monthly_tokens: 2482721150    # 月额度 $30 封顶,与周同值
     input_per_million: 0.22              # 谷(未命中);峰 0.44
     output_per_million: 0.66             # 谷;峰 1.32
     cached_per_million: 0.007            # 谷(命中);峰 0.014
@@ -265,8 +265,8 @@ measurements:
     disputed: false
     notes: |
       DS 2026-08-17 峰谷调价后重算(官方直抓:data/deepseek/official/2026-08-28_ds_peak_valley_pricing.md)。
-      谷价每请求 = (790×$0.22 + 68,000×$0.007 + 280×$0.66)/1e6 = $0.0008346;
-      $12/5h → 14,377 请求 ≈ 9.93 亿 tokens;$30/周、$30/月(模型额度封顶) → 35,943 请求 ≈ 24.8 亿 tokens。
-      峰价(北京工作日 9-12/14-18 点)全部减半:5h ≈ 4.97 亿,周/月 ≈ 12.4 亿。
+      谷价每请求 = (790×$0.22 + 68,000×$0.007 + 280×$0.66)/1e6 = $0.0008346(未取整);
+      $12/5h → floor 14,378 请求 = 9.9309 亿 tokens;$30/周、$30/月(模型额度封顶) → floor 35,945 请求 = 24.827 亿 tokens。
+      峰价(北京工作日 9-12/14-18 点)全部减半:5h ≈ 4.965 亿,周/月 ≈ 12.415 亿。
       旧条目(m_2026_07_*)按调价前旧价计算,虚高 2 倍,已标 outdated。
       DS Flash 月额度以费率卡 $30 为准(非 $60)。
