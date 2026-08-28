@@ -6,7 +6,7 @@ vendor: kimi
 plan_name: Code Plan Allegretto
 plan_tier: allegretto
 status: active
-last_verified: 2026-07-30
+last_verified: 2026-08-28
 
 pricing:
   currency: CNY
@@ -78,3 +78,15 @@ measurements:
     notes: |
       2 个不一致的数据:326M、690M,平均后 508M。
       ⚠ 样本数仅 2，且全是社区单点反馈无独立验证，credibility=low。
+
+  - measurement_id: m_2026_08_kimi_k3_generation_allegretto
+    source_kind: vendor_official
+    source_url: https://www.kimi.com/code
+    evidence_path: data/kimi/official/2026-08-28_kimi_k3_launch.md
+    captured_at: 2026-08-28
+    credibility: high
+    notes: |
+      K3(2026-07-17 发布,1M 上下文)正式上线;Code Plan 仅 Moderato 及以上可用 K3,本档不支持 K3。
+      CLI 编程模型为 K2.7 Code;平台迁移 platform.moonshot.cn → platform.kimi.com(301)。
+      四档价格复核一致(49/99/199/699);第三方称存在第5档+限购,存疑未证实(见 evidence)。
+      Moonshot V1 2026-08-31 全平台下线。

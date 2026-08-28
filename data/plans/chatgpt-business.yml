@@ -6,7 +6,7 @@ vendor: openai
 plan_name: ChatGPT Business
 plan_tier: business
 status: active
-last_verified: 2026-07-31
+last_verified: 2026-08-28
 
 # tier_multiplier:Business 单价 $25 vs Plus $20,但 2+ 用户共享 workspace,实际 1.25× per user
 tier_multiplier: 1.25
@@ -91,3 +91,13 @@ measurements:
       WebSearch 多源印证 ChatGPT Business $25/user/month。
       Business 32K context window, custom GPTs, data excluded from training, SSO/MFA, admin console, file uploads。
       Enterprise 联系销售(custom pricing),包含 128K context, unlimited GPT-4o, SCIM, 数据分析, 专属客户经理, API credits。
+
+  - measurement_id: m_2026_08_business_billing_note
+    source_kind: vendor_official
+    source_url: https://chatgpt.com/zh-Hans-CN/pricing/
+    evidence_path: data/openai/official/2026-08-28_chatgpt_go_global_5p6luna.md
+    captured_at: 2026-08-28
+    credibility: medium
+    notes: |
+      Business 定价为双轨:$25/人/月为年付折月,月付 $30/人/月。
+      本 yml pricing.original_monthly=25 对应年付口径,月付直购应为 $30(前端如展示需注意)。

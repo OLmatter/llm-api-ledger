@@ -3,7 +3,7 @@
 # 2026-07-31 更新:
 #   - 5h tokens: awesome-coding-plan 实测 39.66M(88% 吃满率)
 #   - 5h 翻倍 2026-05-06 起永久(SpaceX Colossus 1 算力),实测已含
-#   - 周 +50% 临时促销 2026-05-14 ~ 2026-07-19 已结束,weekly/monthly 已剥离
+#   - 周 +50% 促销 2026-07-19 终止后又两次延期(至 2026-08-31),见 m_2026_08_weekly_promo_reextended;基础字段仍剥离
 #   - cost_limit_usd 字段基于 Maciek plans.py 标 disputed(community local_estimate)
 #   - Max 5×/20× 套餐数据未独立核实,本 yml 不写(铁律 18)
 
@@ -12,7 +12,7 @@ vendor: anthropic
 plan_name: Claude Code Pro
 plan_tier: pro
 status: active
-last_verified: 2026-07-31
+last_verified: 2026-08-28
 
 # Claude Code 倍率:Pro 1× 基准
 codex_multiplier: 1
@@ -299,3 +299,17 @@ measurements:
       Haiku 4.5(anthropic 2025-10-15):经济版,Pro 用户最划算选项,$1/$5。
       effective $/M = 0.20 = 0.92×$0.10 + 0.073×$1 + 0.007×$5
       $36 ÷ $0.20 = 180M tokens/5h。
+
+  - measurement_id: m_2026_08_weekly_promo_reextended
+    source_kind: community_report
+    source_url: https://news.ycombinator.com/item?id=claude-code-weekly-limits
+    evidence_path: data/anthropic/official/2026-08-28_claude_weekly_promo_extended.md
+    captured_at: 2026-08-28
+    credibility: medium
+    status: active_until_2026_08_31
+    weekly_bonus_percent: 50
+    notes: |
+      周 +50% 促销未随 7-19 终止:社区多源确认两次延期(→8-19→8-31),适用 Pro/Max/Team/Enterprise。
+      本 yml weekly/monthly 基础字段维持剥离口径(铁律17);8 月内实际可用 = 表值 ×1.5。
+      Opus 4.1 API 端 2026-08-05 退役(订阅内使用待确认);Fable 5 变更为 Max/Team 套餐内可用。
+      Max 5x $100 / Max 20x $200 经 support.claude.com 转述核实,按铁律18仍不建 yml(未独立实测)。

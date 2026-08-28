@@ -6,7 +6,7 @@ vendor: openai
 plan_name: ChatGPT Go
 plan_tier: go
 status: active
-last_verified: 2026-07-31
+last_verified: 2026-08-28
 
 # tier_multiplier:Go 是 Plus 之下的廉价档,估算约 0.4×(基于价格比 8/20)
 # 注意:这是估算值,OpenAI 官方不公布绝对倍数,仅以价格比反推
@@ -88,3 +88,14 @@ measurements:
       腾讯新闻 2026-01-19 报道: "OpenAI 全面上线廉价版 ChatGPT Go 订阅方案:每月 8 美元"。
       印度首发价 ₹399 ≈ $4.75 USD (2025-08),全球化后统一 $8 USD。
       媒体比喻 "AI 界的 iPhone SE"(廉价但功能完整)。
+
+  - measurement_id: m_2026_08_go_global_luna
+    source_kind: vendor_official
+    source_url: https://openai.com/zh-Hans-CN/index/introducing-chatgpt-go/
+    evidence_path: data/openai/official/2026-08-28_chatgpt_go_global_5p6luna.md
+    captured_at: 2026-08-28
+    credibility: high
+    notes: |
+      ChatGPT Go 2026-08-26 官宣全球开放($8 美国定价,与账本一致)。
+      GPT-5.6 Luna 对 Free/Go 提供无限文字聊天——该部分不占额度,解读实测 tokens 时注意口径。
+      '首月 $5' 促销本轮未复核。

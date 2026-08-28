@@ -7,7 +7,7 @@ vendor: volcengine            # → data/vendors/volcengine.yml
 plan_name: Coding Plan Pro
 plan_tier: pro
 status: active
-last_verified: 2026-07-21
+last_verified: 2026-08-28
 
 pricing:
   currency: CNY
@@ -67,3 +67,13 @@ measurements:
       单用户单月反推，非统计平均。
       真实月度 cap 可能因用户使用强度 / 请求长度分布不同而漂移。
       榜单展示时标"参考值"，不可作为排序硬依据。
+
+  - measurement_id: m_2026_08_volc_verified_pro
+    source_kind: vendor_official
+    source_url: https://www.volcengine.com/product/coding-plan
+    evidence_path: data/volcengine/official/2026-08-28_volc_codingplan_verified.md
+    captured_at: 2026-08-28
+    credibility: high
+    notes: |
+      Lite/Pro 价格与额度复核一致(40/200,首月9.9/49.9),本轮不改数。
+      方舟侧新增 Serverless OpenClaw(厂商级动态,不涉套餐字段)。

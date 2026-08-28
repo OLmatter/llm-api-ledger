@@ -8,7 +8,7 @@ vendor: zhipu
 plan_name: GLM Coding Plan Pro (v3)
 plan_tier: pro
 status: active
-last_verified: 2026-07-31
+last_verified: 2026-08-28
 
 # v3 tier ratio: Lite 1 / Pro 6 / Max 14 (vs v2 1/5/20)
 # 官方原话: Pro「6× Lite 用量额度」(bigmodel.cn/glm-coding 2026-07-31 dump)
@@ -147,3 +147,15 @@ measurements:
     disputed: false
     notes: |
       Pro 12,000 credits/5h × $0.00203/credit = $24.35 worth of GLM-5.2 input/5h。
+
+  - measurement_id: m_2026_08_zhipu_glm53_rollout_pro
+    source_kind: vendor_official
+    source_url: https://docs.bigmodel.cn/cn/coding-plan/overview
+    evidence_path: data/zhipu/official/2026-08-28_glm53_full_rollout.md
+    captured_at: 2026-08-28
+    credibility: high
+    notes: |
+      GLM-5.3(2026-08-14 发布)已全量接入 Coding Plan(所有档位支持 5.3/5.3-Flash)。
+      v3 积分制价格复核一致(Lite 118/Pro 538/Max 1078),本轮不改价。
+      闲峰五折规则与 z.ai 相同(工作日14-18点 UTC+8 为 peak)。
+      同额度下 5.3-Flash 积分减半,历史 @GLM-5.2 探针 tokens 口径待新实测校准。

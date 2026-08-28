@@ -8,7 +8,7 @@ vendor: zai
 plan_name: GLM Coding Plan Pro (v3)
 plan_tier: pro
 status: active
-last_verified: 2026-07-31
+last_verified: 2026-08-28
 
 # v3 tier ratio: Lite 1 / Pro 6 / Max 14 (vs v2 1/5/20)
 # z.ai = 智谱海外版,同套餐同比例
@@ -139,3 +139,15 @@ measurements:
     notes: |
       来源:docs.z.ai/guides/overview/pricing (2026-07-31 Chrome CDP 抓取)。
       Pro 12,000 credits/5h × $0.00203/credit = $24.35 worth of GLM-5.2 input/5h。
+
+  - measurement_id: m_2026_08_zai_devpack_verified_pro
+    source_kind: vendor_official
+    source_url: https://docs.z.ai/devpack/
+    evidence_path: data/zai/official/2026-08-28_zai_devpack_credits_glm53.md
+    captured_at: 2026-08-28
+    credibility: high
+    notes: |
+      官方 devpack 页 WebFetch 直抓复核:5h/周 credits 与账本一致。
+      GLM-5.3/GLM-5.3-Flash 全量支持;5.2/5.1 请求自动路由至 5.3,4.7 路由至 5.3-Flash。
+      闲峰(工作日14-18点UTC+8以外,含周末全天)积分五扣;5h 自消费起算,周每 7 天重置。
+      Pro/Max 月付价格官网 JS 未渲染未直核,维持现值。

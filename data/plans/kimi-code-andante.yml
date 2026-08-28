@@ -6,7 +6,7 @@ vendor: kimi
 plan_name: Code Plan Andante
 plan_tier: andante
 status: active
-last_verified: 2026-07-30
+last_verified: 2026-08-28
 
 pricing:
   currency: CNY
@@ -39,4 +39,15 @@ ratio_note: |
   倍率:Andante=1×,Moderato=4×,Allegretto=20×,Allegro=60×
   数据状态:全部 3 层限额用户未实测,前端展示 — (铁律:反推 ≠ 用户给)
 
-measurements: []  # 反推不算数(铁律:用户没给 = null),留空数组
+measurements:
+  - measurement_id: m_2026_08_kimi_k3_generation_andante
+    source_kind: vendor_official
+    source_url: https://www.kimi.com/code
+    evidence_path: data/kimi/official/2026-08-28_kimi_k3_launch.md
+    captured_at: 2026-08-28
+    credibility: high
+    notes: |
+      K3(2026-07-17 发布,1M 上下文)正式上线;Code Plan 仅 Moderato 及以上可用 K3,本档不支持 K3。
+      CLI 编程模型为 K2.7 Code;平台迁移 platform.moonshot.cn → platform.kimi.com(301)。
+      四档价格复核一致(49/99/199/699);第三方称存在第5档+限购,存疑未证实(见 evidence)。
+      Moonshot V1 2026-08-31 全平台下线。

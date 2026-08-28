@@ -8,7 +8,7 @@ vendor: minimax
 plan_name: Token Plan Max
 plan_tier: max
 status: active
-last_verified: 2026-07-21
+last_verified: 2026-08-28
 
 pricing:
   currency: CNY
@@ -62,6 +62,17 @@ measurements:
       但 burn 全是 input，真实编程有 output（output ≈ 4× input 计费价），按 input:output=7.5:1 折算：
       真实 5h 混合 cap ≈ 107M（比纯 input 少 26%）。
       折算依据：用户真实编程数据 non-cache input:output = 745M:99M。
+
+  - measurement_id: m_2026_08_minimax_verified_max
+    source_kind: vendor_official
+    source_url: https://platform.minimaxi.com/docs/token-plan/promotion
+    evidence_path: data/minimax/official/2026-08-28_minimax_tokenplan_verified.md
+    captured_at: 2026-08-28
+    credibility: high
+    notes: |
+      三档价格复核无变化(49/119/469)。
+      邀请共建活动 2026-08-31 截止——榜单'邀请码9折'列的官方依据到期日,9月需复核。
+      M3 API 2026-06-15 起五折(厂商成本侧参考,不改套餐限额)。
 
 # 套餐特性
 features:
