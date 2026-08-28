@@ -67,17 +67,14 @@ ratio_note: |
 
   ## ⚠ 6× 乘数不是全模型统一
   月额度 **$60** 档:GLM-5.2 / GLM-5.1 / Kimi K2.7 Code / Kimi K2.6 / MiniMax M3 / M2.7 / M2.5 /
-  Qwen3.7 Plus / Qwen3.6 Plus / Qwen3.7 Max / MiMo-V2.5 / DeepSeek V4 Flash / Hy3 /
-  LongCat-2.0 / Muse Spark 1.2
-  月额度 **$30** 档:Qwen3.8 Flash(2026-08-28 费率卡新增档位)
-  月额度 **$15** 档:GLM-5.3 / GLM-5.3-Flash / Grok 4.6 / GPT 5.6 Luna / Kimi K3 / DeepSeek V4 Pro / MiMo-V2.5-Pro / Qwen3.8 Max
+  Qwen3.7 Plus / Qwen3.6 Plus / Qwen3.7 Max / MiMo-V2.5 / DeepSeek V4 Flash / Hy3
+  月额度 **$15** 档:GLM-5.3 / Grok 4.5 / GPT 5.6 Luna / Kimi K3 / DeepSeek V4 Pro / MiMo-V2.5-Pro
   官方解释:这些模型尚未谈下批量折扣,或其公开价已经是折扣价。
 
-  ## 零加价已验证(2026-08-14 首核 GLM-5.3/5.2/DS V4 Flash;2026-08-28 复核补 GLM-5.3-Flash/DS 峰谷/V4-Pro)
+  ## 零加价已验证(2026-08-14, GLM-5.3 + GLM-5.2 + DS V4 Flash)
   | 模型 | Go 输入/输出/缓存($/M) | 厂商官方 | 来源 |
   |---|---|---|---|
   | GLM-5.3 | 1.40 / 4.40 / 0.26 | 1.4 / 4.4 / 0.26 | docs.z.ai/guides/overview/pricing (Go 列"New") |
-  | GLM-5.3-Flash | 0.15 / 0.50 / 0.03 | z.ai 促销价五折(至 2026-09-09),官方明细未抓到 | opencode.ai/docs/zh-cn/go 费率卡 (2026-08-28 抓,零加价待复核) |
   | GLM-5.2 | 1.40 / 4.40 / 0.26 | 1.4 / 4.4 / 0.26 | docs.z.ai/guides/overview/pricing |
   | DeepSeek V4 Flash (Off-Peak) | 0.22 / 0.66 / 0.007 | 0.22 / 0.66 / 0.007 | api-docs.deepseek.com/quick_start/pricing (2026-08-14 新增分峰/非峰) |
   | DeepSeek V4 Flash (Peak) | 0.44 / 1.32 / 0.014 | 0.44 / 1.32 / 0.014 | api-docs.deepseek.com/quick_start/pricing (2026-08-28 直抓全表,峰=谷×2) |
@@ -208,11 +205,6 @@ measurements:
     model_id: deepseek-v4-flash
     outdated: true                       # 2026-08-17 DS 峰谷调价,单价翻倍,本条 tokens 全部虚高 2 倍
     disputed: true
-    dispute_note: |
-      本条按 DS 2026-08-17 调价前旧价($0.14/$0.28/$0.0028)计算。调价后官方价翻倍
-      ($0.22/$0.66/$0.007 谷),同样的 $12/$30 额度现在只能跑一半 tokens——
-      旧值(2.19B/5.46B/10.92B)在新价下数学上不可达,保留仅作历史对照,勿据此决策。
-      现行有效数字见 m_2026_08_opencode_go_ds_v4_flash_reprice。
     superceded_by: m_2026_08_opencode_go_ds_v4_flash_reprice
     scope: opencode-go-client    # OpenCode Go 客户端观察值：80.4% 缓存命中极高(因为 cache 跨轮复用),
     # 不是 DS V4 Flash API 在所有场景下的通用缓存率
@@ -278,19 +270,3 @@ measurements:
       峰价(北京工作日 9-12/14-18 点)全部减半:5h ≈ 4.965 亿,周/月 ≈ 12.415 亿。
       旧条目(m_2026_07_*)按调价前旧价计算,虚高 2 倍,已标 outdated。
       DS Flash 月额度以费率卡 $30 为准(非 $60)。
-
-  # ── 4. 模型列表刷新(2026-08-28 费率卡对账,用户报「opencode 数据不对/缺 5.3f」) ──
-  - measurement_id: m_2026_08_opencode_model_list_refresh
-    source_kind: vendor_official
-    source_url: https://opencode.ai/docs/zh-cn/go/
-    evidence_path: data/opencode/scraped/2026-08-28_opencode_rate_card_refresh.md
-    captured_at: 2026-08-28
-    credibility: high
-    notes: |
-      opencode 官方费率卡对账(2026-08-28 WebFetch 直抓):
-      1. 新增 GLM-5.3-Flash($0.15/$0.50/$0.03,$15 档)——z.ai 促销价(五折至 9-9),
-         官方明细未抓到,零加价待复核;促销结束后基础价需重验;
-      2. Grok 4.5 更正为 Grok 4.6(≤200K $2/$6/$0.50;>200K $4/$12/$1.00,$15 档);
-      3. 新增 Qwen3.8 Max($15 档 $2/$6/$0.25)与 Qwen3.8 Flash($30 档 $0.15/$0.47/$0.016);
-      4. $60 档补 LongCat-2.0 / Muse Spark 1.2;
-      5. DS V4 Flash/Pro 峰谷价与本表 2026-08-28 已录行逐项一致(铁律 23 复核通过)。
