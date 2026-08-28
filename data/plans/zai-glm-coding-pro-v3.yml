@@ -151,3 +151,41 @@ measurements:
       GLM-5.3/GLM-5.3-Flash 全量支持;5.2/5.1 请求自动路由至 5.3,4.7 路由至 5.3-Flash。
       闲峰(工作日14-18点UTC+8以外,含周末全天)积分五扣;5h 自消费起算,周每 7 天重置。
       Pro/Max 月付价格官网 JS 未渲染未直核,维持现值。
+
+  # ── GLM-5.3-Flash 单独 per_model_breakdown(2026-08-28 新加, 用户原话「加入 glm 5.3 flash 模型」) ──
+  # 模型归属: GLM-5.3-Flash 是 z.ai 官方模型,全套餐可用,抵扣系数 2.3/0.56/8 per 10000 tokens
+  - measurement_id: m_2026_08_zai_pro_v3_glm_5_3_flash
+    source_kind: per_model_breakdown
+    period: 2026-08-28
+    model_id: glm-5.3-flash
+    scope: null
+    requests_5h: null
+    requests_weekly: null
+    requests_monthly: null
+    tokens_per_request: null
+    window_5h_tokens: 182300000          # 12000 credits/5h ÷ 65.82 ≈ 182.3M
+    window_weekly_tokens: 911500000      # 60000 credits/周 ÷ 65.82 ≈ 911.5M
+    window_monthly_tokens: 3919450000    # 周 × 4.3 ≈ 3.92B
+    input_per_million: 0.115
+    output_per_million: 0.40
+    cached_per_million: 0.028
+    cost_per_request: null
+    cost_per_million: 65.82
+    model_monthly_credit_usd: null
+    credibility: medium
+    disputed: false
+    notes: |
+      来源:z.ai devpack 页(https://docs.z.ai/devpack/, 2026-08-28 dump-dom)双重验证。
+      原文:"All plans support GLM-5.3, GLM-5.3-Flash."
+      抵扣系数(per 10000 tokens):Input 2.3 / Cached 0.56 / Output 8。
+      反推公式: tokens = credits / [(input%×coef_in + cache%×coef_cache + output%×coef_out) / 10000]
+      编程场景 cache 命中率 90.9%,token 比例 4.4% / 90.9% / 0.6%
+      → 平均抵扣 = 65.82 credits/1M tokens
+
+      Pro 套餐 5h/周 credits(2026-08-28 devpack 直核):
+        - 5h 12000 credits → 182.3M tokens
+        - 周 60000 credits → 911.5M tokens
+        - 月 = 周 × 4.3 ≈ 3.92B tokens
+
+      ⚠ 反推值是**全非高峰 + 90.9% cache 命中**理论上限,高峰期混合跑会落到下限。
+      ⚠ z.ai devpack 「GLM-5.2 周 2.63-5.26亿」估算:5.3-Flash 跑量是 5.2 的约 1.7-3.5×。

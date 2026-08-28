@@ -489,21 +489,47 @@ const plans = planFiles.map(f => {
         ?? ((p.measurements || []).find(m => m.source_plan && m.source_weekly_tokens)?.notes)
         ?? null,
       // 数据争议标记：disputed=true 时给前端显示红色 ⚠
-      weekly_disputed: (p.measurements || []).some(m => m.disputed === true),
-      dispute_note: ((p.measurements || []).find(m => m.disputed === true)?.dispute_note) || null,
+      // 铁律 18：仅「被同模型新测量取代」的 outdated disputed 不触发争议标签（如 DS 旧价）；
+      // 模型被换但数据仍有效的 outdated（如 GLM-5.2）若 disputed 照常触发
+      weekly_disputed: (() => {
+        const perModelAll = (p.measurements || []).filter(m => m.source_kind === 'per_model_breakdown' && m.model_id)
+        const activeModels = new Set(perModelAll.filter(m => !m.outdated).map(m => m.model_id))
+        return (p.measurements || []).some(m => m.disputed === true && (!m.outdated || !activeModels.has(m.model_id)))
+      })(),
+      dispute_note: (() => {
+        const perModelAll = (p.measurements || []).filter(m => m.source_kind === 'per_model_breakdown' && m.model_id)
+        const activeModels = new Set(perModelAll.filter(m => !m.outdated).map(m => m.model_id))
+        const found = (p.measurements || []).find(m => m.disputed === true && (!m.outdated || !activeModels.has(m.model_id)))
+        return found?.dispute_note || null
+      })(),
     },
 
     measurements_count: (p.measurements || []).length,
-    measurements_credibility_max: (p.measurements || []).reduce(
-      (m, x) => {
-        const rank = { low: 1, medium: 2, high: 3 }
-        return Math.max(m, rank[x.credibility] || 0)
-      }, 0
-    ),
+    // 铁律 18：聚合口径与 model_breakdown 显示口径一致——
+    // outdated 且被同模型新测量取代的不参与；模型被换但数据仍有效的（如 GLM-5.2）参与
+    measurements_credibility_max: (() => {
+      const perModelAll = (p.measurements || []).filter(m => m.source_kind === 'per_model_breakdown' && m.model_id)
+      const activeModels = new Set(perModelAll.filter(m => !m.outdated).map(m => m.model_id))
+      const visible = m => !m.outdated || !activeModels.has(m.model_id)
+      return (p.measurements || []).reduce(
+        (m, x) => {
+          if (!visible(x)) return m
+          const rank = { low: 1, medium: 2, high: 3 }
+          return Math.max(m, rank[x.credibility] || 0)
+        }, 0
+      )
+    })(),
     // Per-model breakdown：每个 model 一个 token 组合（同一 cap 不同 model 用量不同）
     // 前端渲染多个 model_tag 堆叠在 tokens 列
-    model_breakdown: (p.measurements || [])
-      .filter(m => m.source_kind === 'per_model_breakdown' && m.model_id)
+    // 铁律 18：outdated measurement 分两种，处理不同：
+    //   a) 同模型被重测取代（如 DS V4 Flash 旧价被重定价取代）→ 藏旧显新（「DS 做对」）
+    //   b) 模型本身被新模型取代但数据仍有效（如 GLM-5.2 主字段换成 GLM-5.3）→ **保留显示**（「不准删模型」）
+    // 规则：仅当同 model_id 存在非 outdated 的测量时，才隐藏该模型的 outdated 测量
+    model_breakdown: (() => {
+      const perModelAll = (p.measurements || []).filter(m => m.source_kind === 'per_model_breakdown' && m.model_id)
+      const activeModels = new Set(perModelAll.filter(m => !m.outdated).map(m => m.model_id))
+      return perModelAll.filter(m => !m.outdated || !activeModels.has(m.model_id))
+    })()
       .map(m => {
         // 用邀请码后用量：仅 +monthly。
         // 原因：usage credit 是「一次性 apply」而非「每周期叠加」(credit_apply: once)。
@@ -536,10 +562,16 @@ const plans = planFiles.map(f => {
           with_referral_credit: withCredit,
         }
       }),
-    // 数据争议标记：任一 measurement 标 disputed=true，整个 plan 标争议
-    measurements_disputed: (p.measurements || []).some(x => x.disputed === true),
+    // 数据争议标记：同 weekly_disputed 口径——被同模型新测量取代的 outdated disputed 不算
+    measurements_disputed: (() => {
+      const perModelAll = (p.measurements || []).filter(m => m.source_kind === 'per_model_breakdown' && m.model_id)
+      const activeModels = new Set(perModelAll.filter(m => !m.outdated).map(m => m.model_id))
+      return (p.measurements || []).some(x => x.disputed === true && (!x.outdated || !activeModels.has(x.model_id)))
+    })(),
     measurements_dispute_note: (() => {
-      const disputed = (p.measurements || []).find(x => x.disputed === true)
+      const perModelAll = (p.measurements || []).filter(m => m.source_kind === 'per_model_breakdown' && m.model_id)
+      const activeModels = new Set(perModelAll.filter(m => !m.outdated).map(m => m.model_id))
+      const disputed = (p.measurements || []).find(x => x.disputed === true && (!x.outdated || !activeModels.has(x.model_id)))
       return disputed?.dispute_note || null
     })(),
 

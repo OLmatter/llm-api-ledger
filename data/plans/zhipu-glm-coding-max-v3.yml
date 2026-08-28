@@ -161,3 +161,35 @@ measurements:
       v3 积分制价格复核一致(Lite 118/Pro 538/Max 1078),本轮不改价。
       闲峰五折规则与 z.ai 相同(工作日14-18点 UTC+8 为 peak)。
       同额度下 5.3-Flash 积分减半,历史 @GLM-5.2 探针 tokens 口径待新实测校准。
+
+  # ── GLM-5.3-Flash 单独 per_model_breakdown(2026-08-28 新加) ──
+  - measurement_id: m_2026_08_zhipu_max_v3_glm_5_3_flash
+    source_kind: per_model_breakdown
+    period: 2026-08-28
+    model_id: glm-5.3-flash
+    scope: null
+    requests_5h: null
+    requests_weekly: null
+    requests_monthly: null
+    tokens_per_request: null
+    window_5h_tokens: 425400000          # 28000 credits/5h ÷ 65.82 ≈ 425.4M
+    window_weekly_tokens: 2127000000     # 140000 credits/周 ÷ 65.82 ≈ 2.13B
+    window_monthly_tokens: 9146100000    # 周 × 4.3 ≈ 9.15B
+    input_per_million: 0.115
+    output_per_million: 0.40
+    cached_per_million: 0.028
+    cost_per_request: null
+    cost_per_million: 65.82
+    model_monthly_credit_usd: null
+    credibility: medium
+    disputed: false
+    notes: |
+      来源:docs.bigmodel.cn/cn/coding-plan/overview (2026-08-28 dump-dom)双重验证。
+      抵扣系数(per 10000 tokens):Input 2.3 / Cached 0.56 / Output 8。
+      平均抵扣 = 65.82 credits/1M tokens
+
+      Max 套餐 5h/周 credits(2026-08-28 docs.bigmodel.cn 直核):
+        - 5h 28000 credits → 425.4M tokens
+        - 周 140000 credits → 2.13B tokens
+        - 月 = 周 × 4.3 ≈ 9.15B tokens
+      ⚠ 反推值是**全非高峰 + 90.9% cache 命中**理论上限。

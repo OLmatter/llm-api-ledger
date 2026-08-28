@@ -270,3 +270,55 @@ measurements:
       峰价(北京工作日 9-12/14-18 点)全部减半:5h ≈ 4.965 亿,周/月 ≈ 12.415 亿。
       旧条目(m_2026_07_*)按调价前旧价计算,虚高 2 倍,已标 outdated。
       DS Flash 月额度以费率卡 $30 为准(非 $60)。
+
+  # ── 4. GLM-5.3-Flash 口径(2026-08-28 新加, 用户原始指令「加入 glm 5.3 flash 模型」) ──
+  # 模型归属: GLM-5.3-Flash 是 z.ai(智谱国际版)官方模型, opencode Go 是中转商(铁律 23 适用)
+  - measurement_id: m_2026_08_opencode_go_glm_5_3_flash
+    source_kind: per_model_breakdown
+    period: 2026-08-28
+    model_id: glm-5.3-flash
+    scope: opencode-go-client    # OpenCode Go 客户端在自家使用模式下的观察值,非 API 通用值
+    requests_5h: 1580
+    requests_weekly: 3950
+    requests_monthly: 7900
+    tokens_per_request: 56200           # 1000 输入 + 55000 缓存 + 200 输出
+    window_5h_tokens: 88796000          # 1580 × 56200
+    window_weekly_tokens: 221990000      # 3950 × 56200
+    window_monthly_tokens: 443980000     # 7900 × 56200
+    input_per_million: 0.15              # z.ai 原价(不是划线促销价)
+    output_per_million: 0.50             # z.ai 原价
+    cached_per_million: 0.03             # z.ai 原价
+    cost_per_request: 0.001900           # (1000×$0.15 + 55000×$0.03 + 200×$0.50)/1e6 = $0.0019
+    cost_per_million: 0.033808           # $0.0019 ÷ 56200 × 1e6
+    model_monthly_credit_usd: 15         # opencode 给 GLM-5.3-Flash 走 $15 档(同 GLM-5.3 / Kimi K3)
+    credibility: high                    # 铁律 22: 自洽性验算 0.07% 误差(高可信)
+    disputed: false
+    notes: |
+      GLM-5.3-Flash 是 z.ai 官方 docs 新增模型(2026-08-14 上线,标"Latest Models"首行)。
+      抓取:opencode Go 页(https://opencode.ai/docs/zh-cn/go/, 2026-08-28 dump-dom) +
+           z.ai 官方 docs(https://docs.z.ai/guides/overview/pricing, 2026-08-28 dump-dom)
+           双重验证(铁律 21.2 / SOP §0.6)。
+      证据:data/opencode/official/2026-08-28_opencode_go_glm53flash.md
+          + data/zai/official/2026-08-28_zai_pricing_glm53flash.md
+
+      官方 token 组成原文(Go 页):「GLM-5.3-Flash — 每次请求 1,000 个输入 token,
+      55,000 个缓存 token,200 个输出 token」。
+      请求数(Go 页):1,580 / 3,950 / 7,900 (5h / 周 / 月)。
+      单价(Go 页 + z.ai docs 原价口径):$0.15 / $0.50 / $0.03 = 输入 / 输出 / 缓存命中。
+      月档:$15(Go 页「$0.15 $0.50 $0.03 - $15」)。
+
+      ✅ 零加价已验证(铁律 23:跨渠道逐模型对账):
+      opencode Go 价 $0.15/$0.50/$0.03 ≡ z.ai 官方原价 $0.15/$0.50/$0.03(3/3 项一致)。
+
+      ✅ 自洽性验算完全通过(铁律 22,误差 < 0.1%):
+      每请求成本 = (1000×$0.15 + 55000×$0.03 + 200×$0.50)/1e6 = $0.001900
+      $15 / $0.001900 = 7,895 请求 vs 官方 7,900(误差 0.07%) → credibility: high
+
+      ⚠ 重要: z.ai docs 表面展示「促销半价 $0.075/$0.015/$0.25 至 2026-09-09 24:00 UTC+8」,
+      但 opencode Go 抓取单价是 z.ai 原价,且 7,900 月请求 × $0.001900 = $15.01 ≈ $15 月档
+      完美自洽,说明 **opencode Go 账单按 z.ai 原价跑**,不跟促销半价同步。
+      (若按促销半价 $0.000930/请求, 7,900 请求只需 $7.35,与 $15 月档矛盾——验证失败)
+
+      推测:opencode Go 抓价快照早于 8-14 促销上线,或账单系统未接 z.ai 促销。
+      用户看到的「promo」是 z.ai docs 视觉层,与 opencode Go 计费层无关。
+      yml measurement 用 **z.ai 原价**(与 opencode 实际计费一致)。

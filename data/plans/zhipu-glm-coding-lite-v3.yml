@@ -176,3 +176,41 @@ measurements:
       v3 积分制价格复核一致(Lite 118/Pro 538/Max 1078),本轮不改价。
       闲峰五折规则与 z.ai 相同(工作日14-18点 UTC+8 为 peak)。
       同额度下 5.3-Flash 积分减半,历史 @GLM-5.2 探针 tokens 口径待新实测校准。
+
+  # ── GLM-5.3-Flash 单独 per_model_breakdown(2026-08-28 新加, 用户原话「加入 glm 5.3 flash 模型」) ──
+  # 模型归属: GLM-5.3-Flash 是 zhipu 官方模型,全套餐可用,抵扣系数 2.3/0.56/8 per 10000 tokens
+  - measurement_id: m_2026_08_zhipu_lite_v3_glm_5_3_flash
+    source_kind: per_model_breakdown
+    period: 2026-08-28
+    model_id: glm-5.3-flash
+    scope: null
+    requests_5h: null
+    requests_weekly: null
+    requests_monthly: null
+    tokens_per_request: null
+    window_5h_tokens: 30400000           # 2000 credits/5h ÷ 65.82 ≈ 30.4M
+    window_weekly_tokens: 151900000      # 10000 credits/周 ÷ 65.82 ≈ 151.9M
+    window_monthly_tokens: 653170000     # 周 × 4.3 ≈ 653.2M
+    input_per_million: 0.115
+    output_per_million: 0.40
+    cached_per_million: 0.028
+    cost_per_request: null
+    cost_per_million: 65.82
+    model_monthly_credit_usd: null
+    credibility: medium
+    disputed: false
+    notes: |
+      来源:docs.bigmodel.cn/cn/coding-plan/overview (2026-08-28 dump-dom)双重验证。
+      原文:"套餐 GLM-5.3-Flash(含视觉理解 MCP)" + "调用 GLM-5-Turbo、GLM-4.7 将自动切换至 GLM-5.3-Flash"。
+      抵扣系数(per 10000 tokens):Input 2.3 / Cached 0.56 / Output 8(从 HTML tr 直接抓取)。
+      反推公式: tokens = credits / [(input%×coef_in + cache%×coef_cache + output%×coef_out) / 10000]
+      编程场景 cache 命中率 90.9%(官方),input 4.4% / cached 90.9% / output 0.6%(用户实测)
+      → 平均抵扣 = 65.82 credits/1M tokens
+
+      Lite 套餐 5h/周 credits(2026-08-28 docs.bigmodel.cn 直核):
+        - 5h 2000 credits → 30.4M tokens
+        - 周 10000 credits → 151.9M tokens
+        - 月 = 周 × 4.3 ≈ 653.2M tokens
+
+      ⚠ 与 z.ai devpack 同款:z.ai Lite = 2000/10000 credits(智谱是 z.ai 母公司,积分额度一致)。
+      ⚠ 反推值是**全非高峰 + 90.9% cache 命中**理论上限。
