@@ -162,6 +162,34 @@ measurements:
       闲峰五折规则与 z.ai 相同(工作日14-18点 UTC+8 为 peak)。
       同额度下 5.3-Flash 积分减半,历史 @GLM-5.2 探针 tokens 口径待新实测校准。
 
+  # ── GLM-5.3 单独 per_model_breakdown(2026-08-29 新加) ──
+  - measurement_id: m_2026_08_zhipu_max_v3_glm_5_3
+    source_kind: per_model_breakdown
+    period: 2026-08-29
+    model_id: glm-5.3
+    scope: null
+    requests_5h: null
+    requests_weekly: null
+    requests_monthly: null
+    tokens_per_request: null
+    window_5h_tokens: 676000000          # 官方估算页 Max 95% cache 周区间下限 6.76 亿
+    window_weekly_tokens: 676000000
+    window_monthly_tokens: 2906800000    # 6.76亿 × 4.3(下限保守)
+    input_per_million: 0.069
+    output_per_million: 0.24
+    cached_per_million: 0.017
+    cost_per_request: null
+    cost_per_million: null
+    model_monthly_credit_usd: null
+    credibility: medium
+    disputed: false
+    notes: |
+      来源:智谱官方场景估算页 https://docs.bigmodel.cn/cn/coding-plan/overview (2026-08-29 dump-dom)
+      原文(95% cache):"Max 6.76～13.52 亿 Tokens/周"
+      window_weekly_tokens 用区间下限 6.76 亿 = 676M(保守)
+      ⚠ 上限 13.52 亿 = 1352M/周;下限 6.76 亿 = 676M/周,实际跑量在此区间
+      抵扣系数(per 10000 tokens):Input 6.9 / Cached 1.7 / Output 24
+
   # ── GLM-5.3-Flash 单独 per_model_breakdown(2026-08-28 新加) ──
   - measurement_id: m_2026_08_zhipu_max_v3_glm_5_3_flash
     source_kind: per_model_breakdown
