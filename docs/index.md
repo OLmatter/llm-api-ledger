@@ -53,7 +53,7 @@ hero:
 <div>
 <p style="margin-top: 0;"><strong>📱 微信群：Coding AI 交流群</strong></p>
 <p>扫码加入。<strong>大众立场,跟各家企业群不同</strong>——不替任何厂商站台,套餐好不好全靠用户自己反馈。</p>
-<p style="color: #888; font-size: 0.9em;">⚠ 二维码 7 天内有效（2026-08-21 前），过期后群内将更新。</p>
+<p style="color: #888; font-size: 0.9em;">⚠ 微信群二维码 7 天内有效（更新于 2026-08-28），过期请开 issue 或在 Telegram 群里喊一声。</p>
 <p>另有 <a href="https://t.me/+s1flX6cpUZ1kM2M1">Telegram 群</a>(glm-coding-helper 用户群)。</p>
 </div>
 </div>
