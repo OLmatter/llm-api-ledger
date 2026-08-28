@@ -77,7 +77,13 @@ ratio_note: |
   | GLM-5.3 | 1.40 / 4.40 / 0.26 | 1.4 / 4.4 / 0.26 | docs.z.ai/guides/overview/pricing (Go 列"New") |
   | GLM-5.2 | 1.40 / 4.40 / 0.26 | 1.4 / 4.4 / 0.26 | docs.z.ai/guides/overview/pricing |
   | DeepSeek V4 Flash (Off-Peak) | 0.22 / 0.66 / 0.007 | 0.22 / 0.66 / 0.007 | api-docs.deepseek.com/quick_start/pricing (2026-08-14 新增分峰/非峰) |
+  | DeepSeek V4 Flash (Peak) | 0.44 / 1.32 / 0.014 | 0.44 / 1.32 / 0.014 | api-docs.deepseek.com/quick_start/pricing (2026-08-28 直抓全表,峰=谷×2) |
+  | DeepSeek V4 Pro (Off-Peak) | 0.66 / 1.98 / 0.022 | 0.66 / 1.98 / 0.022 | 同上 (V4-Pro 正式版 2026-08-13 上线,$15 档可用) |
+  | DeepSeek V4 Pro (Peak) | 1.32 / 3.96 / 0.044 | 1.32 / 3.96 / 0.044 | 同上 |
   Go 不在单价上加价,价值来自分档额度乘数(部分模型 6×,部分模型<6×)。
+  ⚠ DS 峰谷规则(2026-08-17 生效):高峰=北京时间工作日 9-12/14-18 点,价格=谷×2;
+  周末全天谷价(2026-08-23 起)。谷价跑量成本不变,工作日白天跑量成本×2。
+  全表见 data/deepseek/official/2026-08-28_ds_peak_valley_pricing.md(2026-08-28 官方直抓)。
 
   ## 选模型决定能跑多少(差 47 倍)
   按各模型**实际月档**算（不同模型月档不同）:
