@@ -325,8 +325,8 @@ const plans = planFiles.map(f => {
       return m != null ? (Number.isInteger(m) ? m : Math.round(m * 10) / 10) : null
     })(),
     status: p.status,
-    // 主力模型（榜单对比基准；plan 级字段优先于 vendor 级，详见 SKILL-and-SOP.md 铁律 13）
-    primary_model: p.primary_model || v.shared_features?.primary_model || null,
+    // 主力模型（榜单对比基准；vendor 级共享）
+    primary_model: v.shared_features?.primary_model || null,
 
     pricing: {
       currency: pricing.currency || 'CNY',
