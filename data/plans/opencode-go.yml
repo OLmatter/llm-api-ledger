@@ -93,7 +93,7 @@ ratio_note: |
   按各模型**实际月档**算（不同模型月档不同）:
   - GLM-5.2(月档 $60) → 4,300 请求 / 2.27 亿 tokens
   - GLM-5.3(月档 $15) → 1,080 请求 / 0.57 亿 tokens
-  - DeepSeek V4 Flash(月档 $60) → 158,150 请求 / 109.23 亿 tokens
+  - DeepSeek V4 Flash(月档 $30,2026-08-17 调价后) → 谷价 35,943 请求 / 24.8 亿 tokens(峰价减半)
   榜单主字段取 GLM-5.3 口径(2026-08-14 最新模型,便于与智谱/z.ai 横比),不代表 Go 的上限。
 
   ## ⚠ 为什么 GLM-5.3 看起来比 GLM-5.2「贵 4 倍」
@@ -203,6 +203,9 @@ measurements:
     source_kind: per_model_breakdown
     period: 2026-07-31
     model_id: deepseek-v4-flash
+    outdated: true                       # 2026-08-17 DS 峰谷调价,单价翻倍,本条 tokens 全部虚高 2 倍
+    disputed: true
+    superceded_by: m_2026_08_opencode_go_ds_v4_flash_reprice
     scope: opencode-go-client    # OpenCode Go 客户端观察值：80.4% 缓存命中极高(因为 cache 跨轮复用),
     # 不是 DS V4 Flash API 在所有场景下的通用缓存率
     requests_5h: 31650
@@ -217,11 +220,12 @@ measurements:
     cached_per_million: 0.0028
     cost_per_request: 0.0003794
     cost_per_million: 0.005493         # $0.0003794 ÷ 69,070 tokens × 1e6
-    model_monthly_credit_usd: 60
-    credibility: high
-    disputed: false
+    model_monthly_credit_usd: 30
+    credibility: medium
     notes: |
-      请求数与 token 组成均为官方公布(https://opencode.ai/docs/zh-cn/go/)。
+      ⚠ 2026-08-28 复核:本条按 DS 8-17 调价前旧价($0.14/$0.28/$0.0028)计算,
+      现官方价已翻倍($0.22/$0.66/$0.007 谷),本条 tokens/请求数全部虚高 2 倍,勿直接引用。
+      历史自洽验算(当时通过)保留作审计。请求数与 token 组成均为官方公布(https://opencode.ai/docs/zh-cn/go/)。
       官方 token 组成原文:「DeepSeek V4 Flash — 每次请求 790 个输入 token,68,000 个缓存 token,280 个输出 token」。
 
       ✅ 自洽性验算完全通过(误差 <0.1%),credibility 定 high:
@@ -237,3 +241,32 @@ measurements:
       ⚠ 存疑记录:opencode **Zen** 页面同一模型缓存读标 $0.028(比 Go 页和 DeepSeek 官方高 10 倍)。
       用 $0.028 反推得 28,667 请求,对不上官方标的 158,150;用 $0.0028 才对得上。
       判定为 Zen 页面少写一位的可能性大,**不**作为「Zen 加价」的证据,待官方澄清。
+
+  # ── 3b. DS V4 Flash 重定价修正(2026-08-17 峰谷价生效后) ──
+  - measurement_id: m_2026_08_opencode_go_ds_v4_flash_reprice
+    source_kind: per_model_breakdown
+    period: 2026-08-28
+    model_id: deepseek-v4-flash
+    scope: opencode-go-client
+    requests_5h: 14377
+    requests_weekly: 35943
+    requests_monthly: 35943              # 月额度 $30(费率卡) = 周上限,月 cap 由它决定
+    tokens_per_request: 69070            # 790 输入 + 68,000 缓存 + 280 输出(官方口径不变)
+    window_5h_tokens: 993000000          # 谷价;峰价减半
+    window_weekly_tokens: 2482600000     # 谷价;峰价减半
+    window_monthly_tokens: 2482600000    # 月额度 $30 封顶,与周同值
+    input_per_million: 0.22              # 谷(未命中);峰 0.44
+    output_per_million: 0.66             # 谷;峰 1.32
+    cached_per_million: 0.007            # 谷(命中);峰 0.014
+    cost_per_request: 0.0008346          # 谷;峰 0.0016692
+    cost_per_million: 0.012084
+    model_monthly_credit_usd: 30
+    credibility: high
+    disputed: false
+    notes: |
+      DS 2026-08-17 峰谷调价后重算(官方直抓:data/deepseek/official/2026-08-28_ds_peak_valley_pricing.md)。
+      谷价每请求 = (790×$0.22 + 68,000×$0.007 + 280×$0.66)/1e6 = $0.0008346;
+      $12/5h → 14,377 请求 ≈ 9.93 亿 tokens;$30/周、$30/月(模型额度封顶) → 35,943 请求 ≈ 24.8 亿 tokens。
+      峰价(北京工作日 9-12/14-18 点)全部减半:5h ≈ 4.97 亿,周/月 ≈ 12.4 亿。
+      旧条目(m_2026_07_*)按调价前旧价计算,虚高 2 倍,已标 outdated。
+      DS Flash 月额度以费率卡 $30 为准(非 $60)。
