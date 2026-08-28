@@ -1133,6 +1133,7 @@ features:
 - [ ] **`npx vitepress build docs`** 成功
 - [ ] **`node scripts/data-diff.mjs`** 跑过（铁律 27），无 `⚠️` 字段变化 / `🗑️ 消失套餐` 意外
 - [ ] **三处 UI 抽查**（如果改了显示字段）：榜单表格 / 厂商页 / 详情页
+- [ ] **汇报按铁律 29 四件套**：data-diff 输出 + 表格对照（哪格/之前/现在）+ 文件绝对地址 + 链接
 - [ ] **M1 记忆**：改动写到 NPL（`root.project.<ledger>.task001.mem create`），含"改了什么 + 为什么 + 来源"
 
 ---
@@ -1158,6 +1159,7 @@ features:
 | 一次性 credit 显示在 5h/周/月三列 | 漏 credit_apply 语义判断 | 铁律 25 |
 | 改完代码直接 commit + push 之后才截图 | 流程反了：截图必须在 commit 之前 | 铁律 26 |
 | commit 前没跑 `data-diff.mjs`，漏看 `@模型` 增删 / `tier_multiplier` 变化 | 漏铁律 27 的 commit 前体检 | 铁律 27 |
+| 汇报只贴 raw git diff / 散文总结，没有表格对照 + 绝对地址 + 链接 | 漏铁律 29 汇报纪律 | 铁律 29 |
 
 ### 铁律 27：commit 前必跑 `data-diff.mjs` 看改动（2026-08-01 落地）
 
@@ -1255,6 +1257,44 @@ features:
 - 如果发现 availability 变更，更新 plan.yml + 留 `availability_history` 痕迹
 - 配合铁律 11（限时活动过期机制）：availability 比 intro_monthly 更基础，必须先验证 availability 再验证 intro
 
+### 铁律 29：汇报改动必须用 data-diff 工具 + 表格对照 + 链接 + 绝对地址（2026-08-28 用户教学）
+
+**用户原话**：
+- 「明明有工具可以看改变了什么的，你没用？汇报时必须用」
+- 「瞎几把汇报！！！！！你当我是机器人？？？汇报表格里哪里动了！」
+- 「好，sop里面记好，以后就这样汇报。还要带链接和绝对地址」
+
+**事故**：改完 opencode DS + 加 GLM-5.3-Flash 后，汇报只贴了 raw `git diff` 代码块和散文总结。用户要的是**榜单表格视角**：哪个套餐行、哪个单元格、之前是什么、现在是什么、为什么。raw diff 是给 review 代码的人看的，不是给用户看数据改动的——用户不看代码，看表格。
+
+**规则（汇报改动时四件套，缺一不可）**：
+
+1. **必须先跑专门工具**：`node scripts/data-diff.mjs`（铁律 27），以工具输出为凭证，禁止凭印象总结
+
+2. **表格对照**：把工具输出整理成人读的对照表，四列固定：
+   | 套餐行 | 动了哪格 | 之前 | 现在 |（+ 可选「原因」列）
+   - 渲染层变化（如 build 脚本导致某模型行显示/隐藏）也要列进表格，注明「原因」
+
+3. **绝对地址**：每个改动文件给完整 Windows 绝对路径，例：
+   `C:\Users\520hh\Desktop\项目\no1\.scratch\llm-api-ledger\data\plans\opencode-go.yml`
+   截图同理给绝对路径
+
+4. **链接**：
+   - 数据来源：官方页 URL（如 https://docs.z.ai/guides/overview/pricing）
+   - 线上预览/线上页：GitHub Pages 地址或本地 preview 地址
+   - 已 push 的改动：commit 链接（https://github.com/OLmatter/llm-api-ledger/commit/<sha>）
+
+**反 mode（禁止）**：
+- ❌ 只贴 raw git diff 代码块当汇报
+- ❌ 只写散文「我改了 X 和 Y」不给表格对照
+- ❌ 不跑 data-diff.mjs 凭印象汇报
+- ❌ 文件只给相对路径或文件名，不给绝对地址
+- ❌ 不给来源链接/预览链接
+
+**和什么有关**：
+- 铁律 26（commit 前截图）—— 截图管视觉验收，本条管数据改动汇报，两者都要
+- 铁律 27（commit 前 data-diff）—— 本条是把 27 的工具输出作为汇报凭证
+- 铁律 18（最小 diff）—— 表格对照让用户一眼看出「改了什么」，是 18 的验收手段
+
 ---
 
 ## 6. 历史事故索引（供溯源）
@@ -1274,6 +1314,7 @@ features:
 - 铁律 25（一次性 credit）：`opencode go credit_apply once 一次性 5h 周 月 不能加每个窗口`
 - 铁律 26（commit 前截图）：`审核 不可逆 push 之前 先出图`
 - 铁律 27（commit 前 data-diff）：`data-diff commit 前 model_id 增删 tier_multiplier 肉眼漏看`
+- 铁律 29（汇报纪律）：`data-diff 表格对照 汇报 绝对路径 链接 raw diff 机器人`
 
 ---
 
