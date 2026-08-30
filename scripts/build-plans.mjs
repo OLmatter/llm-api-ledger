@@ -552,6 +552,10 @@ const plans = planFiles.map(f => {
           weekly_tokens: m.window_weekly_tokens,
           monthly_tokens: m.window_monthly_tokens,
           h5_tokens: m.window_5h_tokens || null,
+          // ZCode×1.5 按各模型行自己的 tokens 算（与主行显示同源，禁止用聚合值，否则子行对不上主行）
+          zcode_h5_tokens: m.window_5h_tokens ? Math.round(m.window_5h_tokens * 1.5) : null,
+          zcode_weekly_tokens: m.window_weekly_tokens ? Math.round(m.window_weekly_tokens * 1.5) : null,
+          zcode_monthly_tokens: m.window_monthly_tokens ? Math.round(m.window_monthly_tokens * 1.5) : null,
           cost_per_million: m.cost_per_million,
           credibility: m.credibility,
           notes: m.notes,

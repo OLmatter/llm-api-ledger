@@ -29,11 +29,11 @@ shared_features:
   # GLM-5.3 于 2026-08-14 全量接入 Coding Plan，5.2/5.1 自动路由 5.3，4.7 路由 5.3-Flash
   primary_model: GLM-5.3
   models:
-    - GLM-5.2
-    - GLM-4.7
+    - GLM-5.3
+    - GLM-5.3-Flash
   models_note: |
-    高阶模型（如 GLM-5.2）高峰期有消耗倍率（2~3 倍），
-    名义次数会缩水，实际可用次数低于标称。
+    2026-08-31 用户确认只保留两个版本：GLM-5.3（主）+ GLM-5.3-Flash。
+    5.2/5.1 自动路由 5.3，4.7 路由 5.3-Flash；5.3 高峰期有消耗倍率，名义次数会缩水。
   clients:
     - Cursor
     - Cline

@@ -509,12 +509,18 @@ function fmtTokensYi(n) {
             <!-- 实测用量（tokens） -->
             <td class="num tok">
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
-                <div v-for="mb in row.plan.model_breakdown" :key="mb.model_id" class="tok-row">
-                  <span v-if="mb.h5_tokens">{{ fmtTokens(mb.h5_tokens) }}</span>
-                  <span v-else class="muted">—</span>
-                  <span class="model-tag">@{{ mb.model_id }}</span>
-                  <span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
-                </div>
+                <template v-for="mb in row.plan.model_breakdown" :key="mb.model_id">
+                  <div class="tok-row">
+                    <span v-if="mb.h5_tokens">{{ fmtTokens(mb.h5_tokens) }}</span>
+                    <span v-else class="muted">—</span>
+                    <span class="model-tag">@{{ mb.model_id }}</span>
+                    <span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
+                  </div>
+                  <div v-if="mb.zcode_h5_tokens" class="zcode-aff">
+                    <span class="zcode-label">ZCode×1.5</span>
+                    <span class="zcode-val">{{ fmtTokens(mb.zcode_h5_tokens) }}</span>
+                  </div>
+                </template>
                 <!-- 用邀请码后用量（仅当有 usage credit 且该窗口有数据时显示） -->
                 <div v-for="mb in row.plan.model_breakdown.filter(m => m.with_referral_credit && m.with_referral_credit.h5_tokens)" :key="'cref-' + mb.model_id" class="tok-row tok-row-credit">
                   <span class="credit-val">{{ fmtTokens(mb.with_referral_credit.h5_tokens) }}</span>
@@ -525,16 +531,22 @@ function fmtTokensYi(n) {
               <template v-else>
                 {{ fmtTokens(row.plan.tokens.h5) }}<span v-if="row.plan.primary_model && row.plan.tokens.h5 != null" class="model-tag">@{{ row.plan.primary_model }}</span>
               </template>
-              <div v-if="row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_h5" class="zcode-aff">
+              <div v-if="!(row.plan.model_breakdown && row.plan.model_breakdown.length) && row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_h5" class="zcode-aff">
                 <span class="zcode-label">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_h5) }}</span>
               </div>
             </td>
             <td class="num tok" :class="{ disputed: row.plan.tokens.weekly_disputed }">
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
-                <div v-for="mb in row.plan.model_breakdown" :key="'w-' + mb.model_id" class="tok-row">
-                  {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
-                </div>
+                <template v-for="mb in row.plan.model_breakdown" :key="'w-' + mb.model_id">
+                  <div class="tok-row">
+                    {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
+                  </div>
+                  <div v-if="mb.zcode_weekly_tokens" class="zcode-aff">
+                    <span class="zcode-label" title="ZCode 客户端限时活动，全周期 0.67 折算（等效 1.5x 额度）。跟邀请码独立，可同时享受。">ZCode×1.5</span>
+                    <span class="zcode-val">{{ fmtTokens(mb.zcode_weekly_tokens) }}</span>
+                  </div>
+                </template>
                 <!-- 用邀请码后用量（仅当有 usage credit 且该窗口有数据时显示） -->
                 <div v-for="mb in row.plan.model_breakdown.filter(m => m.with_referral_credit && m.with_referral_credit.weekly_tokens)" :key="'cref-w-' + mb.model_id" class="tok-row tok-row-credit">
                   <span class="credit-val">{{ fmtTokens(mb.with_referral_credit.weekly_tokens) }}</span>
@@ -548,16 +560,22 @@ function fmtTokensYi(n) {
               </template>
               <div v-if="row.plan.reset_card_available" class="reset-card-note">这是标准额度，用几块钱的重置卡或者官方都会重置额度</div>
               <div v-if="row.plan.tokens.weekly_disputed" class="dispute-text">数据有争议</div>
-              <div v-if="row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_weekly" class="zcode-aff">
+              <div v-if="!(row.plan.model_breakdown && row.plan.model_breakdown.length) && row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_weekly" class="zcode-aff">
                 <span class="zcode-label" title="ZCode 客户端限时活动，全周期 0.67 折算（等效 1.5x 额度）。跟邀请码独立，可同时享受。活动截止 2026-07-31。">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_weekly) }}</span>
               </div>
             </td>
             <td class="num tok">
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
-                <div v-for="mb in row.plan.model_breakdown" :key="'m-' + mb.model_id" class="tok-row">
-                  {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
-                </div>
+                <template v-for="mb in row.plan.model_breakdown" :key="'m-' + mb.model_id">
+                  <div class="tok-row">
+                    {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
+                  </div>
+                  <div v-if="mb.zcode_monthly_tokens" class="zcode-aff">
+                    <span class="zcode-label">ZCode×1.5</span>
+                    <span class="zcode-val">{{ fmtTokens(mb.zcode_monthly_tokens) }}</span>
+                  </div>
+                </template>
                 <!-- 用邀请码后用量（仅当有 usage credit 且该窗口有数据时显示） -->
                 <div v-for="mb in row.plan.model_breakdown.filter(m => m.with_referral_credit && m.with_referral_credit.monthly_tokens)" :key="'cref-m-' + mb.model_id" class="tok-row tok-row-credit">
                   <span class="credit-val">{{ fmtTokens(mb.with_referral_credit.monthly_tokens) }}</span>
@@ -568,7 +586,7 @@ function fmtTokensYi(n) {
               <template v-else>
                 {{ fmtTokens(row.plan.tokens.monthly) }}<span v-if="row.plan.primary_model && row.plan.tokens.monthly != null" class="model-tag">@{{ row.plan.primary_model }}</span>
               </template>
-              <div v-if="row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_monthly" class="zcode-aff">
+              <div v-if="!(row.plan.model_breakdown && row.plan.model_breakdown.length) && row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_monthly" class="zcode-aff">
                 <span class="zcode-label">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_monthly) }}</span>
               </div>
