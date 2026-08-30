@@ -233,23 +233,20 @@ measurements:
   - measurement_id: m_2026_07_pro_model_sonnet_5
     source_kind: per_model_breakdown
     model_id: claude-sonnet-5
-    window_5h_tokens: 60000000
-    window_weekly_tokens: 400200000
-    window_monthly_tokens: 1600800000
-    cost_per_million: 0.6000
+    window_5h_tokens: 90000000
+    window_weekly_tokens: 600300000
+    window_monthly_tokens: 2401200000
+    cost_per_million: 0.4000
     cost_limit_5h_usd: 36
-    input_per_million: 3.00
-    cached_per_million: 0.30
-    output_per_million: 15.00
+    input_per_million: 2.00
+    cached_per_million: 0.20
+    output_per_million: 10.00
     credibility: high
     notes: |
       Sonnet 5(anthropic 2026-06-30):Pro/Free 默认。
-      标准价 $3/$15(2026-09-01 起,anthropic.com/pricing 确认)。
-      限时优惠 $2/$10 到 2026-08-31:
-      限时 effective $/M = 0.40 → 90M/5h(更划算,过期失效)。
-      本字段用标准价(铁律 17 双层定价,标准价为底)。
-      effective $/M = 0.60 = 0.92×$0.30 + 0.073×$3 + 0.007×$15
-      $36 ÷ $0.60 = 60M tokens/5h。
+      2026-08-31 官方页 dump-dom:$2/$10 转永久标准价(原定 9 月涨到 $3/$15 已取消)。
+      effective $/M = 0.40 = 0.92×$0.20 + 0.073×$2 + 0.007×$10
+      $36 ÷ $0.40 = 90M tokens/5h(原 60M,因价格转正未涨反降)。
 
   - measurement_id: m_2026_07_pro_model_sonnet_4_6
     source_kind: per_model_breakdown
