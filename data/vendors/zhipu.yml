@@ -25,8 +25,9 @@ v2_v3_transition_note: |
 
 # 厂商公共特性
 shared_features:
-  # 主力模型（榜单对比基准；高阶模型如 GLM-5.2 在高峰期有消耗倍率）
-  primary_model: GLM-5.2
+  # 主力模型（榜单对比基准）2026-08-29 用户要求「智谱模型换为5.3，5.2换为5.3」
+  # GLM-5.3 于 2026-08-14 全量接入 Coding Plan，5.2/5.1 自动路由 5.3，4.7 路由 5.3-Flash
+  primary_model: GLM-5.3
   models:
     - GLM-5.2
     - GLM-4.7
