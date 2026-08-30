@@ -991,6 +991,51 @@ for i in range(3):
 
 ---
 
+## 1.9 统一用量备注语法 annotations（2026-08-31 落地，配套铁律 30）
+
+**原则**：模型是「量的维度」（`model_id`），其余一切修饰都是 **annotation**。禁止再新长第五套散字段
+（历史上 scope / usage_scenario / usage_remark / disputed 各管一摊，已收拢）。
+
+### 语法
+
+```yaml
+# measurement 级（per_model_breakdown，备注挂每个 @模型行）
+- measurement_id: m_xxx
+  model_id: glm-5.3
+  annotations:
+    - kind: scenario
+      value: full_offpeak
+
+# plan 级（无 model_breakdown 的聚合行，备注挂整个单元格）
+usage_annotations:
+  - kind: scenario
+    value: probe_inferred
+```
+
+### kind 枚举（只有这 4 种）
+
+| kind | 含义 | 现有 value | 前端颜色 |
+|---|---|---|---|
+| `scenario` | 数据口径 | full_offpeak（全非高峰期）/ probe_inferred（实测反推）/ opencode-go-client（Go 观测） | 琥珀 |
+| `promo` | 优惠/加成 | zcode_1_5x（ZCode×1.5，**由 vendor.yml rate_multipliers.zcode 派生，禁止手写进 plan yml**） | 紫 |
+| `warning` | 异常/争议 | disputed（disputed: true 自动转） | 红 |
+| `note` | 普通备注 | 自由文本 value | 灰 |
+
+### 新增一种备注的固定三步（不许另起炉灶）
+
+1. `build-plans.mjs` 的 `ANNOTATION_DEFS` 加一条 `'kind/value': { label, tooltip }`（label/tooltip 中心在这，前端不维护映射）
+2. `LeaderBoard.vue` 加 `.ann-<kind>` 颜色（若已有该 kind 则跳过）
+3. yml 里写 `{ kind, value }`
+
+### 兼容与红线
+
+- 未迁移文件的旧 `scope` / `usage_scenario` / `usage_remark` 由 build 自动转 annotation（opencode 等在用），**但智谱/zai 12 文件已清零旧字段，新改动一律写 annotations**
+- promo 注释的量化子行（如 ZCode×1.5 的 5h/周/月三值）由 build 按各模型行自己的 tokens 算，铁律 30 的 model_id 继承自动满足
+- **三列（5h/周/月）都要渲染 annotations**——2026-08-31 踩过坑：只改了 5h 列，周/月漏掉（改模板时全局搜 `scope-tag` 确认处数）
+- data-diff 监视字段已含 `annotations`；汇报/验收照旧按铁律 29 表格
+
+---
+
 ## 2. YAML Schema 模板
 
 ### vendor.yml 完整字段
@@ -1133,7 +1178,8 @@ features:
 - [ ] **`npx vitepress build docs`** 成功
 - [ ] **`node scripts/data-diff.mjs`** 跑过（铁律 27），无 `⚠️` 字段变化 / `🗑️ 消失套餐` 意外
 - [ ] **三处 UI 抽查**（如果改了显示字段）：榜单表格 / 厂商页 / 详情页
-- [ ] **汇报按铁律 29 四件套**：data-diff 输出 + 表格对照（哪格/之前/现在）+ 文件绝对地址 + 链接
+- [ ] **备注字三列齐**（如果动了 annotations/备注渲染）：5h / 周 / 月 三列逐列看（§1.9 踩坑：周月列漏渲染）
+- [ ] **汇报按铁律 29 四件套**：data-diff 输出 + 表格对照（哪格/之前/现在）+ 文件绝对地址 + 链接；**只给表格，不给文件清单**（用户 2026-08-31 原话「我不看文件，只看表格」）
 - [ ] **M1 记忆**：改动写到 NPL（`root.project.<ledger>.task001.mem create`），含"改了什么 + 为什么 + 来源"
 
 ---
