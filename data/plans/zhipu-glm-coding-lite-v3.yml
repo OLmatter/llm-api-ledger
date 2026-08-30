@@ -183,16 +183,17 @@ measurements:
   # 95% cache 命中场景下 Lite 0.48~0.97 亿 Tokens/周(原文中位值就是此区间)
   - measurement_id: m_2026_08_zhipu_lite_v3_glm_5_3
     source_kind: per_model_breakdown
-    period: 2026-08-29
+    period: 2026-08-31
     model_id: glm-5.3
-    scope: null
+    scope: full_offpeak
+    usage_scenario: full_offpeak
     requests_5h: null
     requests_weekly: null
     requests_monthly: null
     tokens_per_request: null
-    window_5h_tokens: 48000000           # 官方估算页 Lite 95% cache 周区间下限 0.48 亿 → 0.48×10^8 周 tokens, 5h 推算 周×5/7 ≈ 34.3M,取下限 0.48 亿作保守值
-    window_weekly_tokens: 48000000
-    window_monthly_tokens: 206400000     # 0.48亿 × 4.3(下限保守)
+    window_5h_tokens: 97000000           # 官方估算页 Lite 95% cache 周区间上限 0.97 亿(全非高峰 0.5 倍积分)
+    window_weekly_tokens: 97000000
+    window_monthly_tokens: 417100000     # 0.97亿 × 4.3
     input_per_million: 0.069
     output_per_million: 0.24
     cached_per_million: 0.017
@@ -202,29 +203,29 @@ measurements:
     credibility: medium
     disputed: false
     notes: |
-      来源:智谱官方场景估算页 https://docs.bigmodel.cn/cn/coding-plan/overview (2026-08-29 dump-dom 双重验证)
+      来源:智谱官方场景估算页 https://docs.bigmodel.cn/cn/coding-plan/overview (2026-08-31 dump-dom 双重验证)
       原文(95% cache 命中):"Lite 0.48～0.97 亿 Tokens/周"
-      铁律 16 通过:官方页面直接给出区间数字,非反推
-      window_weekly_tokens 用区间下限 0.48 亿 = 48M(保守值,避免高估跑量)
-      5h = 周 × 5/7 ≈ 34.3M → 标 48M 周(用周值不变,避免引入额外估算)
-      ⚠ 上限 0.97 亿=97M/周;下限 0.48 亿=48M/周,实际跑量在此区间
-      ⚠ 5h 列与月列是按周值推导(官方未直接给),展示时前端显示需注意语义
+      官方区间说明:「最多 Tokens:全部在非高峰时段,按 0.5 倍积分消耗」
+      2026-08-31 用户指示改用全非高峰+95% cache 口径 → 取区间上限 0.97 亿 = 97M/周
+      ⚠ 下限 0.48 亿 = 全高峰(1 倍积分)口径;实际跑量在此区间
+      ⚠ 5h 列与月列是按周值推导(官方未直接给)
       抵扣系数(per 10000 tokens):Input 6.9 / Cached 1.7 / Output 24(与 GLM-5.2 完全相同)
 
   # ── GLM-5.3-Flash 单独 per_model_breakdown(2026-08-28 新加, 用户原话「加入 glm 5.3 flash 模型」) ──
   # 模型归属: GLM-5.3-Flash 是 zhipu 官方模型,全套餐可用,抵扣系数 2.3/0.56/8 per 10000 tokens
   - measurement_id: m_2026_08_zhipu_lite_v3_glm_5_3_flash
     source_kind: per_model_breakdown
-    period: 2026-08-28
+    period: 2026-08-31
     model_id: glm-5.3-flash
-    scope: null
+    scope: full_offpeak
+    usage_scenario: full_offpeak
     requests_5h: null
     requests_weekly: null
     requests_monthly: null
     tokens_per_request: null
-    window_5h_tokens: 30400000           # 2000 credits/5h ÷ 65.82 ≈ 30.4M
-    window_weekly_tokens: 151900000      # 10000 credits/周 ÷ 65.82 ≈ 151.9M
-    window_monthly_tokens: 653170000     # 周 × 4.3 ≈ 653.2M
+    window_5h_tokens: 292000000         # 官方估算页 95% cache 周区间上限 2.92 亿(全非高峰 0.5 倍积分)
+    window_weekly_tokens: 292000000
+    window_monthly_tokens: 1255600000    # 周 × 4.3
     input_per_million: 0.115
     output_per_million: 0.40
     cached_per_million: 0.028
@@ -248,3 +249,6 @@ measurements:
 
       ⚠ 与 z.ai devpack 同款:z.ai Lite = 2000/10000 credits(智谱是 z.ai 母公司,积分额度一致)。
       ⚠ 反推值是**全非高峰 + 90.9% cache 命中**理论上限。
+      ── 2026-08-31 口径切换(用户指示「全非高峰+95%cache」,与 @glm-5.3 行统一) ──
+      官方场景估算页 95% cache Flash 区间(周):Lite 1.46～2.92亿 / Pro 8.77～17.55亿 / Max 20.47～40.95亿
+      取全非高峰上限(区间说明:最多 Tokens=全部非高峰,按 0.5 倍积分消耗);原积分反推值见 git 历史

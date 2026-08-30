@@ -192,12 +192,16 @@ function fmtClaimed(plan, n) {
 function scopeLabel(scope) {
   const map = {
     'opencode-go-client': 'Go 观测',
+    'full_offpeak': '全非高峰期',
+    'probe_inferred': '实测反推',
   }
   return map[scope] || scope
 }
 function scopeTooltip(scope) {
   const map = {
     'opencode-go-client': '数据是 OpenCode 团队在自家 Go 客户端上观察到的使用模式，不是该模型 API 在所有场景下的通用值（缓存率尤其偏高于通用 API）。',
+    'full_offpeak': '官方场景估算「全非高峰 + 95% cache」口径（区间上限）：全部流量在非高峰时段按 0.5 倍积分消耗时的最大可跑 tokens，全高峰口径则为区间下限。',
+    'probe_inferred': '探针实测反推口径：由用户实测用量反推到 100% 满额（普通客户端口径），非官方场景估算，与「全非高峰期」口径不可直接对比。',
   }
   return map[scope] || ''
 }
@@ -519,6 +523,7 @@ function fmtTokensYi(n) {
                   <div v-if="mb.zcode_h5_tokens" class="zcode-aff">
                     <span class="zcode-label">ZCode×1.5</span>
                     <span class="zcode-val">{{ fmtTokens(mb.zcode_h5_tokens) }}</span>
+                    <span class="model-tag">@{{ mb.model_id }}</span>
                   </div>
                 </template>
                 <!-- 用邀请码后用量（仅当有 usage credit 且该窗口有数据时显示） -->
@@ -529,11 +534,12 @@ function fmtTokensYi(n) {
                 </div>
               </template>
               <template v-else>
-                {{ fmtTokens(row.plan.tokens.h5) }}<span v-if="row.plan.primary_model && row.plan.tokens.h5 != null" class="model-tag">@{{ row.plan.primary_model }}</span>
+                {{ fmtTokens(row.plan.tokens.h5) }}<span v-if="row.plan.primary_model && row.plan.tokens.h5 != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-if="row.plan.tokens.usage_remark" class="scope-tag" :title="scopeTooltip(row.plan.tokens.usage_remark)">{{ scopeLabel(row.plan.tokens.usage_remark) }}</span>
               </template>
               <div v-if="!(row.plan.model_breakdown && row.plan.model_breakdown.length) && row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_h5" class="zcode-aff">
                 <span class="zcode-label">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_h5) }}</span>
+                <span v-if="row.plan.primary_model" class="model-tag">@{{ row.plan.primary_model }}</span>
               </div>
             </td>
             <td class="num tok" :class="{ disputed: row.plan.tokens.weekly_disputed }">
@@ -545,6 +551,7 @@ function fmtTokensYi(n) {
                   <div v-if="mb.zcode_weekly_tokens" class="zcode-aff">
                     <span class="zcode-label" title="ZCode 客户端限时活动，全周期 0.67 折算（等效 1.5x 额度）。跟邀请码独立，可同时享受。">ZCode×1.5</span>
                     <span class="zcode-val">{{ fmtTokens(mb.zcode_weekly_tokens) }}</span>
+                    <span class="model-tag">@{{ mb.model_id }}</span>
                   </div>
                 </template>
                 <!-- 用邀请码后用量（仅当有 usage credit 且该窗口有数据时显示） -->
@@ -555,7 +562,7 @@ function fmtTokensYi(n) {
                 </div>
               </template>
               <template v-else>
-                {{ fmtTokens(row.plan.tokens.weekly) }}<span v-if="row.plan.primary_model && row.plan.tokens.weekly != null" class="model-tag">@{{ row.plan.primary_model }}</span>
+                {{ fmtTokens(row.plan.tokens.weekly) }}<span v-if="row.plan.primary_model && row.plan.tokens.weekly != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-if="row.plan.tokens.usage_remark" class="scope-tag" :title="scopeTooltip(row.plan.tokens.usage_remark)">{{ scopeLabel(row.plan.tokens.usage_remark) }}</span>
                 <span v-if="row.plan.tokens.weekly_disputed" class="dispute-warn" :title="row.plan.tokens.dispute_note || '数据存在较大不确定性'">⚠</span><span v-if="row.plan.tokens.weekly_aggregate_note && !row.plan.tokens.weekly_disputed" class="info-tooltip-wrap info-down"><span class="info-icon info-warn" aria-hidden="true">!</span><span class="info-tooltip">{{ row.plan.tokens.weekly_aggregate_note }}</span></span>
               </template>
               <div v-if="row.plan.reset_card_available" class="reset-card-note">这是标准额度，用几块钱的重置卡或者官方都会重置额度</div>
@@ -563,6 +570,7 @@ function fmtTokensYi(n) {
               <div v-if="!(row.plan.model_breakdown && row.plan.model_breakdown.length) && row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_weekly" class="zcode-aff">
                 <span class="zcode-label" title="ZCode 客户端限时活动，全周期 0.67 折算（等效 1.5x 额度）。跟邀请码独立，可同时享受。活动截止 2026-07-31。">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_weekly) }}</span>
+                <span v-if="row.plan.primary_model" class="model-tag">@{{ row.plan.primary_model }}</span>
               </div>
             </td>
             <td class="num tok">
@@ -574,6 +582,7 @@ function fmtTokensYi(n) {
                   <div v-if="mb.zcode_monthly_tokens" class="zcode-aff">
                     <span class="zcode-label">ZCode×1.5</span>
                     <span class="zcode-val">{{ fmtTokens(mb.zcode_monthly_tokens) }}</span>
+                    <span class="model-tag">@{{ mb.model_id }}</span>
                   </div>
                 </template>
                 <!-- 用邀请码后用量（仅当有 usage credit 且该窗口有数据时显示） -->
@@ -584,11 +593,12 @@ function fmtTokensYi(n) {
                 </div>
               </template>
               <template v-else>
-                {{ fmtTokens(row.plan.tokens.monthly) }}<span v-if="row.plan.primary_model && row.plan.tokens.monthly != null" class="model-tag">@{{ row.plan.primary_model }}</span>
+                {{ fmtTokens(row.plan.tokens.monthly) }}<span v-if="row.plan.primary_model && row.plan.tokens.monthly != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-if="row.plan.tokens.usage_remark" class="scope-tag" :title="scopeTooltip(row.plan.tokens.usage_remark)">{{ scopeLabel(row.plan.tokens.usage_remark) }}</span>
               </template>
               <div v-if="!(row.plan.model_breakdown && row.plan.model_breakdown.length) && row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_monthly" class="zcode-aff">
                 <span class="zcode-label">ZCode×1.5</span>
                 <span class="zcode-val">{{ fmtTokens(row.plan.tokens.zcode_monthly) }}</span>
+                <span v-if="row.plan.primary_model" class="model-tag">@{{ row.plan.primary_model }}</span>
               </div>
               <div v-if="showDSEquiv" class="ds-equiv">
                 <span class="ds-label">DS V4 {{ dsVariant === 'pro' ? 'Pro' : 'Flash' }} {{ dsPeakMode === 'offpeak' ? '非高峰' : '高峰' }} 等价</span>
@@ -737,17 +747,19 @@ thead tr:nth-child(2) th {
   letter-spacing: .2px;
 }
 /* 数据来源范围标签（区别于厂商 API 通用值的特殊场景）—— 橙色提醒 */
+/* scope 备注：纯彩色小字（不带底色边框），hover 出 tooltip（如「全非高峰期」「Go 观测」） */
 .scope-tag {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 400;
   color: #d97706;
-  background: #fef3c7;
-  border: 1px solid #fde68a;
-  border-radius: 3px;
-  padding: 0 4px;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
   margin-left: 4px;
   cursor: help;
   white-space: nowrap;
+  opacity: 0.85;
 }
 /* 用邀请码后用量（绿色 highlight） */
 .tok-row-credit {

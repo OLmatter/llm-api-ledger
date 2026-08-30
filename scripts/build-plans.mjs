@@ -207,6 +207,12 @@ const plans = planFiles.map(f => {
   const p = yaml.load(readFileSync(join(root, 'data', 'plans', f), 'utf-8'))
   const v = vendors[p.vendor] || {}
 
+  // ZCode 折算倍率：只由 vendor.yml 的 rate_multipliers.zcode 定义驱动（off_peak 0.67 折算 → 等效 1/0.67=1.5 倍）。
+  // vendor.yml 没定义 zcode 的厂商，任何 ZCode 字段都不出现（金额/单位等全局量除外，权益必须哪里定义哪里出现）
+  const zcodeBoost = v.rate_multipliers?.zcode?.off_peak
+    ? Math.round((1 / v.rate_multipliers.zcode.off_peak) * 10) / 10   // 1/0.67≈1.4925 → 1.5（与 yml「等效 1.5 倍」及 UI 标签一致）
+    : null
+
   // 邀请码（vendor 级合并）
   const pricing = p.pricing || {}
   const aff = v.affiliate || null
@@ -477,11 +483,13 @@ const plans = planFiles.map(f => {
       monthly: tokens.monthly,
       monthly_is_estimate: tokens.monthly_estimated,
       monthly_source: tokens.monthly_source || null,
-      // ZCode 专属优惠（智谱 + 智谱海外版 Z.AI 都支持，全周期 ×1.5 等效额度）
-      zcode_h5: tokens.h5 ? Math.round(tokens.h5 * 1.5) : null,
-      zcode_weekly: tokens.weekly ? Math.round(tokens.weekly * 1.5) : null,
-      zcode_monthly: tokens.monthly ? Math.round(tokens.monthly * 1.5) : null,
-      zcode_applicable: ['zhipu', 'zai'].includes(p.vendor),
+      // ZCode 专属优惠：倍率来自 vendor.yml rate_multipliers.zcode（见顶部 zcodeBoost）
+      zcode_h5: tokens.h5 && zcodeBoost ? Math.round(tokens.h5 * zcodeBoost) : null,
+      zcode_weekly: tokens.weekly && zcodeBoost ? Math.round(tokens.weekly * zcodeBoost) : null,
+      zcode_monthly: tokens.monthly && zcodeBoost ? Math.round(tokens.monthly * zcodeBoost) : null,
+      zcode_applicable: zcodeBoost != null,
+      // 用量口径备注(plan 级 yml 字段透传,如 probe_inferred → 前端显示「实测反推」)
+      usage_remark: p.usage_remark || null,
       // 实测周聚合说明(任意形式的跨档/多源 measurement 的 notes,用于 hover tooltip)
       // 优先级:aggregate_median(多源聚合) > vendor_sibling_inferred(跨境反推) > community_report 带 source_plan(同档反推)
       weekly_aggregate_note: ((p.measurements || []).find(m => m.source_kind === 'aggregate_median')?.notes)
@@ -553,9 +561,10 @@ const plans = planFiles.map(f => {
           monthly_tokens: m.window_monthly_tokens,
           h5_tokens: m.window_5h_tokens || null,
           // ZCode×1.5 按各模型行自己的 tokens 算（与主行显示同源，禁止用聚合值，否则子行对不上主行）
-          zcode_h5_tokens: m.window_5h_tokens ? Math.round(m.window_5h_tokens * 1.5) : null,
-          zcode_weekly_tokens: m.window_weekly_tokens ? Math.round(m.window_weekly_tokens * 1.5) : null,
-          zcode_monthly_tokens: m.window_monthly_tokens ? Math.round(m.window_monthly_tokens * 1.5) : null,
+          // 倍率与是否启用都来自 vendor.yml rate_multipliers.zcode（zcodeBoost），无定义则全 null
+          zcode_h5_tokens: m.window_5h_tokens && zcodeBoost ? Math.round(m.window_5h_tokens * zcodeBoost) : null,
+          zcode_weekly_tokens: m.window_weekly_tokens && zcodeBoost ? Math.round(m.window_weekly_tokens * zcodeBoost) : null,
+          zcode_monthly_tokens: m.window_monthly_tokens && zcodeBoost ? Math.round(m.window_monthly_tokens * zcodeBoost) : null,
           cost_per_million: m.cost_per_million,
           credibility: m.credibility,
           notes: m.notes,

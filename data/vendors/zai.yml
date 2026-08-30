@@ -40,17 +40,18 @@ v2_v3_transition_note: |
   - 新用户只能购买 v3 套餐（v2 自 2026-07-30 起停止新购/续费）
   - v2 老用户可继续使用 v2（不强制迁移，自动续费已禁用）
   - 数据源：z.ai/subscribe 官方订阅页
-  models_highlight: GLM-5.2, GLM-4.7
+  models_highlight: GLM-5.3, GLM-5.3-Flash
   inviter_reward: |
     邀请人奖励：累计 3 位付费好友 → 10% credit；每 30 位 → 再 +10%。
 
 # 厂商公共特性
 shared_features:
   # 主力模型（榜单对比基准；Z.AI = 智谱海外版,模型同国内智谱）
-  primary_model: GLM-5.2
+  # 2026-08-31 与国内智谱同口径切换（铁律 30：zai 也是智谱的,规则同等适用）
+  primary_model: GLM-5.3
   models:
-    - GLM-5.2
-    - GLM-4.7
+    - GLM-5.3
+    - GLM-5.3-Flash
   models_note: |
     Z.AI 是智谱的海外版本（美元订阅 / 海外线路）。
     限流数值、套餐档位倍率与国内智谱 GLM Coding Plan 完全一致。
@@ -82,7 +83,7 @@ rate_multipliers:
     peak: 2.0
     off_peak: 0.67
   zcode_note: |
-    ZCode 权益：GLM-5.2 全周期按 0.67 系数折算（等效额度 1.5 倍）。
+    ZCode 权益：GLM-5.3 全周期按 0.67 系数折算（等效额度 1.5 倍）。
     - 高峰期（14:00-18:00 UTC+8）：3x → 2x
     - 非高峰期（其余 20h）：1x → 0.67x
     含义：同样跑 100 tokens，ZCode 在非高峰期只扣 67 的额度。
