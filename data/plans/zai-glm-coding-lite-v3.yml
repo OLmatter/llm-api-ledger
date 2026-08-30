@@ -167,8 +167,9 @@ measurements:
     source_kind: per_model_breakdown
     period: 2026-08-31
     model_id: glm-5.3
-    scope: full_offpeak
-    usage_scenario: full_offpeak
+    annotations:
+      - kind: scenario
+        value: full_offpeak
     requests_5h: null
     requests_weekly: null
     requests_monthly: null
@@ -196,7 +197,9 @@ measurements:
     source_kind: per_model_breakdown
     period: 2026-08-31
     model_id: glm-5.3-flash
-    scope: full_offpeak    # 官方场景估算「全非高峰+95%cache」口径(非客户端观察值)
+    annotations:
+      - kind: scenario
+        value: full_offpeak
     requests_5h: null
     requests_weekly: null
     requests_monthly: null

@@ -7,8 +7,10 @@ vendor: zai
 plan_name: GLM Coding Plan Pro (v2)
 plan_tier: pro
 status: active
-# 用量口径备注:探针实测反推(普通客户端 100% 口径),非官方「全非高峰」场景估算,与 v3 不可直接对比
-usage_remark: probe_inferred
+# 用量口径备注(统一 annotations 语法):探针实测反推(普通客户端 100% 口径),非官方「全非高峰」场景估算,与 v3 不可直接对比
+usage_annotations:
+  - kind: scenario
+    value: probe_inferred
 last_verified: 2026-07-22
 
 pricing:

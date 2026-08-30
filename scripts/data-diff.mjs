@@ -233,7 +233,7 @@ function diffMeasurements(oldArr, newArr) {
                               'window_5h_tokens', 'window_weekly_tokens', 'window_monthly_tokens',
                               'input_per_million', 'output_per_million', 'cached_per_million',
                               'cost_per_request', 'cost_per_million', 'credibility', 'disputed',
-                              'source_kind', 'scope'])
+                              'source_kind', 'scope', 'annotations'])
     const label = nm.model_id ? `@模型 ${nm.model_id}` : `@measurement ${nm.measurement_id}`
     for (const f of new Set([...Object.keys(of), ...Object.keys(nf)])) {
       // 只看顶层字段（flatten 会出 measurements[0].x，这里我们只关心同名 measurement 内的顶层字段）

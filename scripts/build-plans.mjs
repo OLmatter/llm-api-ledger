@@ -30,6 +30,32 @@ const planFiles = readdirSync(join(root, 'data', 'plans')).filter(f => f.endsWit
 // 榜单里 USD 套餐（Z.AI）会在原价下显示一行 "≈ ¥xxx" 作为对比参考
 const USD_TO_CNY = 7.15
 
+// 统一备注体系（annotations）label/tooltip 中心定义
+// kind: scenario(口径) / promo(优惠加成) / warning(异常争议) / note(普通备注)
+// 新增一种备注 = 这里加一条 + 前端 .ann-<kind> 上色，不再新长一套字段
+const ANNOTATION_DEFS = {
+  'scenario/full_offpeak': {
+    label: '全非高峰期',
+    tooltip: '官方场景估算「全非高峰 + 95% cache」口径（区间上限）：全部流量在非高峰时段按 0.5 倍积分消耗时的最大可跑 tokens，全高峰口径则为区间下限。',
+  },
+  'scenario/probe_inferred': {
+    label: '实测反推',
+    tooltip: '探针实测反推口径：由用户实测用量反推到 100% 满额（普通客户端口径），非官方场景估算，与「全非高峰期」口径不可直接对比。',
+  },
+  'scenario/opencode-go-client': {
+    label: 'Go 观测',
+    tooltip: '数据是 OpenCode 团队在自家 Go 客户端上观察到的使用模式，不是该模型 API 在所有场景下的通用值（缓存率尤其偏高于通用 API）。',
+  },
+  'promo/zcode_1_5x': {
+    label: 'ZCode×1.5',
+    tooltip: 'ZCode 客户端权益：全周期 0.67 折算（等效 1.5x 额度）。倍率来自 vendor.yml rate_multipliers.zcode，跟邀请码独立可叠加。',
+  },
+  'warning/disputed': {
+    label: '数据有争议',
+    tooltip: '该数据存在较大不确定性或多方口径冲突，谨慎参考。',
+  },
+}
+
 // ── DeepSeek V4 按量等价换算 ──
 // 把套餐月费换算成「如果买 DS V4 非高峰期按量，能跑多少 tokens」
 // 用真实编程比例（non-cache input 9.4% / output 1.2% / cache read 89.4%）
@@ -488,8 +514,19 @@ const plans = planFiles.map(f => {
       zcode_weekly: tokens.weekly && zcodeBoost ? Math.round(tokens.weekly * zcodeBoost) : null,
       zcode_monthly: tokens.monthly && zcodeBoost ? Math.round(tokens.monthly * zcodeBoost) : null,
       zcode_applicable: zcodeBoost != null,
-      // 用量口径备注(plan 级 yml 字段透传,如 probe_inferred → 前端显示「实测反推」)
-      usage_remark: p.usage_remark || null,
+      // 用量口径备注:统一 annotations(聚合行没有 model_breakdown,备注挂整个单元格)
+      // 来源:plan 级 yml usage_annotations 数组,或旧字段 usage_remark(未迁移文件兼容)
+      annotations: (() => {
+        const anns = []
+        const legacy = p.usage_remark
+        const list = (p.usage_annotations && p.usage_annotations.length) ? p.usage_annotations : (legacy ? [{ kind: 'scenario', value: legacy }] : [])
+        for (const a of list) {
+          const def = ANNOTATION_DEFS[a.kind + '/' + a.value]
+          anns.push({ kind: a.kind, value: a.value, label: def?.label || a.value, tooltip: def?.tooltip || '' })
+        }
+        return anns
+      })(),
+      usage_remark: p.usage_remark || null,   // 过渡保留:未迁移前端仍可读
       // 实测周聚合说明(任意形式的跨档/多源 measurement 的 notes,用于 hover tooltip)
       // 优先级:aggregate_median(多源聚合) > vendor_sibling_inferred(跨境反推) > community_report 带 source_plan(同档反推)
       weekly_aggregate_note: ((p.measurements || []).find(m => m.source_kind === 'aggregate_median')?.notes)
@@ -555,22 +592,37 @@ const plans = planFiles.map(f => {
             monthly_tokens: m.window_monthly_tokens ? Math.round(m.window_monthly_tokens * ratio) : null,
           }
         }
+        // 统一备注体系（annotations）：模型是「量的维度」(model_id)，其余一切修饰都是 annotation。
+        // kind 枚举: scenario(口径) / promo(优惠加成) / warning(异常争议) / note(普通备注)
+        // label/tooltip 在 build 层中心化，前端只按 kind 上色，不再各自维护映射
+        const anns = []
+        const pushAnn = (kind, value) => {
+          const def = ANNOTATION_DEFS[kind + '/' + value]
+          if (def) anns.push({ kind, value, label: def.label, tooltip: def.tooltip || '' })
+          else if (value) anns.push({ kind, value, label: value, tooltip: '' })
+        }
+        // 兼容旧字段:scope / usage_scenario（未迁移的厂商文件继续生效）
+        if (m.usage_scenario) pushAnn('scenario', m.usage_scenario)
+        if (m.scope && m.scope !== m.usage_scenario) pushAnn('scenario', m.scope)
+        // 新语法:measurement 级 annotations 数组
+        for (const a of (m.annotations || [])) pushAnn(a.kind, a.value)
+        // promo:ZCode×1.5 由 vendor.yml rate_multipliers.zcode 派生（哪定义哪出现，不在 yml 手写）
+        if (zcodeBoost) pushAnn('promo', 'zcode_1_5x')
+        if (m.disputed) pushAnn('warning', 'disputed')
         return {
           model_id: m.model_id,
           weekly_tokens: m.window_weekly_tokens,
           monthly_tokens: m.window_monthly_tokens,
           h5_tokens: m.window_5h_tokens || null,
-          // ZCode×1.5 按各模型行自己的 tokens 算（与主行显示同源，禁止用聚合值，否则子行对不上主行）
-          // 倍率与是否启用都来自 vendor.yml rate_multipliers.zcode（zcodeBoost），无定义则全 null
+          // promo 修饰的量化结果（倍率来自 zcodeBoost；子行渲染时继承 model_id，铁律 30 自动满足）
           zcode_h5_tokens: m.window_5h_tokens && zcodeBoost ? Math.round(m.window_5h_tokens * zcodeBoost) : null,
           zcode_weekly_tokens: m.window_weekly_tokens && zcodeBoost ? Math.round(m.window_weekly_tokens * zcodeBoost) : null,
           zcode_monthly_tokens: m.window_monthly_tokens && zcodeBoost ? Math.round(m.window_monthly_tokens * zcodeBoost) : null,
           cost_per_million: m.cost_per_million,
           credibility: m.credibility,
           notes: m.notes,
-          // 数据来源范围标注（前端在 @model 后显示小标签，例如 @glm-5.2 [Go 观测]）
-          // 用于区分"厂商 API 通用值" vs "特定客户端/场景的观察值（如 opencode Go 缓存率 98%）"
-          scope: m.scope || null,
+          // 统一备注（scenario/promo/warning/note），前端按 kind 上色
+          annotations: anns,
           // 用邀请码后用量（仅 opencode 等有 usage_credit 机制的有意义；仅 +monthly 适用）
           with_referral_credit: withCredit,
         }

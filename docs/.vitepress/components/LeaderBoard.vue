@@ -187,24 +187,9 @@ function fmtClaimed(plan, n) {
   return String(n)
 }
 
-// measurement.scope 标签：区分"厂商 API 通用值" vs "特定客户端/场景的观察值"
-// 例：scope='opencode-go-client' → "Go 观测" + tooltip 解释
-function scopeLabel(scope) {
-  const map = {
-    'opencode-go-client': 'Go 观测',
-    'full_offpeak': '全非高峰期',
-    'probe_inferred': '实测反推',
-  }
-  return map[scope] || scope
-}
-function scopeTooltip(scope) {
-  const map = {
-    'opencode-go-client': '数据是 OpenCode 团队在自家 Go 客户端上观察到的使用模式，不是该模型 API 在所有场景下的通用值（缓存率尤其偏高于通用 API）。',
-    'full_offpeak': '官方场景估算「全非高峰 + 95% cache」口径（区间上限）：全部流量在非高峰时段按 0.5 倍积分消耗时的最大可跑 tokens，全高峰口径则为区间下限。',
-    'probe_inferred': '探针实测反推口径：由用户实测用量反推到 100% 满额（普通客户端口径），非官方场景估算，与「全非高峰期」口径不可直接对比。',
-  }
-  return map[scope] || ''
-}
+// 统一备注体系:label/tooltip 已在 build-plans.mjs ANNOTATION_DEFS 中心化生成,
+// 前端只按 kind 上色(.ann-scenario/.ann-promo/.ann-warning/.ann-note),不再维护映射
+// promo(zcode) 不在主行循环里渲染——它由专门的 ZCode×1.5 子行表达(继承 model_id,铁律 30)
 
 // 格式化 token 数：893800000 → "894M"，1234567 → "1.2M"
 // 单位由 tokenUnit 控制：'m_b' 默认(M/B/K) | 'yi' 中文习惯(亿/万/K)
@@ -518,7 +503,7 @@ function fmtTokensYi(n) {
                     <span v-if="mb.h5_tokens">{{ fmtTokens(mb.h5_tokens) }}</span>
                     <span v-else class="muted">—</span>
                     <span class="model-tag">@{{ mb.model_id }}</span>
-                    <span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
+                    <span v-for="a in mb.annotations.filter(x => x.kind !== 'promo')" :key="a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
                   </div>
                   <div v-if="mb.zcode_h5_tokens" class="zcode-aff">
                     <span class="zcode-label">ZCode×1.5</span>
@@ -534,7 +519,7 @@ function fmtTokensYi(n) {
                 </div>
               </template>
               <template v-else>
-                {{ fmtTokens(row.plan.tokens.h5) }}<span v-if="row.plan.primary_model && row.plan.tokens.h5 != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-if="row.plan.tokens.usage_remark" class="scope-tag" :title="scopeTooltip(row.plan.tokens.usage_remark)">{{ scopeLabel(row.plan.tokens.usage_remark) }}</span>
+                {{ fmtTokens(row.plan.tokens.h5) }}<span v-if="row.plan.primary_model && row.plan.tokens.h5 != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-for="a in row.plan.tokens.annotations" :key="a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
               </template>
               <div v-if="!(row.plan.model_breakdown && row.plan.model_breakdown.length) && row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_h5" class="zcode-aff">
                 <span class="zcode-label">ZCode×1.5</span>
@@ -546,7 +531,7 @@ function fmtTokensYi(n) {
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
                 <template v-for="mb in row.plan.model_breakdown" :key="'w-' + mb.model_id">
                   <div class="tok-row">
-                    {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
+                    {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-for="a in mb.annotations.filter(x => x.kind !== 'promo')" :key="'w-' + a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
                   </div>
                   <div v-if="mb.zcode_weekly_tokens" class="zcode-aff">
                     <span class="zcode-label" title="ZCode 客户端限时活动，全周期 0.67 折算（等效 1.5x 额度）。跟邀请码独立，可同时享受。">ZCode×1.5</span>
@@ -562,7 +547,7 @@ function fmtTokensYi(n) {
                 </div>
               </template>
               <template v-else>
-                {{ fmtTokens(row.plan.tokens.weekly) }}<span v-if="row.plan.primary_model && row.plan.tokens.weekly != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-if="row.plan.tokens.usage_remark" class="scope-tag" :title="scopeTooltip(row.plan.tokens.usage_remark)">{{ scopeLabel(row.plan.tokens.usage_remark) }}</span>
+                {{ fmtTokens(row.plan.tokens.weekly) }}<span v-if="row.plan.primary_model && row.plan.tokens.weekly != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-for="a in row.plan.tokens.annotations" :key="a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
                 <span v-if="row.plan.tokens.weekly_disputed" class="dispute-warn" :title="row.plan.tokens.dispute_note || '数据存在较大不确定性'">⚠</span><span v-if="row.plan.tokens.weekly_aggregate_note && !row.plan.tokens.weekly_disputed" class="info-tooltip-wrap info-down"><span class="info-icon info-warn" aria-hidden="true">!</span><span class="info-tooltip">{{ row.plan.tokens.weekly_aggregate_note }}</span></span>
               </template>
               <div v-if="row.plan.reset_card_available" class="reset-card-note">这是标准额度，用几块钱的重置卡或者官方都会重置额度</div>
@@ -577,7 +562,7 @@ function fmtTokensYi(n) {
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
                 <template v-for="mb in row.plan.model_breakdown" :key="'m-' + mb.model_id">
                   <div class="tok-row">
-                    {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-if="mb.scope" class="scope-tag" :title="scopeTooltip(mb.scope)">{{ scopeLabel(mb.scope) }}</span>
+                    {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-for="a in mb.annotations.filter(x => x.kind !== 'promo')" :key="'m-' + a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
                   </div>
                   <div v-if="mb.zcode_monthly_tokens" class="zcode-aff">
                     <span class="zcode-label">ZCode×1.5</span>
@@ -593,7 +578,7 @@ function fmtTokensYi(n) {
                 </div>
               </template>
               <template v-else>
-                {{ fmtTokens(row.plan.tokens.monthly) }}<span v-if="row.plan.primary_model && row.plan.tokens.monthly != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-if="row.plan.tokens.usage_remark" class="scope-tag" :title="scopeTooltip(row.plan.tokens.usage_remark)">{{ scopeLabel(row.plan.tokens.usage_remark) }}</span>
+                {{ fmtTokens(row.plan.tokens.monthly) }}<span v-if="row.plan.primary_model && row.plan.tokens.monthly != null" class="model-tag">@{{ row.plan.primary_model }}</span><span v-for="a in row.plan.tokens.annotations" :key="a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
               </template>
               <div v-if="!(row.plan.model_breakdown && row.plan.model_breakdown.length) && row.plan.tokens.zcode_applicable && row.plan.tokens.zcode_monthly" class="zcode-aff">
                 <span class="zcode-label">ZCode×1.5</span>
@@ -761,6 +746,10 @@ thead tr:nth-child(2) th {
   white-space: nowrap;
   opacity: 0.85;
 }
+/* annotations 按 kind 上色:口径=琥珀(默认)/优惠=紫/异常=红/备注=灰 */
+.scope-tag.ann-promo { color: #9333ea; }
+.scope-tag.ann-warning { color: #dc2626; font-weight: 600; opacity: 1; }
+.scope-tag.ann-note { color: #6b7280; }
 /* 用邀请码后用量（绿色 highlight） */
 .tok-row-credit {
   margin-top: 2px;
