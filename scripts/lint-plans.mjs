@@ -264,6 +264,7 @@ function checkWindowEquality(plan) {
     }
   }
   for (const mb of plan.model_breakdown || []) {
+    if (mb.windows_equal_by_design) continue   // yml 显式声明窗口相等是有意设计(如月额度封顶=周)
     const mbPairs = [
       ['5h', 'weekly', mb.h5_tokens, mb.weekly_tokens],
       ['weekly', 'monthly', mb.weekly_tokens, mb.monthly_tokens],

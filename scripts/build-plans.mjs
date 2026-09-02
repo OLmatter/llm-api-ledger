@@ -621,6 +621,8 @@ const plans = planFiles.map(f => {
           cost_per_million: m.cost_per_million,
           credibility: m.credibility,
           notes: m.notes,
+          // 周=月等窗口相等是有意设计(如月额度封顶=周上限)时置 true,lint「窗口相等」豁免
+          windows_equal_by_design: m.windows_equal_by_design === true,
           // 统一备注（scenario/promo/warning/note），前端按 kind 上色
           annotations: anns,
           // 用邀请码后用量（仅 opencode 等有 usage_credit 机制的有意义；仅 +monthly 适用）

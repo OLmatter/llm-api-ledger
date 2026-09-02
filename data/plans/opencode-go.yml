@@ -251,6 +251,7 @@ measurements:
     requests_5h: 14378
     requests_weekly: 35945
     requests_monthly: 35945              # 月额度 $30(费率卡) = 周上限,月 cap 由它决定
+    windows_equal_by_design: true        # 周=月是有意设计($30 封顶),lint「窗口相等」豁免
     tokens_per_request: 69070            # 790 输入 + 68,000 缓存 + 280 输出(官方口径不变)
     window_5h_tokens: 993088460          # 谷价;峰价减半
     window_weekly_tokens: 2482721150     # 谷价;峰价减半
