@@ -248,6 +248,35 @@ function checkNoBasePrice() {
   }
 }
 
+// ── 窗口相等检查：5h / 周 / 月 任何两个相等 → warning ──
+// 2026-08-31 事故：智谱 v3 的 5h 列被填成周值(5h=周)，实为积分配额 1:5。
+// 窗口之间数值完全相等几乎总是「抄错列」。聚合 tokens 和 model_breakdown 每个模型行都查。
+function checkWindowEquality(plan) {
+  const agg = plan.tokens || {}
+  const aggPairs = [
+    ['5h', 'weekly', agg.h5, agg.weekly],
+    ['weekly', 'monthly', agg.weekly, agg.monthly],
+    ['5h', 'monthly', agg.h5, agg.monthly],
+  ]
+  for (const [a, b, va, vb] of aggPairs) {
+    if (va != null && vb != null && va === vb) {
+      warn(plan.plan_id, '窗口相等', `tokens.${a} === tokens.${b} === ${va}（两个窗口数值完全相等，大概率抄错列/填错行）`)
+    }
+  }
+  for (const mb of plan.model_breakdown || []) {
+    const mbPairs = [
+      ['5h', 'weekly', mb.h5_tokens, mb.weekly_tokens],
+      ['weekly', 'monthly', mb.weekly_tokens, mb.monthly_tokens],
+      ['5h', 'monthly', mb.h5_tokens, mb.monthly_tokens],
+    ]
+    for (const [a, b, va, vb] of mbPairs) {
+      if (va != null && vb != null && va === vb) {
+        warn(plan.plan_id, '窗口相等', `@${mb.model_id} ${a} === ${b} === ${va}（两个窗口数值完全相等，大概率抄错列/填错行）`)
+      }
+    }
+  }
+}
+
 // ── 跑全部检查 ──
 for (const plan of plans) {
   checkUnitSanity(plan)
@@ -261,6 +290,7 @@ for (const plan of plans) {
   checkRequiredFields(plan)
   checkAffiliateSchema(plan)
   checkOriginalVsIntro(plan)
+  checkWindowEquality(plan)         // 5h/周/月 任何两个相等
 }
 checkNoBasePrice()  // 铁律 17：检查 yml 源文件里的 base_*
 checkVendorOfficialHasEvidence()  // 铁律 28：yml 源文件级别检查
