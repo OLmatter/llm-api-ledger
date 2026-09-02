@@ -167,7 +167,7 @@ measurements:
     requests_weekly: null
     requests_monthly: null
     tokens_per_request: null
-    window_5h_tokens: 580000000                            # 官方估算页 Pro 95% cache 周区间上限 5.80 亿(全非高峰 0.5 倍积分)
+    window_5h_tokens: 116000000   # 5h 窗口 = 周 ÷ 5(官方积分配额 5h:周=1:5)
     window_weekly_tokens: 580000000
     window_monthly_tokens: 2494000000                           # 周 × 4.3
     input_per_million: 0.069
@@ -197,7 +197,7 @@ measurements:
     requests_weekly: null
     requests_monthly: null
     tokens_per_request: null
-    window_5h_tokens: 1755000000         # 官方估算页 95% cache 周区间上限 17.55 亿(全非高峰 0.5 倍积分)
+    window_5h_tokens: 351000000   # 5h 窗口 = 周 ÷ 5(官方积分配额 5h:周=1:5)
     window_weekly_tokens: 1755000000
     window_monthly_tokens: 7546500000    # 周 × 4.3
     input_per_million: 0.115
