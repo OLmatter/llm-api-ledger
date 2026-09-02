@@ -11,6 +11,22 @@ homepage: https://kimi.moonshot.cn/membership/code
 docs: https://platform.moonshot.cn
 last_verified: 2026-07-30
 
+# 社区情报（非官方，自行甄别；铁律 11：限时活动必须填 expires，过期自动摘）
+# date = 登记时间（必填）：情报会过时，读者需要知道是什么时候看到的
+intel:
+  - kind: deal
+    date: 2026-09-01
+    text: 闲鱼搜「Kimi登月邀请」有代邀请服务（实测 2026-09-01 约 ¥15.99，标价 10 人 = 10 次抽奖次数，48h 发货）：只包邀请到账即抽奖次数，不包会员时长；参与前自行了解登月同行计划邀请规则
+    channel: 闲鱼
+    source: community
+    expires: null   # 行情价随时波动，时限未知
+  - kind: warning
+    date: 2026-09-01
+    text: 同平台另有 ¥20 的「Kimi登月代邀协议注册机」脚本源码在卖（协议批量刷邀请码、带卡密系统、不依赖客户端）——属协议破解类灰产：违反活动规则可能封号、卖家明示无售后不退、还有封电报/支付渠道的风险，强烈不建议碰
+    channel: 闲鱼
+    source: community
+    expires: null
+
 # 邀请码：Kimi 不提供邀请码（无购买优惠）
 affiliate: null
 

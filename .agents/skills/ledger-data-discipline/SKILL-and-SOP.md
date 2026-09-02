@@ -1036,6 +1036,26 @@ usage_annotations:
 
 ---
 
+## 1.10 情报模块 intel（2026-09-02 落地）
+
+榜单的社区情报（优惠渠道/坑点），展示在 `/intel` 情报页（HN 风格）。
+
+```yaml
+# vendor.yml（厂商通用）或 plan yml（挂具体套餐）
+intel:
+  - kind: deal            # deal(优惠,紫) / warning(坑点,红) / note(备注,灰)
+    date: 2026-09-01      # 必填！登记时间，缺了 build 直接拒绝
+    text: 具体内容（价格标「实测日期」，防行情变动被当承诺）
+    channel: 闲鱼          # 渠道
+    source: community     # community(社区,自动标「非官方」) / official
+    expires: 2026-09-30   # 限时必填（铁律 11），过期自动摘；未核实填 null 并在 text 里说明
+```
+
+- 灰色渠道（代充/代邀请/脚本）一律写 warning 或在 text 里标风险，榜单不背书
+- build 双保险：缺 date 抛错拒绝构建；lint 再补「intel 缺 date」warning
+
+---
+
 ## 2. YAML Schema 模板
 
 ### vendor.yml 完整字段

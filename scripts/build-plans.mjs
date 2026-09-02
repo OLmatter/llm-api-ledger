@@ -708,11 +708,39 @@ plans.sort((a, b) => {
   return priceFor(a) - priceFor(b)
 })
 
+// ── 情报模块：plan/vendor 级 intel 聚合（铁律 11：expires 过期自动摘）──
+// 数据在哪定义哪出现：plan yml 写 intel:[]（挂具体套餐），vendor yml 写 intel:[]（厂商通用，如 Kimi 闲鱼代邀请）
+const intelToday = new Date().toISOString().slice(0, 10)
+const intelActive = (list) => (list || []).filter(it => !(it.expires && it.expires < intelToday))
+// date = 登记时间(必填):没有登记时间的情报无法判断新鲜度,build 直接拒绝
+const intelCheck = (list, where) => {
+  for (const it of (list || [])) {
+    if (!it.date) throw new Error(`[intel] ${where} 的一条情报缺 date(登记时间,格式 YYYY-MM-DD):${(it.text || '').slice(0, 40)}`)
+  }
+  return list
+}
+const intel = []
+for (const [vid, v] of Object.entries(vendors)) {
+  for (const it of intelActive(intelCheck(v.intel, `vendor:${vid}`))) {
+    intel.push({ ...it, scope: 'vendor', vendor: vid, target: v.vendor_display || vid, plan_id: null })
+  }
+}
+for (const p of plans) {
+  const v = vendors[p.vendor] || {}
+  const items = intelActive(intelCheck(p.intel, `plan:${p.plan_id}`))
+  const vItems = intelActive(v.intel)   // 厂商级情报也算到该厂商每个套餐头上（💬 提示用）
+  for (const it of items) {
+    intel.push({ ...it, scope: 'plan', vendor: p.vendor, target: p.plan_name || p.plan_id, plan_id: p.plan_id })
+  }
+  p.intel_count = items.length + vItems.length
+}
+
 const out = {
   generated_at: new Date().toISOString(),
   plans_count: plans.length,
   vendors_count: Object.keys(vendors).length,
   credibility_label: credLabel,
+  intel,
   plans,
 }
 

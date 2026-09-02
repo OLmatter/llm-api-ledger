@@ -25,9 +25,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # 去掉 /llm-api-ledger/ 前缀，转发给实际文件
         if self.path.startswith(BASE_PREFIX):
             self.path = self.path[len(BASE_PREFIX):]
-        # 路径不含 . 的当作 SPA 路径 → fallback 到 index.html
-        if '.' not in self.path.split('?')[0].split('/')[-1]:
-            self.path = 'index.html'
+        # 路径不含 . ：先试 cleanUrls 的 <path>.html（如 /intel → intel.html），否则 fallback index.html
+        path = self.path.split('?')[0]
+        if '.' not in path.split('/')[-1]:
+            import os
+            candidate = path.rstrip('/') + '.html'
+            if os.path.exists(os.path.join(ROOT, candidate.lstrip('/'))):
+                self.path = candidate
+            else:
+                self.path = 'index.html'
         return super().do_GET()
 
 

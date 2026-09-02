@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { withBase } from 'vitepress'
 import plansData from '../plans.json'
 
 const plans = ref(plansData.plans)
+const intelCount = (plansData.intel || []).length
 
 // 排序选项
 // vendor（默认，厂商分组）/ credibility / price_asc / price_desc / tokens / value
@@ -347,6 +349,12 @@ function fmtTokensYi(n) {
         >{{ Math.round(opt*100) }}%</button>
       </template>
       <span class="count">{{ plans.length }} 个套餐 · {{ plansData.vendors_count }} 个厂商</span>
+      <span class="divider">|</span>
+      <a
+        class="sort-btn"
+        :href="withBase('/intel')"
+        :title="`社区情报（优惠渠道/坑点提醒，非官方，自行甄别），当前 ${intelCount} 条`"
+      >📢 情报{{ intelCount ? ` ${intelCount}` : '' }}</a>
     </div>
 
     <!-- 对比表 -->
@@ -394,6 +402,13 @@ function fmtTokensYi(n) {
                 <span class="vendor-dot" :style="{ background: row.plan.brand_color || '#86868b' }"></span>
                 {{ row.plan.vendor_display }}
               </template>
+              <!-- 情报快速跳转（该厂商有社区情报时显示） -->
+              <a
+                v-if="row.isVendorStart && row.plan.intel_count"
+                class="intel-link"
+                :href="withBase('/intel#vendor-' + row.plan.vendor)"
+                :title="`跳到「${row.plan.vendor_display}」的社区情报（${row.plan.intel_count} 条）`"
+              >💬{{ row.plan.intel_count }}</a>
               <!-- 邀请码（嵌在厂商下方，小字，仅 isAffStart 行渲染）-->
               <div v-if="row.isAffStart" class="vendor-aff">
                 <template v-if="row.plan.affiliate">
@@ -412,7 +427,7 @@ function fmtTokensYi(n) {
 
             <!-- 套餐 -->
             <td class="plan-cell">
-              <div class="plan-name">{{ row.plan.plan_name }}</div>
+              <div class="plan-name">{{ row.plan.plan_name }}<a v-if="row.plan.intel_count" class="intel-dot" :href="withBase('/intel#vendor-' + row.plan.vendor)" title="有社区情报，点击查看">💬</a></div>
               <div class="plan-meta">
                 <span v-if="row.plan.tier_multiplier != null" :class="['tier-mult', { 'is-base': row.plan.tier_multiplier === 1 }]" :title="`本档用量 = 同厂商最低档 × ${row.plan.tier_multiplier}（基于厂商官方产品定义）`">{{ row.plan.tier_multiplier === 1 ? '基础档' : '×' + row.plan.tier_multiplier }}</span>
                 <span class="tier-name">{{ row.plan.plan_tier }}</span>
@@ -750,6 +765,16 @@ thead tr:nth-child(2) th {
 .scope-tag.ann-promo { color: #9333ea; }
 .scope-tag.ann-warning { color: #dc2626; font-weight: 600; opacity: 1; }
 .scope-tag.ann-note { color: #6b7280; }
+/* 情报快速跳转 */
+.intel-link {
+  font-size: 11px;
+  color: #9333ea;
+  margin-left: 6px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.intel-link:hover { text-decoration: underline; }
+.intel-dot { font-size: 11px; margin-left: 4px; text-decoration: none; }
 /* 用邀请码后用量（绿色 highlight） */
 .tok-row-credit {
   margin-top: 2px;

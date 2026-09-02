@@ -318,6 +318,13 @@ function checkVendorOfficialHasEvidence() {
   }
 }
 
+// ── 情报 intel:缺登记时间 date → warning ──
+for (const it of raw.intel || []) {
+  if (!it.date) {
+    warn(it.target || it.vendor || '(unknown)', 'intel 缺 date', `情报「${(it.text || '').slice(0, 30)}…」缺登记时间 date（YYYY-MM-DD）`)
+  }
+}
+
 // ── 输出 ──
 console.log('')
 console.log('═══ Ledger Data Lint ═══')

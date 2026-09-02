@@ -23,6 +23,7 @@ export default defineConfig({
     nav: [
       { text: '榜单', link: '/' },
       { text: '厂商', link: '/vendors' },
+      { text: '📢 情报', link: '/intel' },
       { text: '工具', link: '/probe' },
       { text: '关于', link: '/about' },
       { text: '💬 TG 群', link: 'https://t.me/+s1flX6cpUZ1kM2M1' },
@@ -33,7 +34,7 @@ export default defineConfig({
       '/': [
         {
           text: '榜单',
-          items: [{ text: '全部套餐', link: '/' }],
+          items: [{ text: '全部套餐', link: '/' }, { text: '📢 情报板', link: '/intel' }],
         },
         {
           text: '工具',
