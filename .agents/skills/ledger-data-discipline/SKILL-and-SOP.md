@@ -1173,7 +1173,7 @@ features:
 ## 4. 修改后 checklist（验完才算完）
 
 - [ ] **`node scripts/build-plans.mjs`** 成功，无报错
-- [ ] **`node scripts/lint-plans.mjs`** 通过（机械检查铁律 3/4/6/9）
+- [ ] **`node scripts/lint-plans.mjs`** 通过（机械检查铁律 3/4/6/9 + **窗口相等**：5h/周/月任何两个完全相等即 ⚠，2026-08-31 智谱 v3 5h=周 事故防回归；有意设计用 `windows_equal_by_design: true` 豁免）
 - [ ] **数字合理性**：抽查 1-2 个套餐，月 / 周 比例在 2-5×（铁律 6）
 - [ ] **`npx vitepress build docs`** 成功
 - [ ] **`node scripts/data-diff.mjs`** 跑过（铁律 27），无 `⚠️` 字段变化 / `🗑️ 消失套餐` 意外
@@ -1200,6 +1200,7 @@ features:
 | 邀请码 lint 报错但 discount 真的没折扣 | 漏 no_user_discount: true | 铁律 7 扩展 |
 | 缓存率/请求数标「极端」但实际是客户端观察值 | 漏 scope 字段 | 铁律 21 |
 | 第三方平台「零加价」但实际可能加价 | 漏逐模型查厂商官方单价 | 铁律 23 |
+| 5h/周/月 某两列数值一模一样（如 5h=周） | 抄错列/填错行；lint 会报「窗口相等」⚠，有意设计（如月额度封顶=周）用 `windows_equal_by_design: true` 豁免 | 窗口相等检查 |
 | 改完代码没截图直接说「好了」 | 漏交付前截图 | 铁律 24 |
 | 官方请求数与反推误差 > 15% | 缺自洽性验算 | 铁律 22 |
 | 一次性 credit 显示在 5h/周/月三列 | 漏 credit_apply 语义判断 | 铁律 25 |
