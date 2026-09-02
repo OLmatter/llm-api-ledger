@@ -10,6 +10,23 @@ homepage: https://www.bigmodel.cn/glm-coding
 docs: https://open.bigmodel.cn/dev/api/normal-model/glm-4
 last_verified: 2026-07-21
 
+# 社区情报（非官方，自行甄别；铁律 11：限时活动必须填 expires，过期自动摘）
+# date = 登记时间（必填）：情报会过时，读者需要知道是什么时候看到的
+intel:
+  - kind: deal
+    date: 2026-09-02
+    text: 买 Pro v3 可对比海外版 Z.AI：年付走 Z.AI + 邀请码 9 折约 ¥4324/年（$604.8×7.15），比智谱国内直购 ¥4519.2/年 便宜约 ¥195；月付差价很小（¥515 vs ¥538）。注意 Z.AI 是独立账号体系（美元订阅、海外线路），已有国内账号的权益不互通
+    channel: Z.AI 官网 + 邀请码
+    source: community
+    expires: null   # 依赖两家现价与 9 折邀请码，任一变动即失效；数据可在榜单 Pro v3 两行直接对比
+  - kind: deal
+    date: 2026-09-02
+    text: ZCode 自己的额度重置卡：用户破百万、客户端大版本更新（3.8.1+）等节点官方会发放/解锁——周额度用完点卡立即回 100%，卡有 30 天有效期、过期作废；另有 5 小时重置卡闲时自动下发（闲时+5h 用量超阈值+当日限次，动态调整）。仅发登录 ZCode 并绑定 Coding Plan 的账号，纯 API Key 不发；「编程套餐」页可看累计次数（机制详见 zcode.z.ai/cn/docs/usage-stats）。OpenAI Codex 也有自己的一套重置卡，见情报板 OpenAI 条目
+    channel: ZCode 端内（≥3.8.1）
+    source: official
+    expires: null   # 官方机制页常驻；下发频率动态调整，以端内为准   # 官方常驻功能，非限时活动
+
+
 # 邀请码：智谱不提供邀请码（活动已取消）
 # 表格邀请码列对智谱套餐显示空（—）
 affiliate: null

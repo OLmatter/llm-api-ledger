@@ -10,6 +10,14 @@ homepage: https://chatgpt.com
 docs: https://platform.openai.com/docs
 last_verified: 2026-07-30
 
+# 社区情报（非官方，自行甄别；铁律 11：限时活动必须填 expires，过期自动摘）
+intel:
+  - kind: deal
+    date: 2026-09-02
+    text: Codex 的「banked reset」额度重置官方机制：①邀请新用户——对方发出第一条 Codex 消息后双方各得 1 次 reset 入账，邀请上限 3 人（对方须从未用过 Codex）；②重置效果：立即恢复限额（覆盖 5h 滚动 + 周限额）；③仅限 ChatGPT Work / Codex 场景，banked reset 30 天有效期（官方条款原文），过期作废；④无每月自动补发——早期「官方批量重置全员周限额」已被这套 banking 机制取代；客户端更新只是解锁重置 UI，不产生新次数。官方条款：help.openai.com/en/articles/20001271（ChatGPT Desktop Referral Promotions）+ @OpenAIDevs 官方推文
+    channel: Codex 客户端 + 邀请活动
+    source: official   # 官方 Help Center 条款 + @OpenAIDevs 官方推文（2026-09-02 核）
+
 # 邀请码：OpenAI 不提供邀请码（无购买优惠）
 affiliate: null
 
