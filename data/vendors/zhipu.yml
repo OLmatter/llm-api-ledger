@@ -24,7 +24,13 @@ intel:
     text: ZCode 自己的额度重置卡：用户破百万、客户端大版本更新（3.8.1+）等节点官方会发放/解锁——周额度用完点卡立即回 100%，卡有 30 天有效期、过期作废；另有 5 小时重置卡闲时自动下发（闲时+5h 用量超阈值+当日限次，动态调整）。仅发登录 ZCode 并绑定 Coding Plan 的账号，纯 API Key 不发；「编程套餐」页可看累计次数（机制详见 zcode.z.ai/cn/docs/usage-stats）。OpenAI Codex 也有自己的一套重置卡，见情报板 OpenAI 条目
     channel: ZCode 端内（≥3.8.1）
     source: official
-    expires: null   # 官方机制页常驻；下发频率动态调整，以端内为准   # 官方常驻功能，非限时活动
+    expires: null   # 官方机制页常驻；下发频率动态调整，以端内为准
+  - kind: deal
+    date: 2026-09-04
+    text: 官方「夜间畅用活动」：9 月 3 日至 9 月 20 日，每晚 23:00～次日 09:00（北京时间，含周末及节假日），GLM-5.3-Flash 在 ZCode 端额度消耗为 0（免费畅用）；在套餐支持的其他 Agent（Claude Code 等）中使用额度 ×2 倍。仅限 GLM-5.3-Flash——错峰时段选用 GLM-5.3 仍按标准扣量；覆盖所有付费套餐用户，进时段自动生效无需报名。公告：docs.bigmodel.cn/cn/coding-plan/notice/event-glm-5.3-flash
+    channel: GLM Coding Plan 官方公告
+    source: official
+    expires: 2026-09-20   # 活动截止日，过期自动摘   # 官方常驻功能，非限时活动
 
 
 # 邀请码：智谱不提供邀请码（活动已取消）
