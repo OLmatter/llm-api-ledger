@@ -91,6 +91,9 @@ rate_multipliers:
     如果全程非高峰，可用实际 tokens ≈ 名义额度 × 1.5。
     ⚠️ 限时活动：2026-07-31 截止（无延期公告则恢复正常计费倍率）。
 
+# 智谱 API 按量定价 (per million tokens, 2026-07-31 智谱海外版 docs.z.ai CDP 抓取)
+# z.ai = 智谱海外版,同模型池同计费 → 国内 zhipu 数据与 zai 完全一致
+model_pricing:
 # ── 2026-09-07 新增:GLM-5.3 / GLM-5.3-Flash 按量价(bigmodel.cn/pricing dump-dom 实抓) ──
 # glm-5.3-flash 当前为「5 折限时两周」促销价(约至 2026-09-21),到期由定时任务自动恢复原价;
 # 原价 = 现价 ×2(官方口径「定价为 GLM-5.3 的 1/10」,限时内为 1/20)
@@ -124,9 +127,6 @@ rate_multipliers:
       原价(regular_*)= 官方口径「GLM-5.3-Flash 定价为 GLM-5.3 的 1/10,限时折扣内为 1/20」。
       2026-09-21 到期由定时任务自动把 regular_* 写回主字段。
 
-# 智谱 API 按量定价 (per million tokens, 2026-07-31 智谱海外版 docs.z.ai CDP 抓取)
-# z.ai = 智谱海外版,同模型池同计费 → 国内 zhipu 数据与 zai 完全一致
-model_pricing:
   glm-5.2:
     input: 1.40
     cached_input: 0.26
