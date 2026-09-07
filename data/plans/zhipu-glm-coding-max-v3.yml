@@ -201,6 +201,9 @@ measurements:
     annotations:
       - kind: scenario
         value: full_offpeak
+      - kind: promo
+        value: night_x2
+        expires: 2026-09-20   # 夜间畅用活动截止,过期注解自动摘
     requests_5h: null
     requests_weekly: null
     requests_monthly: null

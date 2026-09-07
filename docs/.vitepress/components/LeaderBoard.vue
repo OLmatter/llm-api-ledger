@@ -518,7 +518,7 @@ function fmtTokensYi(n) {
                     <span v-if="mb.h5_tokens">{{ fmtTokens(mb.h5_tokens) }}</span>
                     <span v-else class="muted">—</span>
                     <span class="model-tag">@{{ mb.model_id }}</span>
-                    <span v-for="a in mb.annotations.filter(x => x.kind !== 'promo')" :key="a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
+                    <span v-for="a in mb.annotations.filter(x => x.value !== 'zcode_1_5x')" :key="a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
                   </div>
                   <div v-if="mb.zcode_h5_tokens" class="zcode-aff">
                     <span class="zcode-label">ZCode×1.5</span>
@@ -546,7 +546,7 @@ function fmtTokensYi(n) {
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
                 <template v-for="mb in row.plan.model_breakdown" :key="'w-' + mb.model_id">
                   <div class="tok-row">
-                    {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-for="a in mb.annotations.filter(x => x.kind !== 'promo')" :key="'w-' + a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
+                    {{ fmtTokens(mb.weekly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-for="a in mb.annotations.filter(x => x.value !== 'zcode_1_5x')" :key="'w-' + a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
                   </div>
                   <div v-if="mb.zcode_weekly_tokens" class="zcode-aff">
                     <span class="zcode-label" title="ZCode 客户端限时活动，全周期 0.67 折算（等效 1.5x 额度）。跟邀请码独立，可同时享受。">ZCode×1.5</span>
@@ -577,7 +577,7 @@ function fmtTokensYi(n) {
               <template v-if="row.plan.model_breakdown && row.plan.model_breakdown.length">
                 <template v-for="mb in row.plan.model_breakdown" :key="'m-' + mb.model_id">
                   <div class="tok-row">
-                    {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-for="a in mb.annotations.filter(x => x.kind !== 'promo')" :key="'m-' + a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
+                    {{ fmtTokens(mb.monthly_tokens) }}<span class="model-tag">@{{ mb.model_id }}</span><span v-for="a in mb.annotations.filter(x => x.value !== 'zcode_1_5x')" :key="'m-' + a.kind + '/' + a.value" class="scope-tag" :class="'ann-' + a.kind" :title="a.tooltip">{{ a.label }}</span>
                   </div>
                   <div v-if="mb.zcode_monthly_tokens" class="zcode-aff">
                     <span class="zcode-label">ZCode×1.5</span>

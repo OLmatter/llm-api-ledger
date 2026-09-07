@@ -77,6 +77,10 @@ const ANNOTATION_DEFS = {
     label: 'Go 观测',
     tooltip: '数据是 OpenCode 团队在自家 Go 客户端上观察到的使用模式，不是该模型 API 在所有场景下的通用值（缓存率尤其偏高于通用 API）。',
   },
+  'promo/night_x2': {
+    label: '夜间×2',
+    tooltip: '夜间畅用活动（2026/9/3-9/20）：每晚 23:00-次日 09:00 在其他 Agent 中 GLM-5.3-Flash 额度 ×2，ZCode 端 0 消耗；活动结束自动回落。',
+  },
   'promo/zcode_1_5x': {
     label: 'ZCode×1.5',
     tooltip: 'ZCode 客户端权益：全周期 0.67 折算（等效 1.5x 额度）。倍率来自 vendor.yml rate_multipliers.zcode，跟邀请码独立可叠加。',
@@ -635,8 +639,14 @@ const plans = planFiles.map(f => {
         // 兼容旧字段:scope / usage_scenario（未迁移的厂商文件继续生效）
         if (m.usage_scenario) pushAnn('scenario', m.usage_scenario)
         if (m.scope && m.scope !== m.usage_scenario) pushAnn('scenario', m.scope)
-        // 新语法:measurement 级 annotations 数组
-        for (const a of (m.annotations || [])) pushAnn(a.kind, a.value)
+        // 新语法:measurement 级 annotations 数组(支持 expires,过期自动摘,铁律 11)
+        const annToday = new Date().toISOString().slice(0, 10)
+        const isoDate = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : String(d || '').slice(0, 10))
+        for (const a of (m.annotations || [])) {
+          const aExp = a.expires ? isoDate(a.expires) : null
+          if (aExp && aExp < annToday) continue
+          pushAnn(a.kind, a.value)
+        }
         // promo:ZCode×1.5 由 vendor.yml rate_multipliers.zcode 派生（哪定义哪出现，不在 yml 手写）
         if (zcodeBoost) pushAnn('promo', 'zcode_1_5x')
         if (m.disputed) pushAnn('warning', 'disputed')
