@@ -26,6 +26,37 @@ function loadYamlDir(dir) {
 const vendors = loadYamlDir(join(root, 'data', 'vendors'))
 const planFiles = readdirSync(join(root, 'data', 'plans')).filter(f => f.endsWith('.yml'))
 
+// ── model_pricing 限时价自动恢复（期限机制下沉到 build，与邀请码/intel 的 expires 同思路）──
+// 价目条目带 limited_until + regular_* 时：到期后每次构建自动把 regular_* 写回主字段并删限时字段。
+// build 在本地与 CI 的每次部署都会跑，恢复不依赖人工和定时任务（定时任务退化为提醒兜底）。
+{
+  const today = new Date().toISOString().slice(0, 10)
+  for (const v of Object.values(vendors)) {
+    for (const [model, mp] of Object.entries(v.model_pricing || {})) {
+      // js-yaml 会把 YYYY-MM-DD 解析成 Date 对象，统一转 ISO 字符串再比较（Date 与字符串直接比较会错乱）
+      const lu = mp.limited_until instanceof Date ? mp.limited_until.toISOString().slice(0, 10) : String(mp.limited_until || '').slice(0, 10)
+      if (!lu || lu >= today) continue
+      if (mp.regular_input == null) continue
+      const expiredOn = lu
+      const restore = {
+        input: mp.regular_input,
+        output: mp.regular_output,
+        cached_input: mp.regular_cached_input ?? mp.cached_input,
+      }
+      if (mp.regular_input_over_32k != null) restore.input_over_32k = mp.regular_input_over_32k
+      if (mp.regular_cached_input_over_32k != null) restore.cached_input_over_32k = mp.regular_cached_input_over_32k
+      for (const [k, val] of Object.entries(restore)) {
+        if (val != null) mp[k] = val
+      }
+      for (const k of ['limited_until', 'regular_input', 'regular_output', 'regular_cached_input', 'regular_input_over_32k', 'regular_cached_input_over_32k']) {
+        delete mp[k]
+      }
+      mp.note = `${mp.note || ''}\n      [${today} build 自动恢复] ${model} 限时价已于 ${expiredOn} 到期，本条已自动恢复原价（原价写入时已按官方口径核对）。`
+      console.warn(`↩ model_pricing.${model} 限时价到期（${expiredOn}），已自动恢复原价`)
+    }
+  }
+}
+
 // USD → CNY 折算汇率（顶部常量，便于调整；近期 7.10–7.20）
 // 榜单里 USD 套餐（Z.AI）会在原价下显示一行 "≈ ¥xxx" 作为对比参考
 const USD_TO_CNY = 7.15
