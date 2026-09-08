@@ -95,8 +95,8 @@ const hover = ref(-1)
 const hoverRow = computed(() => rows.value.find(d => d.plan_id + '/' + d.model === hover.value) || null)
 
 const modeDesc = computed(() => (mode.value === 'extreme'
-  ? '极限用量排序：考虑虚影——错峰增益与活动加成后的理论上限参与排序。'
-  : '基本用量排序：不考虑虚影，直接按表格月度用量÷包月原价排序。'))
+  ? '极限用量（全非高峰上限）：全部流量集中在错峰时段（每日 23:00–次日 09:00 及周末，积分 5 折）+ 95% 缓存命中，智谱 v3 另叠加「夜间畅用」活动（GLM-5.3-Flash 在 ZCode 端 0 消耗、其他 Agent 额度 ×2，9/3–9/20）后的理论最大可跑量。'
+  : '标准用量（全高峰下限）：全部流量集中在高峰时段（工作日 14:00–18:00，积分 1 倍）+ 95% 缓存命中，智谱 v3 为官方场景估算下限，智谱 v2 / 腾讯 / 火山 为探针实测反推。'))
 
 const vendorName = (v) => ({ zhipu:'智谱', zai:'Z.AI', anthropic:'Anthropic', openai:'OpenAI', kimi:'Kimi', minimax:'MiniMax', tencent:'腾讯云', volcengine:'火山', alibaba:'阿里', opencode:'OpenCode', deepseek:'DeepSeek', google:'Google' }[v] || v)
 function colorOf(vendor) {
