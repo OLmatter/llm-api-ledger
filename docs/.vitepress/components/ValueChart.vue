@@ -93,7 +93,7 @@ const yTicks = computed(() => {
           <rect
             v-if="d.ghost_tokens_per_cny"
             :x="bx(i)" :y="by(d.ghost_tokens_per_cny)"
-            :width="barW" :height="Math.max(2, bH(d.tokens_per_cny) - bH(d.ghost_tokens_per_cny))"
+            :width="barW" :height="Math.max(2, bH(d.ghost_tokens_per_cny) - bH(d.tokens_per_cny))"
             :fill="colorOf(d.vendor)" fill-opacity="0.28"
             stroke="#ff6600" stroke-width="1.2" stroke-dasharray="4 3"
             :opacity="hover === -1 || hover === i ? 1 : 0.35"
