@@ -27,14 +27,12 @@ function toggleVendor(v) {
   hiddenVendors.value = s
 }
 
+// 排序键 = 视觉总长 endpoint（基准 + 虚线段增量）——铁律：柱子的视觉长度必须与排序完全一致，
+// 否则必然出现「少的排在多的前面」。等效折算行（virtual）参与排名，视觉上用斜纹透明柱区分。
+const endpointOf = (d) => Math.max(valOf(d), d.ghost_tokens_per_cny || 0)
 const rows = computed(() => (groups.value[active.value] || [])
-  .filter(d => !d.virtual && !hiddenVendors.value.has(d.vendor))
-  .sort((a, b) => valOf(b) - valOf(a)))
-
-// 等效折算参考（虚数口径，不计入排名）
-const virtualRows = computed(() => (groups.value[active.value] || [])
-  .filter(d => d.virtual)
-  .sort((a, b) => valOf(b) - valOf(a)))
+  .filter(d => !hiddenVendors.value.has(d.vendor))
+  .sort((a, b) => endpointOf(b) - endpointOf(a)))
 
 // 当前视图实际出现的厂商（图例只显示存在的）
 const presentVendors = computed(() => [...new Set(rows.value.map(d => d.vendor))])
@@ -46,7 +44,7 @@ function caliberOf(d) {
     return mode.value === 'standard' ? '全高峰下限' : '全非高峰期'
   }
   if (anns.some(a => a.label === 'Go 观测' || a.value === 'opencode-go-client')) return 'Go 观测'
-  if (d.monthly_source) return '实测反推'
+  if (anns.some(a => a.value === 'probe_inferred') || d.monthly_source) return '实测反推'
   return ''
 }
 
@@ -55,9 +53,8 @@ const barMax = 560
 const rowH = 34
 
 const scaleLog = ref(true)
-const rowsVals = computed(() => rows.value.map(d => valOf(d)))
-const valMax = computed(() => Math.max(...rowsVals.value, 1))
-const valMin = computed(() => Math.min(...rowsVals.value, valMax.value * 0.02))
+const valMax = computed(() => Math.max(...rows.value.map(d => endpointOf(d)), 1))
+const valMin = computed(() => Math.min(...rows.value.map(d => valOf(d)), valMax.value * 0.02))
 function valScale(v) {
   if (!scaleLog.value) return (v / valMax.value) * barMax
   const lo = Math.log10(Math.max(valMin.value, 1)), hi = Math.log10(valMax.value * 1.05)
@@ -86,8 +83,7 @@ const fmtB = (n) => (n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : (n / 1e6).toFixed(0
 
 // 悬停行
 const hover = ref('')
-const hoverRow = computed(() => rows.value.find(d => d.plan_id + '/' + d.model === hover.value)
-  || virtualRows.value.find(d => d.plan_id + '/' + d.model === hover.value) || null)
+const hoverRow = computed(() => rows.value.find(d => d.plan_id + '/' + d.model === hover.value) || null)
 
 const modeDesc = computed(() => (mode.value === 'extreme'
   ? '极限用量口径：全部流量集中在错峰时段（每日 23:00–次日 09:00 及周末，积分 5 折）+ 95% 缓存命中，智谱 v3 另叠加「夜间畅用」活动（GLM-5.3-Flash 在 ZCode 端 0 消耗、其他 Agent 额度 ×2，9/3–9/20）。'
@@ -154,28 +150,28 @@ function colorOf(vendor) {
     </div>
 
     <!-- 横向柱状图 -->
+    <div class="vc3-scalehint">log 轴刻度：{{ grid.map(g => g.label).join(' / ') }} 万 tokens</div>
     <div class="vc3-chart" :style="{ height: chartH + 'px' }">
       <div class="vc3-axis">
         <span v-for="g in grid" :key="g.label" class="vc3-gridline" :style="{ top: (barMax - g.px + 8) + 'px' }">
           <i class="vc3-grid" :style="{ width: barMax + 'px' }"></i>
-          <em class="vc3-gridlabel">{{ g.label }}</em>
         </span>
       </div>
       <div
         v-for="(d, i) in rows" :key="d.plan_id + d.model"
-        class="vc3-row"
+        class="vc3-row" :class="{ 'vc3-virtual': d.virtual }"
         @mouseenter="hover = d.plan_id + '/' + d.model"
       >
         <span class="vc3-rank">{{ i + 1 }}</span>
         <span class="vc3-dot" :style="{ background: colorOf(d.vendor) }"></span>
-        <span class="vc3-name" :title="d.label">{{ d.vendor_display }} · {{ d.plan_name.replace(/ GLM Coding Plan /, ' ') }} · {{ d.model }}</span>
+        <span class="vc3-name" :title="d.label">{{ d.vendor_display }} · {{ d.plan_name.replace(/ GLM Coding Plan /, ' ') }} · {{ d.model }}<em v-if="d.virtual" class="vc3-vtag">等效折算</em></span>
         <span class="vc3-barzone">
-          <i class="vc3-bar" :style="{ width: valScale(valOf(d)) + 'px', background: colorOf(d.vendor) }"></i>
+          <i class="vc3-bar" :style="{ width: Math.max(3, valScale(valOf(d))) + 'px', background: colorOf(d.vendor) }"></i>
           <i v-if="d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d)"
             class="vc3-bar vc3-ext"
             :style="{ left: valScale(valOf(d)) + 'px', width: Math.max(2, valScale(d.ghost_tokens_per_cny) - valScale(valOf(d))) + 'px' }"
-            title="本口径到极限用量的差距"></i>
-          <b class="vc3-val">{{ fmt(valOf(d)) }}</b>
+            title="极限用量与基准的差距"></i>
+          <b class="vc3-val">{{ fmt(endpointOf(d)) }}</b>
           <em v-if="caliberOf(d)" class="vc3-caliber">{{ caliberOf(d) }}</em>
         </span>
       </div>
@@ -192,20 +188,11 @@ function colorOf(vendor) {
       <div v-for="a in (hoverRow.annotations || [])" :key="a.label" class="vc3-tip-line muted">{{ a.label }}：{{ a.tooltip }}</div>
     </div>
 
-    <!-- 等效折算参考 -->
-    <template v-if="virtualRows.length">
-      <h3 class="vc3-sub">等效折算参考（虚数口径，不计入上方排名）</h3>
-      <div v-for="d in virtualRows" :key="d.plan_id + d.model" class="vc3-row vc3-vrow">
-        <span class="vc3-rank">—</span>
-        <span class="vc3-dot" :style="{ background: colorOf(d.vendor) }"></span>
-        <span class="vc3-name">{{ d.label }}</span>
-        <span class="vc3-barzone"><b class="vc3-val">{{ fmt(valOf(d)) }}</b></span>
-      </div>
-    </template>
+
 
     <p class="vc3-note">
       口径：智谱/Z.AI v3 为官方场景估算双口径（极限=全非高峰上限，标准=全高峰下限）；v2 为探针实测反推；
-      opencode 为 Go 客户端观测；ChatGPT 等效折算行单独归档不参与排名。包月均取原价（非首月/邀请码价）。
+      opencode 为 Go 客户端观测；ChatGPT 等效折算行为虚数口径参考（列表尾部单独归档）。包月均取原价（非首月/邀请码价）。
       方法论详见 <a href="/llm-api-ledger/methodology">数据口径</a> 页。
     </p>
   </div>
@@ -236,6 +223,7 @@ function colorOf(vendor) {
   font: inherit; font-size: 12px; cursor: pointer;
 }
 .vc3-chip.off { opacity: 0.35; text-decoration: line-through; }
+.vc3-scalehint { font-size: 11px; color: var(--vp-c-text-3); margin: 4px 0 2px 460px; }
 .vc3-chart { position: relative; margin: 8px 0 4px; }
 .vc3-axis { position: absolute; inset: 0; pointer-events: none; }
 .vc3-gridline { position: absolute; left: 0; height: 0; }
@@ -247,7 +235,7 @@ function colorOf(vendor) {
 .vc3-rank { color: var(--vp-c-text-3); min-width: 22px; text-align: right; font-size: 11px; }
 .vc3-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .vc3-name {
-  width: 300px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  width: 420px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: var(--vp-c-text-1);
 }
 .vc3-barzone { position: relative; flex: 1; height: 22px; display: flex; align-items: center; }
@@ -258,7 +246,12 @@ function colorOf(vendor) {
 }
 .vc3-val { margin-left: 8px; font-size: 12px; font-weight: 600; color: var(--vp-c-text-1); white-space: nowrap; }
 .vc3-caliber { margin-left: 8px; font-size: 11px; color: #d97706; opacity: 0.85; white-space: nowrap; }
-.vc3-vrow .vc3-name { color: var(--vp-c-text-2); }
+.vc3-vrow .vc3-bar { opacity: 0.45; }
+.vc3-vrow { opacity: 0.85; }
+.vc3-vtag {
+  font-size: 10px; font-style: normal; color: #d97706;
+  border: 1px solid #d97706; border-radius: 3px; padding: 0 3px; margin-left: 4px;
+}
 .vc3-sub { font-size: 14px; margin: 20px 0 8px; color: var(--vp-c-text-2); }
 .vc3-tip {
   position: sticky; bottom: 8px;

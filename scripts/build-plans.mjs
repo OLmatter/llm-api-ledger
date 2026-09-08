@@ -833,11 +833,16 @@ for (const p of plans) {
     const affActive = aff && aff.discount && (!aff.expires || String(aff.expires).slice(0, 10) >= new Date().toISOString().slice(0, 10))
     const ghosts = affActive ? [{ label: `用邀请码(${aff.discount}折)`, tokens_per_cny: Math.round((p.tokens.monthly / (priceCny * aff.discount)) / 1e4 * 100) / 100 }] : []
     const best = ghosts.length ? Math.max(...ghosts.map(g => g.tokens_per_cny)) : null
+    const usageAnns = ((rawPlanDocs.find(r => r.plan_id === p.plan_id))?.usage_annotations || []).map(a => {
+      const def = ANNOTATION_DEFS['scenario/' + a.value]
+      return { kind: a.kind, value: a.value, label: def?.label || a.value, tooltip: def?.tooltip || '' }
+    })
     modelValue.push({ ...base, virtual: VIRTUAL_SPLIT.has(p.plan_id), model: (p.primary_model || '').toLowerCase() || null,
       label: `${p.vendor_display} ${p.plan_name} @${p.primary_model || '?'}${VIRTUAL_SPLIT.has(p.plan_id) ? '（等效折算）' : ''}`,
       monthly_tokens: p.tokens.monthly,
       tokens_per_cny: Math.round((p.tokens.monthly / priceCny) / 1e4 * 100) / 100,
       monthly_source: p.tokens?.monthly_source || null,
+      annotations: usageAnns,
       ghosts,
       ghost_tokens_per_cny: best,
       annotations: [] })
