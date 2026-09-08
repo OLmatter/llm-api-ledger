@@ -56,6 +56,7 @@ function caliberOf(d) {
   if (anns.some(a => a.value === 'full_offpeak')) {
     return '全非高峰期'
   }
+  if (anns.some(a => a.value === 'official_multiplier')) return '官方倍率反推'
   if (anns.some(a => a.label === 'Go 观测' || a.value === 'opencode-go-client')) return 'Go 观测'
   if (anns.some(a => a.value === 'probe_inferred') || d.monthly_source) return '实测反推'
   return ''
@@ -201,6 +202,7 @@ function colorOf(vendor) {
 
     <p class="vc3-note">
       口径：智谱/Z.AI v3 为官方场景估算双口径（极限=全非高峰上限，标准=全高峰下限）；v2 为探针实测反推（普通客户端口径）；
+      Kimi Andante/Moderato 为官方倍率反推（Kimi 只公布 1×/4×/20×/60× 倍数，按同链实测档换算）；
       opencode 为 Go 客户端观测；ChatGPT 等效折算行为虚数口径参考（参与列表排序，另列标注）；
       极限排序下 MiniMax/Z.AI 部分行的数值含邀请码 9 折加成（虚线段/行内标注）。包月均取原价（非首月/邀请码价）。</p>
   </div>

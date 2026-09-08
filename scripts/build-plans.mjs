@@ -73,6 +73,10 @@ const ANNOTATION_DEFS = {
     label: '实测反推',
     tooltip: '探针实测反推口径：由用户实测用量反推到 100% 满额（普通客户端口径），非官方场景估算，与「全非高峰期」口径不可直接对比。',
   },
+  'scenario/official_multiplier': {
+    label: '官方倍率反推',
+    tooltip: '厂商只公布档位倍数（如 Kimi 1×/4×/20×/60×）不公布绝对额，本档用量 = 同链实测档 × 官方倍率反推，非本档独立实测。',
+  },
   'scenario/opencode-go-client': {
     label: 'Go 观测',
     tooltip: '数据是 OpenCode 团队在自家 Go 客户端上观察到的使用模式，不是该模型 API 在所有场景下的通用值（缓存率尤其偏高于通用 API）。',

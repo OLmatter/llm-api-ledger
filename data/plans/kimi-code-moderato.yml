@@ -1,12 +1,17 @@
 # Kimi Code Plan Moderato（中档 = 4×）
-# 2026-07 三层限额无独立实测，构建脚本从 Allegretto(508M/10亿) × 4/20 反推
+# 2026-09-08: 月 cap 按官方倍率链填入(Allegretto 10亿实测 × 4/20 = 200M),带 monthly_estimated + official_multiplier 口径标注
 
 plan_id: kimi-code-moderato
 vendor: kimi
 plan_name: Code Plan Moderato
 plan_tier: moderato
 status: active
-last_verified: 2026-08-28
+last_verified: 2026-09-08
+
+# 口径标注:月用量为官方倍率反推,非本档独立实测
+usage_annotations:
+  - kind: scenario
+    value: official_multiplier
 
 pricing:
   currency: CNY
@@ -23,20 +28,21 @@ limits:
   window_weekly:
     requests_official: null
     tokens_official_claimed: null
-    tokens_measured: null                  # 用户未提供 Moderato 7 天实测(反推不算数,留 null)
+    tokens_measured: null                  # 本档未实测;构建脚本按 Allegretto 周实测 × 4/20 反推展示
   window_monthly:
     requests_official: null
     tokens_official_claimed: null
-    tokens_measured: null                  # 用户未提供 Moderato 月实测(反推不算数,留 null)
+    tokens_measured: 200000000             # 官方倍率链:Allegretto 月 10亿(@Golden白 明说) × 4/20 = 200M
+    monthly_estimated: true                # 倍率反推,非本档独立实测
     is_unlimited: false
 
 ratio_note: |
   Moderato (4×) 三层限额:
   - 5h cap: 未测
-  - 7 天 cap: 未实测(Allegretto 508M × 4/20 = 反推 102M,但反推不展示)
-  - 月 cap: 未实测(Allegretto 10亿 × 4/20 = 反推 200M,但反推不展示)
-  倍率:Moderato=4× = Allegretto / 5
-  数据状态:全部 3 层限额用户未实测,前端展示 —
+  - 7 天 cap: 本档未实测,按 Allegretto 周实测 508M × 4/20 = 102M 反推展示
+  - 月 cap: 按官方倍率链 200M(Allegretto 10亿 × 4/20),monthly_estimated=true,标注「官方倍率反推」
+  倍率:Moderato=4× = Allegretto / 5(Andante=1×,Allegretto=20×,Allegro=60×,Kimi 官方口径)
+  数据状态:5h/周无独立实测;月为官方倍率反推(带口径标注,区别于 Allegretto/Allegro 的用户实测)
 
 measurements:
   - measurement_id: m_2026_08_kimi_k3_generation_moderato

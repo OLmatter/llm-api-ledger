@@ -1016,7 +1016,7 @@ usage_annotations:
 
 | kind | 含义 | 现有 value | 前端颜色 |
 |---|---|---|---|
-| `scenario` | 数据口径 | full_offpeak（全非高峰期）/ probe_inferred（实测反推）/ opencode-go-client（Go 观测） | 琥珀 |
+| `scenario` | 数据口径 | full_offpeak（全非高峰期）/ probe_inferred（实测反推）/ official_multiplier（官方倍率反推，Kimi Andante/Moderato 在用）/ opencode-go-client（Go 观测） | 琥珀 |
 | `promo` | 优惠/加成 | zcode_1_5x（ZCode×1.5，**由 vendor.yml rate_multipliers.zcode 派生，禁止手写进 plan yml**） | 紫 |
 | `warning` | 异常/争议 | disputed（disputed: true 自动转） | 红 |
 | `note` | 普通备注 | 自由文本 value | 灰 |
