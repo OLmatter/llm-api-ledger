@@ -9,13 +9,19 @@ hero:
     - theme: brand
       text: 看榜单 →
       link: '#leaderboard'
+    - theme: alt
+      text: 📢 情报板
+      link: /intel
+    - theme: alt
+      text: 📈 性价比
+      link: /value
     # 截图分享时, 让群友直接看到 repo (避免搜不到)。放 actions 里才能和主按钮同行对齐
     - theme: alt
       text: 'github: OLmatter/llm-api-ledger'
       link: https://github.com/OLmatter/llm-api-ledger
     # 第三个无 link 的按钮, 显示「最新更新」时间, build 脚本自动从 git log 取日期填进来
     - theme: alt
-      text: '📅 最新更新 2026-09-09 03:47'
+      text: '📅 最新更新 2026-09-09 04:33'
 ---
 
 # 榜单 {#leaderboard}
