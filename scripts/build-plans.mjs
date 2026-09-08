@@ -867,8 +867,8 @@ modelValue.sort((a, b) => b.tokens_per_cny - a.tokens_per_cny)
 {
   const tableApiModels = new Set(modelValue.filter(d => d.series === 'api').map(d => d.model))
   const apiSeen = new Set()
-  // 已被替代的老代际模型不上图：glm-4.7-flashx 官方路由至 GLM-5.3-Flash（同价位完全被覆盖）
-  const API_EXCLUDED_MODELS = new Set(['glm-4.7-flashx'])
+  // 已被替代的老代际模型不上图（官方路由规则：5.2/5.1 → GLM-5.3，4.7/4.7-flashx → GLM-5.3-Flash）
+  const API_EXCLUDED_MODELS = new Set(['glm-4.7-flashx', 'glm-4.7', 'glm-5.2', 'glm-5.1'])
   for (const [vid, v] of Object.entries(vendors)) {
     for (const [model, mp] of Object.entries(v.model_pricing || {})) {
       if (mp.input == null || mp.output == null || mp.cached_input == null) continue
