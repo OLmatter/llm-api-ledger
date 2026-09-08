@@ -155,12 +155,8 @@ const yTicks = computed(() => {
         <div class="vc2-tip-model">{{ hoverData.label }}</div>
         <div class="vc2-tip-big">{{ fmt(mode === 'actual' ? (hoverData.conservative_tokens_per_cny ?? hoverData.tokens_per_cny) : hoverData.tokens_per_cny) }} <span>万 tokens / ¥1（包月·{{ mode === 'actual' ? '标准' : '极限' }}口径）</span></div>
         <div class="vc2-tip-meta">月用量 {{ fmtB(hoverData.monthly_tokens) }} tokens · 包月原价 ¥{{ hoverData.price_cny }}</div>
-        <div class="vc2-tip-base">
-          {{ mode === 'actual' ? '极限口径：' : '原有（无加成）：' }}≈ {{ fmt(mode === 'actual' ? hoverData.tokens_per_cny : hoverData.tokens_per_cny) }} 万/¥
-        </div>
-        <div v-for="g in (hoverData.ghosts || [])" :key="'g-' + g.label" class="vc2-tip-boost">
-          含{{ g.label }}：≈ {{ fmt(g.tokens_per_cny) }} 万/¥
-        </div>
+        <div class="vc2-tip-base">基本用量：≈ {{ fmt(hoverData.tokens_per_cny) }} 万/¥</div>
+        <div v-if="hoverData.ghost_tokens_per_cny" class="vc2-tip-boost">极限用量：≈ {{ fmt(hoverData.ghost_tokens_per_cny) }} 万/¥（错峰增益 + 活动加成后的理论上限）</div>
       </div>
     </div>
 
