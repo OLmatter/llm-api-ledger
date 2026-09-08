@@ -814,10 +814,14 @@ for (const p of plans) {
         ghosts.push({ label: `用邀请码(${aff.discount * 10}折)`, tokens_per_cny: Math.round((m.monthly_tokens / (priceCny * aff.discount)) / 1e4 * 100) / 100 })
       }
       const best = ghosts.length ? Math.max(...ghosts.map(g => g.tokens_per_cny)) : null
+      // 保守口径（实际）：全非高峰上限 ÷2 = 全高峰下限（官方区间两端）；非区间口径的行两模式同值
+      const isExtreme = (m.annotations || []).some(a => a.value === 'full_offpeak')
+      const conservative = isExtreme ? Math.round((m.monthly_tokens / 2 / priceCny) / 1e4 * 100) / 100 : null
       modelValue.push({ ...base, model: m.model_id,
         label: `${p.vendor_display} ${p.plan_name} @${m.model_id}${VIRTUAL_SPLIT.has(p.plan_id) ? '（等效折算）' : ''}`,
         monthly_tokens: m.monthly_tokens,
         tokens_per_cny: Math.round((m.monthly_tokens / priceCny) / 1e4 * 100) / 100,
+        conservative_tokens_per_cny: conservative,
         ghosts,
         ghost_tokens_per_cny: best,
         annotations: m.annotations || [] })
