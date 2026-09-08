@@ -187,8 +187,8 @@ function colorOf(vendor) {
     <!-- 悬停明细卡 -->
     <div v-if="hoverRow" class="vc3-tip">
       <div class="vc3-tip-title">{{ hoverRow.label }}</div>
-      <div class="vc3-tip-line" v-if="hoverRow.monthly_tokens != null">基本用量：<b>{{ fmt(valBase(hoverRow)) }}</b> 万 tokens / ¥1（= 月度用量 {{ fmtB(hoverRow.monthly_tokens) }} ÷ 包月定价 ¥{{ hoverRow.price_cny }}）</div>
-      <div class="vc3-tip-line" v-if="mode === 'extreme' && valExt(hoverRow) > valBase(hoverRow)">极限用量：{{ fmt(valExt(hoverRow)) }} 万 tokens / ¥1（错峰增益 + 活动加成后的理论上限）</div>
+      <div class="vc3-tip-line">基本用量：<b>{{ fmt(valBase(hoverRow)) }}</b> 万 tokens / ¥1（= 月度用量 {{ fmtB(hoverRow.monthly_tokens) }} ÷ 包月定价 ¥{{ hoverRow.price_cny }}）</div>
+      <div class="vc3-tip-line">极限用量：<b>{{ fmt(valExt(hoverRow)) }}</b> 万 tokens / ¥1（错峰增益 + 活动加成后的理论上限）</div>
       <div class="vc3-tip-line muted" v-if="hoverRow.monthly_tokens == null">官方按量价（{{ hoverRow.currency === 'USD' ? '$' : '¥' }}{{ hoverRow.input }}/M 输入 · {{ hoverRow.currency === 'USD' ? '$' : '¥' }}{{ hoverRow.cached_input }}/M 缓存 · {{ hoverRow.currency === 'USD' ? '$' : '¥' }}{{ hoverRow.output }}/M 输出）{{ hoverRow.limited_until ? ' · 限时至 ' + hoverRow.limited_until : '' }}；折算有效价 ¥{{ hoverRow.eff_cost_cny }}/M（编程场景 92% 缓存折算）</div>
       <div v-for="a in (hoverRow.annotations || [])" :key="a.label" class="vc3-tip-line muted">{{ a.label }}：{{ a.tooltip }}</div>
     </div>
