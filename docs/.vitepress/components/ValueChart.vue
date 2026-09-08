@@ -46,10 +46,14 @@ const hoverPct = computed(() => (hover.value >= 0 ? ((bx(hover.value) + barW.val
 const fmt = (v) => (v >= 1 ? v.toLocaleString('zh-CN', { maximumFractionDigits: 0 }) : v.toFixed(2))
 const fmtB = (n) => (n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : (n / 1e6).toFixed(0) + 'M')
 const yTicks = computed(() => {
+  // 刻度取整：从 1/2/2.5/5 × 10^n 序列里选能覆盖最大值的最疏步长
+  const max = yMax.value
+  const rawStep = max / 4
+  const pow = Math.pow(10, Math.floor(Math.log10(rawStep)))
+  const step = [1, 2, 2.5, 5, 10].map(m => m * pow).find(s => s >= rawStep) ?? rawStep
   const t = []
-  for (let i = 0; i <= 4; i++) {
-    const val = (yMax.value * i) / 4
-    t.push({ y: by(val), label: Math.round(val).toLocaleString('zh-CN') })
+  for (let v = 0; v <= max; v += step) {
+    t.push({ y: by(v), label: v >= 1000 ? (v / 1000).toFixed(v % 1000 ? 1 : 0) + 'k' : Math.round(v).toLocaleString('zh-CN') })
   }
   return t
 })
