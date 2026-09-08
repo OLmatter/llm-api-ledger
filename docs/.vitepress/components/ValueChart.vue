@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useData } from 'vitepress'
+import { useData, withBase } from 'vitepress'
 import plansData from '../plans.json'
 
 const { isDark } = useData()
@@ -12,12 +12,15 @@ const groups = computed(() => ({
   api: all.value.filter(d => d.series === 'api'),
 }))
 const active = ref('sub')
+function setActive(t) { if (active.value !== t) { active.value = t; hiddenVendors.value = new Set(); hover.value = '' } }
 
-// 排名模式：standard=标准用量（全高峰下限/探针实测） / extreme=极限用量（全非高峰上限）
+// 排名模式：standard=基本用量排序（不考虑虚影） / extreme=极限用量排序（考虑虚影）
+// 柱体恒为:实柱=基本用量(表格月度用量÷包月原价),柱顶虚线段=极限用量(错峰/活动加成后的理论上限)
 const mode = ref('standard')
-const valOf = (d) => (mode.value === 'standard'
-  ? (d.conservative_tokens_per_cny ?? d.tokens_per_cny)
-  : d.tokens_per_cny)
+const valBase = (d) => d.tokens_per_cny
+const valExt = (d) => (d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > d.tokens_per_cny)
+  ? d.ghost_tokens_per_cny
+  : d.tokens_per_cny
 
 // 厂商筛选（空 Set = 全部显示）
 const hiddenVendors = ref(new Set())
@@ -29,19 +32,20 @@ function toggleVendor(v) {
 
 // 排序键严格随模式：标准=保守/实测值，极限=含活动加成的上限值。
 // 柱长、标签、排序三者必须同源（同一口径值），否则必然「看着乱序」。
-const sortVal = (d) => (mode.value === 'extreme' ? Math.max(valOf(d), d.ghost_tokens_per_cny || 0) : valOf(d))
-const rows = computed(() => (groups.value[active.value] || [])
-  .filter(d => !hiddenVendors.value.has(d.vendor))
-  .sort((a, b) => sortVal(b) - sortVal(a)))
+const rows = computed(() => {
+  const arr = (groups.value[active.value] || []).filter(d => !hiddenVendors.value.has(d.vendor))
+  const key = mode.value === 'extreme' ? valExt : valBase
+  return [...arr].sort((a, b) => key(b) - key(a))
+})
 
 // 当前视图实际出现的厂商（图例只显示存在的）
-const presentVendors = computed(() => [...new Set(rows.value.map(d => d.vendor))])
+const presentVendors = computed(() => [...new Set((groups.value[active.value] || []).map(d => d.vendor))])
 
 // ── 口径标注 ──
 function caliberOf(d) {
   const anns = d.annotations || []
   if (anns.some(a => a.value === 'full_offpeak')) {
-    return mode.value === 'standard' ? '全高峰下限' : '全非高峰期'
+    return '全非高峰期'
   }
   if (anns.some(a => a.label === 'Go 观测' || a.value === 'opencode-go-client')) return 'Go 观测'
   if (anns.some(a => a.value === 'probe_inferred') || d.monthly_source) return '实测反推'
@@ -53,8 +57,8 @@ const barMax = 560
 const rowH = 34
 
 const scaleLog = ref(true)
-const valMax = computed(() => Math.max(...rows.value.map(d => sortVal(d)), 1))
-const valMin = computed(() => Math.min(...rows.value.map(d => valOf(d)), valMax.value * 0.02))
+const valMax = computed(() => Math.max(...rows.value.map(d => valExt(d)), 1))
+const valMin = computed(() => Math.min(...rows.value.map(d => valBase(d)), valMax.value * 0.02))
 function valScale(v) {
   if (!scaleLog.value) return (v / valMax.value) * barMax
   const lo = Math.log10(Math.max(valMin.value, 1)), hi = Math.log10(valMax.value * 1.05)
@@ -79,17 +83,17 @@ function gridLines() {
 const grid = computed(() => gridLines())
 
 const fmt = (v) => (v == null ? '—' : v >= 1 ? v.toLocaleString('zh-CN', { maximumFractionDigits: 0 }) : v.toFixed(2))
-const fmtB = (n) => (n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : (n / 1e6).toFixed(0) + 'M')
+const fmtB = (n) => (n == null ? '—' : n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : (n / 1e3).toFixed(0) + 'K')
 
 // 悬停行
 const hover = ref('')
 const hoverRow = computed(() => rows.value.find(d => d.plan_id + '/' + d.model === hover.value) || null)
 
 const modeDesc = computed(() => (mode.value === 'extreme'
-  ? '极限用量口径：全部流量集中在错峰时段（每日 23:00–次日 09:00 及周末，积分 5 折）+ 95% 缓存命中，智谱 v3 另叠加「夜间畅用」活动（GLM-5.3-Flash 在 ZCode 端 0 消耗、其他 Agent 额度 ×2，9/3–9/20）。'
-  : '标准用量口径：全高峰时段（工作日 14:00–18:00，积分 1 倍）+ 95% 缓存命中的下限值；智谱 v2 为探针实测反推（普通客户端口径），ChatGPT/Claude Code 为等效美元折算。'))
+  ? '极限用量排序：考虑虚影——错峰增益与活动加成后的理论上限参与排序。'
+  : '基本用量排序：不考虑虚影，直接按表格月度用量÷包月原价排序。'))
 
-const vendorName = (v) => ({ zhipu:'智谱', zai:'Z.AI', anthropic:'Anthropic', openai:'OpenAI', kimi:'Kimi', minimax:'MiniMax', tencent:'腾讯云', volcengine:'火山', alibaba:'阿里', opencode:'OpenCode' }[v] || v)
+const vendorName = (v) => ({ zhipu:'智谱', zai:'Z.AI', anthropic:'Anthropic', openai:'OpenAI', kimi:'Kimi', minimax:'MiniMax', tencent:'腾讯云', volcengine:'火山', alibaba:'阿里', opencode:'OpenCode', deepseek:'DeepSeek', google:'Google' }[v] || v)
 function colorOf(vendor) {
   const c = {
     anthropic:  { light: '#E07856', dark: '#E58B6C' },
@@ -99,9 +103,11 @@ function colorOf(vendor) {
     minimax:    { light: '#F0436E', dark: '#FF7089' },
     kimi:       { light: '#556575', dark: '#C9D1D9' },
     zhipu:      { light: '#3B82F6', dark: '#748FFC' },
-    tencent:    { light: '#7C3AED', dark: '#A78BFA' },
+    tencent:    { light: '#7C3AED', dark: '#8B5CF6' },
     volcengine: { light: '#06B6D4', dark: '#22D3EE' },
     zai:        { light: '#8B5CF6', dark: '#A78BFA' },
+    deepseek:   { light: '#4D6BFE', dark: '#7C9AFF' },
+    google:     { light: '#4285F4', dark: '#8AB4F8' },
   }[vendor]
   if (!c) return '#86868b'
   return isDark.value ? c.dark : c.light
@@ -117,11 +123,11 @@ function colorOf(vendor) {
 
     <!-- 工具栏 -->
     <div class="vc3-toolbar">
-      <button :class="['vc3-tab', { active: active === 'sub' }]" @click="active = 'sub'">
-        订阅套餐 <span class="vc3-n">{{ groups.sub.filter(d => !d.virtual).length }}</span>
+      <button :class="['vc3-tab', { active: active === 'sub' }]" @click="setActive('sub')">
+        订阅套餐 <span class="vc3-n">{{ groups.sub.length }}</span>
       </button>
-      <button :class="['vc3-tab', { active: active === 'api' }]" @click="active = 'api'">
-        API 额度型 <span class="vc3-n">{{ groups.api.filter(d => !d.virtual).length }}</span>
+      <button :class="['vc3-tab', { active: active === 'api' }]" @click="setActive('api')">
+        API 额度型 <span class="vc3-n">{{ groups.api.length }}</span>
       </button>
       <span class="vc3-sep">|</span>
       <span class="vc3-label">排名：</span>
@@ -150,13 +156,9 @@ function colorOf(vendor) {
     </div>
 
     <!-- 横向柱状图 -->
-    <div class="vc3-scalehint">log 轴刻度：{{ grid.map(g => g.label).join(' / ') }} 万 tokens</div>
-    <div class="vc3-chart" :style="{ height: chartH + 'px' }">
-      <div class="vc3-axis">
-        <span v-for="g in grid" :key="g.label" class="vc3-gridline" :style="{ top: (barMax - g.px + 8) + 'px' }">
-          <i class="vc3-grid" :style="{ width: barMax + 'px' }"></i>
-        </span>
-      </div>
+    <div class="vc3-scalehint">{{ scaleLog ? 'log 轴' : '线性轴' }}（{{ grid.map(g => g.label).join(' / ') }} 万 tokens）</div>
+    <div class="vc3-chart" @mouseleave="hover = -1">
+
       <div
         v-for="(d, i) in rows" :key="d.plan_id + d.model"
         class="vc3-row" :class="{ 'vc3-virtual': d.virtual }"
@@ -166,12 +168,12 @@ function colorOf(vendor) {
         <span class="vc3-dot" :style="{ background: colorOf(d.vendor) }"></span>
         <span class="vc3-name" :title="d.label">{{ [d.vendor_display, d.plan_name, d.model].filter(Boolean).join(' · ').replace(/ GLM Coding Plan /, ' ') }}<em v-if="d.virtual" class="vc3-vtag">等效折算</em></span>
         <span class="vc3-barzone">
-          <i class="vc3-bar" :style="{ width: Math.max(3, valScale(valOf(d))) + 'px', background: colorOf(d.vendor) }"></i>
-          <i v-if="mode === 'extreme' && d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d)"
+          <i class="vc3-bar" :style="{ width: Math.max(3, valScale(valBase(d))) + 'px', background: colorOf(d.vendor) }"></i>
+          <b class="vc3-val">{{ fmt(valBase(d)) }}</b>
+          <i v-if="mode === 'extreme' && d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > d.tokens_per_cny"
             class="vc3-bar vc3-ext"
-            :style="{ left: valScale(valOf(d)) + 'px', width: Math.max(2, valScale(d.ghost_tokens_per_cny) - valScale(valOf(d))) + 'px' }"
-            title="夜间畅用×2 等活动加成增量（叠加在标准口径之上）"></i>
-          <b class="vc3-val">{{ fmt(sortVal(d)) }}</b>
+            :style="{ left: valScale(d.tokens_per_cny) + 'px', width: Math.max(2, valScale(d.ghost_tokens_per_cny) - valScale(d.tokens_per_cny)) + 'px' }"
+            title="极限用量与基本用量的差距"></i>
           <em v-if="caliberOf(d)" class="vc3-caliber">{{ caliberOf(d) }}</em>
         </span>
       </div>
@@ -180,22 +182,18 @@ function colorOf(vendor) {
     <!-- 悬停明细卡 -->
     <div v-if="hoverRow" class="vc3-tip">
       <div class="vc3-tip-title">{{ hoverRow.label }}</div>
-      <div class="vc3-tip-line">
-        {{ mode === 'standard' ? '标准用量' : '极限用量' }}：<b>{{ fmt(valOf(hoverRow)) }}</b> 万 tokens / ¥1
-        <template v-if="mode === 'extreme' && hoverRow.conservative_tokens_per_cny">（标准口径 {{ fmt(hoverRow.conservative_tokens_per_cny) }}）</template>
-      </div>
-      <div class="vc3-tip-line muted" v-if="hoverRow.monthly_tokens != null">月用量 {{ fmtB(hoverRow.monthly_tokens) }} tokens · 包月原价 ¥{{ hoverRow.price_cny }}</div>
-      <div class="vc3-tip-line muted" v-else>官方按量价：输入 ¥{{ hoverRow.input }}/M · 缓存命中 ¥{{ hoverRow.cached_input }}/M · 输出 ¥{{ hoverRow.output }}/M{{ hoverRow.limited_until ? '（限时至 ' + hoverRow.limited_until + '）' : '' }}</div>
+      <div class="vc3-tip-line" v-if="hoverRow.monthly_tokens != null">基本用量：<b>{{ fmt(valBase(hoverRow)) }}</b> 万 tokens / ¥1（= 月度用量 {{ fmtB(hoverRow.monthly_tokens) }} ÷ 包月定价 ¥{{ hoverRow.price_cny }}）</div>
+      <div class="vc3-tip-line" v-if="mode === 'extreme' && valExt(hoverRow) > valBase(hoverRow)">极限用量：{{ fmt(valExt(hoverRow)) }} 万 tokens / ¥1（错峰增益 + 活动加成后的理论上限）</div>
+      <div class="vc3-tip-line muted" v-if="hoverRow.monthly_tokens == null">官方按量价（{{ hoverRow.currency === 'USD' ? '$' : '¥' }}{{ hoverRow.input }}/M 输入 · {{ hoverRow.currency === 'USD' ? '$' : '¥' }}{{ hoverRow.cached_input }}/M 缓存 · {{ hoverRow.currency === 'USD' ? '$' : '¥' }}{{ hoverRow.output }}/M 输出）{{ hoverRow.limited_until ? ' · 限时至 ' + hoverRow.limited_until : '' }}；折算有效价 ¥{{ hoverRow.eff_cost_cny }}/M（编程场景 92% 缓存折算）</div>
       <div v-for="a in (hoverRow.annotations || [])" :key="a.label" class="vc3-tip-line muted">{{ a.label }}：{{ a.tooltip }}</div>
     </div>
 
 
 
     <p class="vc3-note">
-      口径：智谱/Z.AI v3 为官方场景估算双口径（极限=全非高峰上限，标准=全高峰下限）；v2 为探针实测反推；
-      opencode 为 Go 客户端观测；ChatGPT 等效折算行为虚数口径参考（列表尾部单独归档）。包月均取原价（非首月/邀请码价）。
-      方法论详见 <a href="/llm-api-ledger/methodology">数据口径</a> 页。
-    </p>
+      口径：智谱/Z.AI v3 为官方场景估算双口径（极限=全非高峰上限，标准=全高峰下限）；v2 为探针实测反推（普通客户端口径）；
+      opencode 为 Go 客户端观测；ChatGPT 等效折算行为虚数口径参考（参与列表排序，另列标注）；
+      极限排序下 MiniMax/Z.AI 部分行的数值含邀请码 9 折加成（虚线段/行内标注）。包月均取原价（非首月/邀请码价）。</p>
   </div>
 </template>
 
@@ -240,7 +238,7 @@ function colorOf(vendor) {
   color: var(--vp-c-text-1);
 }
 .vc3-barzone { position: relative; flex: 1; height: 22px; display: flex; align-items: center; }
-.vc3-bar { display: block; height: 16px; border-radius: 0 3px 3px 0; }
+.vc3-bar { display: block; height: 16px; border-radius: 0 3px 3px 0; flex-shrink: 0; }
 .vc3-ext {
   background: repeating-linear-gradient(45deg, transparent 0 3px, rgba(255,102,0,0.5) 3px 5px) !important;
   border: 1px dashed #ff6600; border-radius: 0 3px 3px 0;
@@ -248,7 +246,8 @@ function colorOf(vendor) {
 .vc3-val { margin-left: 8px; font-size: 12px; font-weight: 600; color: var(--vp-c-text-1); white-space: nowrap; }
 .vc3-caliber { margin-left: 8px; font-size: 11px; color: #d97706; opacity: 0.85; white-space: nowrap; }
 .vc3-vrow .vc3-bar { opacity: 0.45; }
-.vc3-vrow { opacity: 0.85; }
+.vc3-virtual { opacity: 0.55; }
+.vc3-virtual .vc3-bar { opacity: 0.45; }
 .vc3-vtag {
   font-size: 10px; font-style: normal; color: #d97706;
   border: 1px solid #d97706; border-radius: 3px; padding: 0 3px; margin-left: 4px;
