@@ -32,11 +32,16 @@ function toggleVendor(v) {
 
 // 排序键严格随模式：标准=保守/实测值，极限=含活动加成的上限值。
 // 柱长、标签、排序三者必须同源（同一口径值），否则必然「看着乱序」。
-const rows = computed(() => {
-  const arr = (groups.value[active.value] || []).filter(d => !hiddenVendors.value.has(d.vendor))
-  const key = mode.value === 'extreme' ? valExt : valBase
-  return [...arr].sort((a, b) => key(b) - key(a))
-})
+// 端点 = 柱子的视觉总长(基本+虚线段);排序键恒等于视觉总长——柱长与名次永远一致
+const endpointOf = (d) => (d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > d.tokens_per_cny)
+  ? d.ghost_tokens_per_cny
+  : d.tokens_per_cny
+const rows = computed(() => (groups.value[active.value] || [])
+  .filter(d => !hiddenVendors.value.has(d.vendor))
+  .sort((a, b) => {
+    const key = mode.value === 'extreme' ? valExt : valBase
+    return key(b) - key(a) || a.model.localeCompare(b.model)
+  }))
 
 // 当前视图实际出现的厂商（图例只显示存在的）
 const presentVendors = computed(() => [...new Set((groups.value[active.value] || []).map(d => d.vendor))])
@@ -57,7 +62,7 @@ const barMax = 560
 const rowH = 34
 
 const scaleLog = ref(true)
-const valMax = computed(() => Math.max(...rows.value.map(d => valExt(d)), 1))
+const valMax = computed(() => Math.max(...rows.value.map(d => endpointOf(d)), 1))
 const valMin = computed(() => Math.min(...rows.value.map(d => valBase(d)), valMax.value * 0.02))
 function valScale(v) {
   if (!scaleLog.value) return (v / valMax.value) * barMax
@@ -168,12 +173,12 @@ function colorOf(vendor) {
         <span class="vc3-dot" :style="{ background: colorOf(d.vendor) }"></span>
         <span class="vc3-name" :title="d.label">{{ [d.vendor_display, d.plan_name, d.model].filter(Boolean).join(' · ').replace(/ GLM Coding Plan /, ' ') }}<em v-if="d.virtual" class="vc3-vtag">等效折算</em></span>
         <span class="vc3-barzone">
-          <i class="vc3-bar" :style="{ width: Math.max(3, valScale(valBase(d))) + 'px', background: colorOf(d.vendor) }"></i>
-          <b class="vc3-val">{{ fmt(valBase(d)) }}</b>
+          <i class="vc3-bar" :style="{ width: valScale(valBase(d)) + 'px', background: colorOf(d.vendor) }"></i>
           <i v-if="d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > d.tokens_per_cny"
             class="vc3-bar vc3-ext"
-            :style="{ left: valScale(d.tokens_per_cny) + 'px', width: Math.max(2, valScale(d.ghost_tokens_per_cny) - valScale(d.tokens_per_cny)) + 'px' }"
+            :style="{ left: valScale(valBase(d)) + 'px', width: Math.max(2, valScale(d.ghost_tokens_per_cny) - valScale(d.tokens_per_cny)) + 'px' }"
             title="极限用量与基本用量的差距"></i>
+          <b class="vc3-val" :style="{ left: valScale(endpointOf(d)) + 'px' }">{{ fmt(endpointOf(d)) }}</b>
           <em v-if="caliberOf(d)" class="vc3-caliber">{{ caliberOf(d) }}</em>
         </span>
       </div>
