@@ -822,6 +822,7 @@ for (const p of plans) {
         label: `${p.vendor_display} ${p.plan_name} @${m.model_id}${VIRTUAL_SPLIT.has(p.plan_id) ? '（等效折算）' : ''}`,
         monthly_tokens: m.monthly_tokens,
         tokens_per_cny: Math.round((m.monthly_tokens / priceCny) / 1e4 * 100) / 100,
+        monthly_source: p.tokens?.monthly_source || null,
         conservative_tokens_per_cny: conservative,
         ghosts,
         ghost_tokens_per_cny: best,
@@ -836,6 +837,7 @@ for (const p of plans) {
       label: `${p.vendor_display} ${p.plan_name} @${p.primary_model || '?'}${VIRTUAL_SPLIT.has(p.plan_id) ? '（等效折算）' : ''}`,
       monthly_tokens: p.tokens.monthly,
       tokens_per_cny: Math.round((p.tokens.monthly / priceCny) / 1e4 * 100) / 100,
+      monthly_source: p.tokens?.monthly_source || null,
       ghosts,
       ghost_tokens_per_cny: best,
       annotations: [] })

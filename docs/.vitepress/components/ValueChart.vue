@@ -1,278 +1,275 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useData } from 'vitepress'
 import plansData from '../plans.json'
 
-// ── 数据：sub=订阅套餐 / api=额度型（opencode-go，$ 额度跨模型）──
+const { isDark } = useData()
+
+// ── 数据分组 ──
 const all = computed(() => plansData.model_value || [])
 const groups = computed(() => ({
   sub: all.value.filter(d => d.series === 'sub'),
   api: all.value.filter(d => d.series === 'api'),
 }))
 const active = ref('sub')
-// 排名模式：extreme=极限用量(全非高峰上限,含加成虚影) / standard=标准用量(全高峰下限,保守口径)
-const mode = ref('extreme')
-// 等效折算行（virtual）：不参与坡形曲线，排名列表尾部单独归档
-const virtualRows = computed(() => (groups.value[active.value] || []).filter(d => d.virtual))
-const rows = computed(() => (groups.value[active.value] || []).filter(d => !d.virtual).sort((a, b) => {
-  const key = mode.value === 'actual' ? 'conservative_tokens_per_cny' : 'tokens_per_cny'
-  return (b[key] ?? b.tokens_per_cny) - (a[key] ?? a.tokens_per_cny)
-}))
-const valOf = (d) => (mode.value === 'actual'
+
+// 排名模式：standard=标准用量（全高峰下限/探针实测） / extreme=极限用量（全非高峰上限）
+const mode = ref('standard')
+const valOf = (d) => (mode.value === 'standard'
   ? (d.conservative_tokens_per_cny ?? d.tokens_per_cny)
   : d.tokens_per_cny)
 
-// ── 配色（子代理调查结论：厂商恒定色，深浅双值）──
-const vendorColor = {
-  anthropic:  { light: '#E07856', dark: '#E58B6C' },
-  openai:     { light: '#0EA37F', dark: '#1FC39B' },
-  alibaba:    { light: '#FF6A00', dark: '#FF8A33' },
-  opencode:   { light: '#E5A800', dark: '#F0B429' },
-  minimax:    { light: '#F0436E', dark: '#FF7089' },
-  kimi:       { light: '#556575', dark: '#C9D1D9' },
-  zhipu:      { light: '#3B82F6', dark: '#748FFC' },
-  tencent:    { light: '#7C3AED', dark: '#A78BFA' },
-  volcengine: { light: '#06B6D4', dark: '#22D3EE' },
-  zai:        { light: '#8B5CF6', dark: '#A78BFA' },
-}
-function colorOf(vendor) {
-  const c = vendorColor[vendor]
-  if (!c) return '#86868b'
-  return typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? c.dark : c.light
+// 厂商筛选（空 Set = 全部显示）
+const hiddenVendors = ref(new Set())
+function toggleVendor(v) {
+  const s = new Set(hiddenVendors.value)
+  s.has(v) ? s.delete(v) : s.add(v)
+  hiddenVendors.value = s
 }
 
-// ── 布局与柱状 ──
-const W = 1400, H = 680
-const M = { top: 40, right: 20, bottom: 150, left: 96 }
-const yMax = computed(() => Math.max(1, ...rows.value.map(d => Math.max(valOf(d), d.ghost_tokens_per_cny || 0))) * 1.08)
-const plotW = W - M.left - M.right
-const barW = computed(() => Math.max(6, (plotW / Math.max(1, rows.value.length)) * 0.72))
-const bx = (i) => M.left + (i * plotW) / Math.max(1, rows.value.length) + ((plotW / rows.value.length) - barW.value) / 2
-const by = (v) => H - M.bottom - (v / yMax.value) * (H - M.top - M.bottom)
-const bH = (v) => (v / yMax.value) * (H - M.top - M.bottom)
+const rows = computed(() => (groups.value[active.value] || [])
+  .filter(d => !d.virtual && !hiddenVendors.value.has(d.vendor))
+  .sort((a, b) => valOf(b) - valOf(a)))
 
-const hover = ref(-1)
-const hoverData = computed(() => (hover.value >= 0 ? rows.value[hover.value] : null))
-const hoverPct = computed(() => (hover.value >= 0 ? ((bx(hover.value) + barW.value / 2) / W) * 100 : 0))
-const fmt = (v) => (v >= 1 ? v.toLocaleString('zh-CN', { maximumFractionDigits: 0 }) : v.toFixed(2))
-const fmtB = (n) => (n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : (n / 1e6).toFixed(0) + 'M')
-const yTicks = computed(() => {
-  // 刻度取整：从 1/2/2.5/5 × 10^n 序列里选能覆盖最大值的最疏步长
-  const max = yMax.value
-  const rawStep = max / 4
-  const pow = Math.pow(10, Math.floor(Math.log10(rawStep)))
-  const step = [1, 2, 2.5, 5, 10].map(m => m * pow).find(s => s >= rawStep) ?? rawStep
-  const t = []
-  for (let v = 0; v <= max; v += step) {
-    t.push({ y: by(v), label: v >= 1000 ? (v / 1000).toFixed(v % 1000 ? 1 : 0) + 'k' : Math.round(v).toLocaleString('zh-CN') })
+// 等效折算参考（虚数口径，不计入排名）
+const virtualRows = computed(() => (groups.value[active.value] || [])
+  .filter(d => d.virtual)
+  .sort((a, b) => valOf(b) - valOf(a)))
+
+// 当前视图实际出现的厂商（图例只显示存在的）
+const presentVendors = computed(() => [...new Set(rows.value.map(d => d.vendor))])
+
+// ── 口径标注 ──
+function caliberOf(d) {
+  const anns = d.annotations || []
+  if (anns.some(a => a.value === 'full_offpeak')) {
+    return mode.value === 'standard' ? '全高峰下限' : '全非高峰期'
   }
-  return t
-})
+  if (anns.some(a => a.label === 'Go 观测' || a.value === 'opencode-go-client')) return 'Go 观测'
+  if (d.monthly_source) return '实测反推'
+  return ''
+}
+
+// ── 布局（横向柱状：左列名称 + 右侧柱体）──
+const barMax = 560
+const rowH = 34
+
+const scaleLog = ref(true)
+const rowsVals = computed(() => rows.value.map(d => valOf(d)))
+const valMax = computed(() => Math.max(...rowsVals.value, 1))
+const valMin = computed(() => Math.min(...rowsVals.value, valMax.value * 0.02))
+function valScale(v) {
+  if (!scaleLog.value) return (v / valMax.value) * barMax
+  const lo = Math.log10(Math.max(valMin.value, 1)), hi = Math.log10(valMax.value * 1.05)
+  return ((Math.log10(Math.max(v, 1)) - lo) / (hi - lo)) * barMax
+}
+function gridLines() {
+  const lines = []
+  if (scaleLog.value) {
+    for (const decade of [1, 10, 100, 1000, 10000]) {
+      if (decade >= valMin.value * 0.9 && decade <= valMax.value * 1.05) {
+        lines.push({ v: decade, px: valScale(decade), label: decade.toLocaleString('zh-CN') })
+      }
+    }
+  } else {
+    for (let i = 1; i <= 4; i++) {
+      const v = (valMax.value * i) / 4
+      lines.push({ v, px: valScale(v), label: Math.round(v).toLocaleString('zh-CN') })
+    }
+  }
+  return lines
+}
+const grid = computed(() => gridLines())
+
+const fmt = (v) => (v == null ? '—' : v >= 1 ? v.toLocaleString('zh-CN', { maximumFractionDigits: 0 }) : v.toFixed(2))
+const fmtB = (n) => (n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : (n / 1e6).toFixed(0) + 'M')
+
+// 悬停行
+const hover = ref('')
+const hoverRow = computed(() => rows.value.find(d => d.plan_id + '/' + d.model === hover.value)
+  || virtualRows.value.find(d => d.plan_id + '/' + d.model === hover.value) || null)
+
+const modeDesc = computed(() => (mode.value === 'extreme'
+  ? '极限用量口径：全部流量集中在错峰时段（每日 23:00–次日 09:00 及周末，积分 5 折）+ 95% 缓存命中，智谱 v3 另叠加「夜间畅用」活动（GLM-5.3-Flash 在 ZCode 端 0 消耗、其他 Agent 额度 ×2，9/3–9/20）。'
+  : '标准用量口径：全高峰时段（工作日 14:00–18:00，积分 1 倍）+ 95% 缓存命中的下限值；智谱 v2 为探针实测反推（普通客户端口径），ChatGPT/Claude Code 为等效美元折算。'))
+
+const vendorName = (v) => ({ zhipu:'智谱', zai:'Z.AI', anthropic:'Anthropic', openai:'OpenAI', kimi:'Kimi', minimax:'MiniMax', tencent:'腾讯云', volcengine:'火山', alibaba:'阿里', opencode:'OpenCode' }[v] || v)
+function colorOf(vendor) {
+  const c = {
+    anthropic:  { light: '#E07856', dark: '#E58B6C' },
+    openai:     { light: '#0EA37F', dark: '#1FC39B' },
+    alibaba:    { light: '#FF6A00', dark: '#FF8A33' },
+    opencode:   { light: '#E5A800', dark: '#F0B429' },
+    minimax:    { light: '#F0436E', dark: '#FF7089' },
+    kimi:       { light: '#556575', dark: '#C9D1D9' },
+    zhipu:      { light: '#3B82F6', dark: '#748FFC' },
+    tencent:    { light: '#7C3AED', dark: '#A78BFA' },
+    volcengine: { light: '#06B6D4', dark: '#22D3EE' },
+    zai:        { light: '#8B5CF6', dark: '#A78BFA' },
+  }[vendor]
+  if (!c) return '#86868b'
+  return isDark.value ? c.dark : c.light
+}
 </script>
 
 <template>
-  <div class="vc2">
-    <p class="vc2-desc">
+  <div class="vc3">
+    <p class="vc3-desc">
       指标：<b>榜单表格里的「月度用量 ÷ 包月原价」</b>——每 1 元人民币能跑多少 tokens（USD 套餐按汇率折算）。
-      分两条线：<b class="c-sub">订阅套餐</b> 与 <b class="c-api">额度型（OpenCode Go，$ 额度跨模型，口径不同单独成线）</b>。
-      柱高即性价比，从左到右递减；有多个 @模型的套餐逐模型拆柱。悬停查看明细，下方为完整排名。
+      横向柱越长性价比越高。
     </p>
 
-    <div class="vc2-legend">
-      <span v-for="(v, vid) in vendorColor" :key="vid" class="vc2-lg">
-        <span class="vc2-lg-dot" :style="{ background: colorOf(vid) }"></span>{{ { anthropic:'Anthropic', openai:'OpenAI', alibaba:'阿里', opencode:'OpenCode', minimax:'MiniMax', kimi:'Kimi', zhipu:'智谱', tencent:'腾讯云', volcengine:'火山', zai:'Z.AI' }[vid] }}
-      </span>
+    <!-- 工具栏 -->
+    <div class="vc3-toolbar">
+      <button :class="['vc3-tab', { active: active === 'sub' }]" @click="active = 'sub'">
+        订阅套餐 <span class="vc3-n">{{ groups.sub.filter(d => !d.virtual).length }}</span>
+      </button>
+      <button :class="['vc3-tab', { active: active === 'api' }]" @click="active = 'api'">
+        API 额度型 <span class="vc3-n">{{ groups.api.filter(d => !d.virtual).length }}</span>
+      </button>
+      <span class="vc3-sep">|</span>
+      <span class="vc3-label">排名：</span>
+      <button :class="['vc3-tab', { active: mode === 'standard' }]" @click="mode = 'standard'"
+        title="全高峰下限（保守）与探针实测口径">标准用量</button>
+      <button :class="['vc3-tab', { active: mode === 'extreme' }]" @click="mode = 'extreme'"
+        title="全非高峰上限（错峰 5 折 + 95% cache）口径">极限用量</button>
+      <span class="vc3-sep">|</span>
+      <span class="vc3-label">轴：</span>
+      <button :class="['vc3-tab', { active: !scaleLog }]" @click="scaleLog = false" title="线性比例">线性</button>
+      <button :class="['vc3-tab', { active: scaleLog }]" @click="scaleLog = true" title="对数比例：数值悬殊时让所有柱可见">log</button>
     </div>
 
-    <div class="vc2-ghost-note">柱顶虚线段 = 极限用量与基本用量的差距（错峰时段增益 + 活动加成），限时活动结束后自动消失</div>
+    <!-- 常驻口径说明（随模式联动） -->
+    <div class="vc3-modedesc">{{ modeDesc }}</div>
 
-    <div class="vc2-tabs">
-      <button :class="['vc2-tab', { active: active === 'sub' }]" @click="active = 'sub'; hover = -1">
-        订阅套餐 <span class="vc2-tabn">{{ groups.sub.length }}</span>
-      </button>
-      <button :class="['vc2-tab', { active: active === 'api' }]" @click="active = 'api'; hover = -1">
-        API 额度型 <span class="vc2-tabn">{{ groups.api.length }}</span>
-      </button>
-      <span class="vc2-divider2">|</span>
-      <span class="vc2-tablabel">排名：</span>
-      <button :class="['vc2-tab', { active: mode === 'extreme' }]" @click="mode = 'extreme'; hover = -1"
-        title="官方区间上限口径（全非高峰 + 95% cache），叠加活动加成虚线段">极限用量</button>
-      <button :class="['vc2-tab', { active: mode === 'actual' }]" @click="mode = 'actual'; hover = -1"
-        title="保守口径（全高峰下限）与探针实测，不含活动加成">标准用量</button>
+    <!-- 厂商筛选 chips（仅显示当前组实际存在的厂商） -->
+    <div class="vc3-chips">
+      <button
+        v-for="v in presentVendors" :key="v"
+        class="vc3-chip" :class="{ off: hiddenVendors.has(v) }"
+        :style="hiddenVendors.has(v) ? {} : { borderColor: colorOf(v), color: colorOf(v) }"
+        @click="toggleVendor(v)"
+        :title="hiddenVendors.has(v) ? '点击显示' : '点击隐藏该厂商'"
+      >{{ vendorName(v) }}</button>
     </div>
 
-    <div class="vc2-chart">
-      <svg :viewBox="`0 0 ${W} ${H}`" class="vc2-svg" @mouseleave="hover = -1">
-        <g v-for="t in yTicks" :key="t.y">
-          <line class="vc2-grid" :x1="M.left" :x2="W - M.right" :y1="t.y" :y2="t.y" />
-          <text class="vc2-tick" :x="M.left - 10" :y="t.y + 4" text-anchor="end">{{ t.label }}</text>
-        </g>
-        <text class="vc2-axis" :x="M.left - 10" :y="M.top - 16">万 tokens / ¥1（包月·{{ mode === 'actual' ? '标准' : '极限' }}）</text>
-
-        <g v-for="(d, i) in rows" :key="d.plan_id + d.model">
-          <!-- 柱顶堆叠段：临时加成场景（基准 → 含加成），斜纹半透明；活动过期自动消失 -->
-          <rect
-            v-if="d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d)"
-            :x="bx(i)" :y="by(d.ghost_tokens_per_cny)"
-            :width="barW" :height="Math.max(2, bH(d.ghost_tokens_per_cny) - bH(valOf(d)))"
-            :fill="colorOf(d.vendor)" fill-opacity="0.28"
-            stroke="#ff6600" stroke-width="1.2" stroke-dasharray="4 3"
-            :opacity="hover === -1 || hover === i ? 1 : 0.35"
-            rx="2"
-          />
-          <rect
-            :x="bx(i)" :y="by(valOf(d))"
-            :width="barW" :height="Math.max(2, bH(valOf(d)))"
-            :fill="colorOf(d.vendor)"
-            :opacity="hover === -1 || hover === i ? 1 : 0.35"
-            rx="2"
-          />
-          <text
-            v-if="hover === i || i < 3"
-            :x="bx(i) + barW / 2" :y="by(valOf(d)) - 6"
-            text-anchor="middle" class="vc2-barval"
-          >{{ fmt(valOf(d)) }}</text>
-          <text
-            :x="bx(i) + barW / 2" :y="H - M.bottom + 14"
-            text-anchor="end" class="vc2-xlab"
-            :transform="`rotate(-40 ${bx(i) + barW / 2} ${H - M.bottom + 14})`"
-            :opacity="hover === -1 || hover === i ? 1 : 0.45"
-          >{{ d.vendor_display }}·{{ d.model }}</text>
-          <rect
-            :x="M.left + (i * plotW) / rows.length" y="0"
-            :width="plotW / rows.length" :height="H - M.bottom"
-            fill="transparent" @mouseenter="hover = i"
-          />
-        </g>
-
-        <line :x1="M.left" :x2="W - M.right" :y1="H - M.bottom" :y2="H - M.bottom" class="vc2-baseline" />
-      </svg>
-
+    <!-- 横向柱状图 -->
+    <div class="vc3-chart" :style="{ height: chartH + 'px' }">
+      <div class="vc3-axis">
+        <span v-for="g in grid" :key="g.label" class="vc3-gridline" :style="{ top: (barMax - g.px + 8) + 'px' }">
+          <i class="vc3-grid" :style="{ width: barMax + 'px' }"></i>
+          <em class="vc3-gridlabel">{{ g.label }}</em>
+        </span>
+      </div>
       <div
-        v-if="hoverData"
-        class="vc2-tip"
-        :style="{ left: `min(max(${hoverPct}%, 160px), calc(100% - 160px))` }"
+        v-for="(d, i) in rows" :key="d.plan_id + d.model"
+        class="vc3-row"
+        @mouseenter="hover = d.plan_id + '/' + d.model"
       >
-        <div class="vc2-tip-model">{{ hoverData.label }}</div>
-        <div class="vc2-tip-big">{{ fmt(mode === 'actual' ? (hoverData.conservative_tokens_per_cny ?? hoverData.tokens_per_cny) : hoverData.tokens_per_cny) }} <span>万 tokens / ¥1（包月·{{ mode === 'actual' ? '标准' : '极限' }}口径）</span></div>
-        <div class="vc2-tip-meta">月用量 {{ fmtB(hoverData.monthly_tokens) }} tokens · 包月原价 ¥{{ hoverData.price_cny }}</div>
-        <div class="vc2-tip-base">基本用量：≈ {{ fmt(hoverData.tokens_per_cny) }} 万/¥</div>
-        <div v-if="hoverData.ghost_tokens_per_cny" class="vc2-tip-boost">极限用量：≈ {{ fmt(hoverData.ghost_tokens_per_cny) }} 万/¥（错峰增益 + 活动加成后的理论上限）</div>
+        <span class="vc3-rank">{{ i + 1 }}</span>
+        <span class="vc3-dot" :style="{ background: colorOf(d.vendor) }"></span>
+        <span class="vc3-name" :title="d.label">{{ d.vendor_display }} · {{ d.plan_name.replace(/ GLM Coding Plan /, ' ') }} · {{ d.model }}</span>
+        <span class="vc3-barzone">
+          <i class="vc3-bar" :style="{ width: valScale(valOf(d)) + 'px', background: colorOf(d.vendor) }"></i>
+          <i v-if="d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d)"
+            class="vc3-bar vc3-ext"
+            :style="{ left: valScale(valOf(d)) + 'px', width: Math.max(2, valScale(d.ghost_tokens_per_cny) - valScale(valOf(d))) + 'px' }"
+            title="本口径到极限用量的差距"></i>
+          <b class="vc3-val">{{ fmt(valOf(d)) }}</b>
+          <em v-if="caliberOf(d)" class="vc3-caliber">{{ caliberOf(d) }}</em>
+        </span>
       </div>
     </div>
 
-    <div class="vc2-xlabel">
-      <template v-if="hoverData">{{ hoverData.label }}</template>
-      <template v-else>共 {{ rows.length }} 个点 · 悬停柱子查看明细 · 完整排名见下</template>
+    <!-- 悬停明细卡 -->
+    <div v-if="hoverRow" class="vc3-tip">
+      <div class="vc3-tip-title">{{ hoverRow.label }}</div>
+      <div class="vc3-tip-line">
+        {{ mode === 'standard' ? '标准用量' : '极限用量' }}：<b>{{ fmt(valOf(hoverRow)) }}</b> 万 tokens / ¥1
+        <template v-if="mode === 'extreme' && hoverRow.conservative_tokens_per_cny">（标准口径 {{ fmt(hoverRow.conservative_tokens_per_cny) }}）</template>
+      </div>
+      <div class="vc3-tip-line muted">月用量 {{ fmtB(hoverRow.monthly_tokens) }} tokens · 包月原价 ¥{{ hoverRow.price_cny }}</div>
+      <div v-for="a in (hoverRow.annotations || [])" :key="a.label" class="vc3-tip-line muted">{{ a.label }}：{{ a.tooltip }}</div>
     </div>
 
-    <div class="vc2-rank">
-      <button
-        v-for="(d, i) in rows" :key="d.plan_id + d.model"
-        class="vc2-rankrow"
-        :class="{ hot: hover === i }"
-        :style="{ borderLeft: `3px solid ${colorOf(d.vendor)}` }"
-        @mouseenter="hover = i"
-        @mouseleave="hover = -1"
-      >
-        <span class="vc2-rank-n">{{ i + 1 }}</span>
-        <span class="vc2-rank-name">{{ d.label }}</span>
-        <span class="vc2-rank-val">{{ fmt(mode === 'actual' ? (d.conservative_tokens_per_cny ?? d.tokens_per_cny) : d.tokens_per_cny) }} 万/¥</span>
-      </button>
-    </div>
+    <!-- 等效折算参考 -->
+    <template v-if="virtualRows.length">
+      <h3 class="vc3-sub">等效折算参考（虚数口径，不计入上方排名）</h3>
+      <div v-for="d in virtualRows" :key="d.plan_id + d.model" class="vc3-row vc3-vrow">
+        <span class="vc3-rank">—</span>
+        <span class="vc3-dot" :style="{ background: colorOf(d.vendor) }"></span>
+        <span class="vc3-name">{{ d.label }}</span>
+        <span class="vc3-barzone"><b class="vc3-val">{{ fmt(valOf(d)) }}</b></span>
+      </div>
+    </template>
 
-    <p class="vc2-note">
-      口径：月度用量含官方场景估算（智谱 v3 全非高峰 + 95% cache）与探针实测（v2「实测反推」），详见榜单各行备注；
-      智谱 9/3-9/20 夜间畅用活动的 flash ×2 未计入（活动口径见情报板）；包月均取原价（非首月/邀请码价）。
-      带「（等效折算）」的行是 ChatGPT/Claude Code Pro 的等效美元拆分口径（表格内有灰字说明）。
+    <p class="vc3-note">
+      口径：智谱/Z.AI v3 为官方场景估算双口径（极限=全非高峰上限，标准=全高峰下限）；v2 为探针实测反推；
+      opencode 为 Go 客户端观测；ChatGPT 等效折算行单独归档不参与排名。包月均取原价（非首月/邀请码价）。
+      方法论详见 <a href="/llm-api-ledger/methodology">数据口径</a> 页。
     </p>
   </div>
 </template>
 
 <style scoped>
-.vc2 { max-width: 1400px; }
-.vc2-desc { font-size: 14px; color: var(--vp-c-text-2); line-height: 1.7; }
-.vc2-desc b { color: var(--vp-c-text-1); }
-.c-sub { color: #ff6600; }
-.c-api { color: #0b8aff; }
-.vc2-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 8px 0 4px; font-size: 12px; color: var(--vp-c-text-2); }
-.vc2-lg { display: inline-flex; align-items: center; gap: 5px; }
-.vc2-lg-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.vc2-ghost-note { font-size: 12px; color: var(--vp-c-text-3); margin: 6px 0 0; }
-.vc2-tabs { display: flex; gap: 8px; margin: 10px 0 4px; }
-.vc2-tab {
-  border: 1px solid var(--vp-c-divider);
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-2);
-  padding: 5px 14px;
-  border-radius: 6px;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
+.vc3 { max-width: 1400px; font-size: 13px; }
+.vc3-desc { color: var(--vp-c-text-2); line-height: 1.7; }
+.vc3-desc b { color: var(--vp-c-text-1); }
+.vc3-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 4px; }
+.vc3-tab {
+  border: 1px solid var(--vp-c-divider); background: var(--vp-c-bg);
+  color: var(--vp-c-text-2); padding: 4px 12px; border-radius: 6px;
+  font: inherit; font-size: 13px; cursor: pointer;
 }
-.vc2-tab.active { border-color: #ff6600; color: #ff6600; font-weight: 600; }
-.vc2-tabn { opacity: 0.7; font-size: 11px; }
-.vc2-divider2 { color: var(--vp-c-divider); margin: 0 4px; }
-.vc2-tablabel { font-size: 13px; color: var(--vp-c-text-2); align-self: center; }
-.vc2-chart { position: relative; margin-top: 8px; }
-.vc2-svg { width: 100%; height: auto; display: block; }
-.vc2-grid { stroke: var(--vp-c-divider); stroke-width: 1; stroke-dasharray: 3 4; opacity: 0.8; }
-.vc2-tick { font-size: 13px; fill: var(--vp-c-text-3); }
-.vc2-axis { font-size: 13px; fill: var(--vp-c-text-2); font-weight: 600; }
-.vc2-barval { font-size: 12px; font-weight: 700; fill: #ff6600; }
-.vc2-xlab { font-size: 11px; fill: var(--vp-c-text-2); }
-.vc2-baseline { stroke: var(--vp-c-divider); stroke-width: 1.5; }
-.vc2-tip {
-  position: absolute;
-  top: 8px;
-  transform: translateX(-50%);
-  background: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  padding: 10px 14px;
-  pointer-events: none;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-  min-width: 230px;
-  z-index: 5;
+.vc3-tab.active { border-color: #ff6600; color: #ff6600; font-weight: 600; }
+.vc3-n { opacity: 0.7; font-size: 11px; }
+.vc3-sep { color: var(--vp-c-divider); }
+.vc3-label { font-size: 13px; color: var(--vp-c-text-2); }
+.vc3-modedesc {
+  font-size: 12px; color: var(--vp-c-text-2); line-height: 1.6;
+  background: var(--vp-c-bg-soft); border-radius: 6px; padding: 6px 10px; margin: 6px 0;
 }
-.vc2-tip-model { font-size: 12px; color: var(--vp-c-text-3); margin-bottom: 2px; }
-.vc2-tip-big { font-size: 24px; font-weight: 700; color: #ff6600; line-height: 1.2; }
-.vc2-tip-big span { font-size: 13px; font-weight: 400; color: var(--vp-c-text-2); }
-.vc2-tip-meta { font-size: 12px; color: var(--vp-c-text-2); margin-top: 2px; }
-.vc2-tip-base { font-size: 12px; color: var(--vp-c-text-2); margin-top: 2px; }
-.vc2-tip-boost { font-size: 12px; color: #ff6600; margin-top: 2px; }
-.vc2-xlabel {
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
+.vc3-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.vc3-chip {
+  border: 1px solid var(--vp-c-divider); background: var(--vp-c-bg);
+  color: var(--vp-c-text-2); padding: 2px 10px; border-radius: 999px;
+  font: inherit; font-size: 12px; cursor: pointer;
+}
+.vc3-chip.off { opacity: 0.35; text-decoration: line-through; }
+.vc3-chart { position: relative; margin: 8px 0 4px; }
+.vc3-axis { position: absolute; inset: 0; pointer-events: none; }
+.vc3-gridline { position: absolute; left: 0; height: 0; }
+.vc3-grid { display: block; height: 1px; background: var(--vp-c-divider); opacity: 0.6; }
+.vc3-gridlabel { position: absolute; right: 8px; top: -14px; font-size: 11px; color: var(--vp-c-text-3); font-style: normal; }
+.vc3-row { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 4px; }
+.vc3-row:hover { background: var(--vp-c-bg-soft); }
+.vc3-row.dim { opacity: 0.25; }
+.vc3-rank { color: var(--vp-c-text-3); min-width: 22px; text-align: right; font-size: 11px; }
+.vc3-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.vc3-name {
+  width: 300px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: var(--vp-c-text-1);
-  margin-top: 2px;
-  min-height: 20px;
 }
-.vc2-rank {
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2px 18px;
+.vc3-barzone { position: relative; flex: 1; height: 22px; display: flex; align-items: center; }
+.vc3-bar { display: block; height: 16px; border-radius: 0 3px 3px 0; }
+.vc3-ext {
+  background: repeating-linear-gradient(45deg, transparent 0 3px, rgba(255,102,0,0.5) 3px 5px) !important;
+  border: 1px dashed #ff6600; border-radius: 0 3px 3px 0;
 }
-.vc2-rankrow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
-  border: none;
-  border-bottom: 1px solid var(--vp-c-divider);
-  border-left: 3px solid transparent;
-  background: transparent;
-  font: inherit;
-  font-size: 13px;
-  color: var(--vp-c-text-1);
-  text-align: left;
-  cursor: default;
-  border-radius: 4px;
+.vc3-val { margin-left: 8px; font-size: 12px; font-weight: 600; color: var(--vp-c-text-1); white-space: nowrap; }
+.vc3-caliber { margin-left: 8px; font-size: 11px; color: #d97706; opacity: 0.85; white-space: nowrap; }
+.vc3-vrow .vc3-name { color: var(--vp-c-text-2); }
+.vc3-sub { font-size: 14px; margin: 20px 0 8px; color: var(--vp-c-text-2); }
+.vc3-tip {
+  position: sticky; bottom: 8px;
+  background: var(--vp-c-bg); border: 1px solid var(--vp-c-divider); border-radius: 8px;
+  padding: 8px 12px; margin-top: 8px; font-size: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
-.vc2-rankrow.hot { background: var(--vp-c-bg-soft); }
-.vc2-rank-n { color: var(--vp-c-text-3); min-width: 20px; text-align: right; font-size: 11px; }
-.vc2-rank-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.vc2-rank-val { color: #ff6600; font-weight: 600; }
-.vc2-note { font-size: 12px; color: var(--vp-c-text-3); margin-top: 10px; }
+.vc3-tip-title { font-weight: 600; color: var(--vp-c-text-1); margin-bottom: 2px; }
+.vc3-tip-line { color: var(--vp-c-text-2); line-height: 1.6; }
+.vc3-tip-line b { color: #ff6600; }
+.vc3-tip-line.muted { color: var(--vp-c-text-3); }
+.vc3-note { font-size: 12px; color: var(--vp-c-text-3); margin-top: 12px; line-height: 1.7; }
+.vc3-note a { color: var(--vp-c-link); }
 </style>
