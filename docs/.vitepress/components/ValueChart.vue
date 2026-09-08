@@ -83,7 +83,7 @@ const yTicks = computed(() => {
       </span>
     </div>
 
-    <div class="vc2-ghost-note">柱顶虚线段 = 本口径之上一路的加成/口径差距：极限模式为「夜间畅用×2」加成增量，标准模式为「标准→极限」的口径差距；活动结束或改价自动消失</div>
+    <div class="vc2-ghost-note">柱顶虚线段 = 极限用量与基本用量的差距（错峰时段增益 + 活动加成），限时活动结束后自动消失</div>
 
     <div class="vc2-tabs">
       <button :class="['vc2-tab', { active: active === 'sub' }]" @click="active = 'sub'; hover = -1">
