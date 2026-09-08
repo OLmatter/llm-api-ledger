@@ -27,12 +27,12 @@ function toggleVendor(v) {
   hiddenVendors.value = s
 }
 
-// 排序键 = 视觉总长 endpoint（基准 + 虚线段增量）——铁律：柱子的视觉长度必须与排序完全一致，
-// 否则必然出现「少的排在多的前面」。等效折算行（virtual）参与排名，视觉上用斜纹透明柱区分。
-const endpointOf = (d) => Math.max(valOf(d), d.ghost_tokens_per_cny || 0)
+// 排序键严格随模式：标准=保守/实测值，极限=含活动加成的上限值。
+// 柱长、标签、排序三者必须同源（同一口径值），否则必然「看着乱序」。
+const sortVal = (d) => (mode.value === 'extreme' ? Math.max(valOf(d), d.ghost_tokens_per_cny || 0) : valOf(d))
 const rows = computed(() => (groups.value[active.value] || [])
   .filter(d => !hiddenVendors.value.has(d.vendor))
-  .sort((a, b) => endpointOf(b) - endpointOf(a)))
+  .sort((a, b) => sortVal(b) - sortVal(a)))
 
 // 当前视图实际出现的厂商（图例只显示存在的）
 const presentVendors = computed(() => [...new Set(rows.value.map(d => d.vendor))])
@@ -53,7 +53,7 @@ const barMax = 560
 const rowH = 34
 
 const scaleLog = ref(true)
-const valMax = computed(() => Math.max(...rows.value.map(d => endpointOf(d)), 1))
+const valMax = computed(() => Math.max(...rows.value.map(d => sortVal(d)), 1))
 const valMin = computed(() => Math.min(...rows.value.map(d => valOf(d)), valMax.value * 0.02))
 function valScale(v) {
   if (!scaleLog.value) return (v / valMax.value) * barMax
@@ -167,11 +167,11 @@ function colorOf(vendor) {
         <span class="vc3-name" :title="d.label">{{ d.vendor_display }} · {{ d.plan_name.replace(/ GLM Coding Plan /, ' ') }} · {{ d.model }}<em v-if="d.virtual" class="vc3-vtag">等效折算</em></span>
         <span class="vc3-barzone">
           <i class="vc3-bar" :style="{ width: Math.max(3, valScale(valOf(d))) + 'px', background: colorOf(d.vendor) }"></i>
-          <i v-if="d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d)"
+          <i v-if="mode === 'extreme' && d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d)"
             class="vc3-bar vc3-ext"
             :style="{ left: valScale(valOf(d)) + 'px', width: Math.max(2, valScale(d.ghost_tokens_per_cny) - valScale(valOf(d))) + 'px' }"
-            title="极限用量与基准的差距"></i>
-          <b class="vc3-val">{{ fmt(endpointOf(d)) }}</b>
+            title="夜间畅用×2 等活动加成增量（叠加在标准口径之上）"></i>
+          <b class="vc3-val">{{ fmt(sortVal(d)) }}</b>
           <em v-if="caliberOf(d)" class="vc3-caliber">{{ caliberOf(d) }}</em>
         </span>
       </div>
