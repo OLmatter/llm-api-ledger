@@ -785,6 +785,7 @@ for (const p of plans) {
 // ChatGPT 全系 + Claude Code Pro 的 per-model 行是「等效美元拆分」口径（表格内有灰字说明）：
 // 不剔除，label 加「等效折算」后缀明示（审核 2026-09-07 A1/A2 折中：数据全量 + 口径标注）
 const VIRTUAL_SPLIT = new Set(['chatgpt-plus', 'chatgpt-pro-5x', 'chatgpt-pro-20x', 'chatgpt-go', 'chatgpt-business', 'claude-code-pro'])
+// virtual=true 的行：等效美元折算口径，不参与坡形曲线，只在排名列表尾部单独归档
 const modelValue = []
 const rawPlanDocs = planFiles.map(f => yaml.load(readFileSync(join(root, 'data', 'plans', f), 'utf-8'))).filter(Boolean)
 for (const p of plans) {
@@ -817,7 +818,7 @@ for (const p of plans) {
       // 保守口径（实际）：全非高峰上限 ÷2 = 全高峰下限（官方区间两端）；非区间口径的行两模式同值
       const isExtreme = (m.annotations || []).some(a => a.value === 'full_offpeak')
       const conservative = isExtreme ? Math.round((m.monthly_tokens / 2 / priceCny) / 1e4 * 100) / 100 : null
-      modelValue.push({ ...base, model: m.model_id,
+      modelValue.push({ ...base, virtual: VIRTUAL_SPLIT.has(p.plan_id), model: m.model_id,
         label: `${p.vendor_display} ${p.plan_name} @${m.model_id}${VIRTUAL_SPLIT.has(p.plan_id) ? '（等效折算）' : ''}`,
         monthly_tokens: m.monthly_tokens,
         tokens_per_cny: Math.round((m.monthly_tokens / priceCny) / 1e4 * 100) / 100,
@@ -831,7 +832,7 @@ for (const p of plans) {
     const affActive = aff && aff.discount && (!aff.expires || String(aff.expires).slice(0, 10) >= new Date().toISOString().slice(0, 10))
     const ghosts = affActive ? [{ label: `用邀请码(${aff.discount}折)`, tokens_per_cny: Math.round((p.tokens.monthly / (priceCny * aff.discount)) / 1e4 * 100) / 100 }] : []
     const best = ghosts.length ? Math.max(...ghosts.map(g => g.tokens_per_cny)) : null
-    modelValue.push({ ...base, model: (p.primary_model || '').toLowerCase() || null,
+    modelValue.push({ ...base, virtual: VIRTUAL_SPLIT.has(p.plan_id), model: (p.primary_model || '').toLowerCase() || null,
       label: `${p.vendor_display} ${p.plan_name} @${p.primary_model || '?'}${VIRTUAL_SPLIT.has(p.plan_id) ? '（等效折算）' : ''}`,
       monthly_tokens: p.tokens.monthly,
       tokens_per_cny: Math.round((p.tokens.monthly / priceCny) / 1e4 * 100) / 100,

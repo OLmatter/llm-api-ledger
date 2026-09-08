@@ -9,13 +9,14 @@ const groups = computed(() => ({
   api: all.value.filter(d => d.series === 'api'),
 }))
 const active = ref('sub')
-// 排名模式：extreme=极限用量(全非高峰上限,含加成虚影) / actual=标准用量(全高峰下限,保守口径)
+// 排名模式：extreme=极限用量(全非高峰上限,含加成虚影) / standard=标准用量(全高峰下限,保守口径)
 const mode = ref('extreme')
-const rows = computed(() => {
-  const arr = groups.value[active.value] || []
+// 等效折算行（virtual）：不参与坡形曲线，排名列表尾部单独归档
+const virtualRows = computed(() => (groups.value[active.value] || []).filter(d => d.virtual))
+const rows = computed(() => (groups.value[active.value] || []).filter(d => !d.virtual).sort((a, b) => {
   const key = mode.value === 'actual' ? 'conservative_tokens_per_cny' : 'tokens_per_cny'
-  return [...arr].sort((a, b) => (b[key] ?? b.tokens_per_cny) - (a[key] ?? a.tokens_per_cny))
-})
+  return (b[key] ?? b.tokens_per_cny) - (a[key] ?? a.tokens_per_cny)
+}))
 const valOf = (d) => (mode.value === 'actual'
   ? (d.conservative_tokens_per_cny ?? d.tokens_per_cny)
   : d.tokens_per_cny)
@@ -42,7 +43,7 @@ function colorOf(vendor) {
 // ── 布局与柱状 ──
 const W = 1400, H = 680
 const M = { top: 40, right: 20, bottom: 150, left: 96 }
-const yMax = computed(() => Math.max(1, ...rows.value.map(d => d.tokens_per_cny)) * 1.06)
+const yMax = computed(() => Math.max(1, ...rows.value.map(d => Math.max(valOf(d), d.ghost_tokens_per_cny || 0))) * 1.08)
 const plotW = W - M.left - M.right
 const barW = computed(() => Math.max(6, (plotW / Math.max(1, rows.value.length)) * 0.72))
 const bx = (i) => M.left + (i * plotW) / Math.max(1, rows.value.length) + ((plotW / rows.value.length) - barW.value) / 2
@@ -82,7 +83,7 @@ const yTicks = computed(() => {
       </span>
     </div>
 
-    <div class="vc2-ghost-note">柱顶虚线段 = 本口径之上一路的加成/口径差距：极限模式为「夜间畅用×2」增量，标准模式为「保守→极限」的差距；活动结束或改价自动消失</div>
+    <div class="vc2-ghost-note">柱顶虚线段 = 本口径之上一路的加成/口径差距：极限模式为「夜间畅用×2」加成增量，标准模式为「标准→极限」的口径差距；活动结束或改价自动消失</div>
 
     <div class="vc2-tabs">
       <button :class="['vc2-tab', { active: active === 'sub' }]" @click="active = 'sub'; hover = -1">
@@ -127,9 +128,9 @@ const yTicks = computed(() => {
           />
           <text
             v-if="hover === i || i < 3"
-            :x="bx(i) + (d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d) ? barW + 1 : 0) + barW / 2" :y="by(d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d) ? d.ghost_tokens_per_cny : valOf(d)) - 6"
+            :x="bx(i) + barW / 2" :y="by(valOf(d)) - 6"
             text-anchor="middle" class="vc2-barval"
-          >{{ fmt(d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d) ? d.ghost_tokens_per_cny : valOf(d)) }}</text>
+          >{{ fmt(valOf(d)) }}</text>
           <text
             :x="bx(i) + barW / 2" :y="H - M.bottom + 14"
             text-anchor="end" class="vc2-xlab"
@@ -152,7 +153,7 @@ const yTicks = computed(() => {
         :style="{ left: `min(max(${hoverPct}%, 160px), calc(100% - 160px))` }"
       >
         <div class="vc2-tip-model">{{ hoverData.label }}</div>
-        <div class="vc2-tip-big">{{ fmt(mode === 'actual' ? (hoverData.conservative_tokens_per_cny ?? hoverData.tokens_per_cny) : hoverData.tokens_per_cny) }} <span>万 tokens / ¥1（包月·{{ mode === 'actual' ? '保守' : '极限' }}口径）</span></div>
+        <div class="vc2-tip-big">{{ fmt(mode === 'actual' ? (hoverData.conservative_tokens_per_cny ?? hoverData.tokens_per_cny) : hoverData.tokens_per_cny) }} <span>万 tokens / ¥1（包月·{{ mode === 'actual' ? '标准' : '极限' }}口径）</span></div>
         <div class="vc2-tip-meta">月用量 {{ fmtB(hoverData.monthly_tokens) }} tokens · 包月原价 ¥{{ hoverData.price_cny }}</div>
         <div class="vc2-tip-base">
           {{ mode === 'actual' ? '极限口径：' : '原有（无加成）：' }}≈ {{ fmt(mode === 'actual' ? hoverData.tokens_per_cny : hoverData.tokens_per_cny) }} 万/¥
