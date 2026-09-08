@@ -9,7 +9,7 @@ const groups = computed(() => ({
   api: all.value.filter(d => d.series === 'api'),
 }))
 const active = ref('sub')
-// 排名模式：extreme=极限用量(全非高峰上限,含加成虚影) / actual=实际用量(全高峰下限,保守口径)
+// 排名模式：extreme=极限用量(全非高峰上限,含加成虚影) / actual=标准用量(全高峰下限,保守口径)
 const mode = ref('extreme')
 const rows = computed(() => {
   const arr = groups.value[active.value] || []
@@ -82,7 +82,7 @@ const yTicks = computed(() => {
       </span>
     </div>
 
-    <div class="vc2-ghost-note">柱顶虚线段 = 本口径之上一路的加成/口径差距：极限模式为「夜间畅用×2」增量，实际模式为「保守→极限」的差距；活动结束或改价自动消失</div>
+    <div class="vc2-ghost-note">柱顶虚线段 = 本口径之上一路的加成/口径差距：极限模式为「夜间畅用×2」增量，标准模式为「保守→极限」的差距；活动结束或改价自动消失</div>
 
     <div class="vc2-tabs">
       <button :class="['vc2-tab', { active: active === 'sub' }]" @click="active = 'sub'; hover = -1">
@@ -96,7 +96,7 @@ const yTicks = computed(() => {
       <button :class="['vc2-tab', { active: mode === 'extreme' }]" @click="mode = 'extreme'; hover = -1"
         title="官方区间上限口径（全非高峰 + 95% cache），叠加活动加成虚线段">极限用量</button>
       <button :class="['vc2-tab', { active: mode === 'actual' }]" @click="mode = 'actual'; hover = -1"
-        title="保守口径（全高峰下限）与探针实测，不含活动加成">实际用量</button>
+        title="保守口径（全高峰下限）与探针实测，不含活动加成">标准用量</button>
     </div>
 
     <div class="vc2-chart">
@@ -105,7 +105,7 @@ const yTicks = computed(() => {
           <line class="vc2-grid" :x1="M.left" :x2="W - M.right" :y1="t.y" :y2="t.y" />
           <text class="vc2-tick" :x="M.left - 10" :y="t.y + 4" text-anchor="end">{{ t.label }}</text>
         </g>
-        <text class="vc2-axis" :x="M.left - 10" :y="M.top - 16">万 tokens / ¥1（包月·{{ mode === 'actual' ? '实际' : '极限' }}）</text>
+        <text class="vc2-axis" :x="M.left - 10" :y="M.top - 16">万 tokens / ¥1（包月·{{ mode === 'actual' ? '标准' : '极限' }}）</text>
 
         <g v-for="(d, i) in rows" :key="d.plan_id + d.model">
           <!-- 柱顶堆叠段：临时加成场景（基准 → 含加成），斜纹半透明；活动过期自动消失 -->
