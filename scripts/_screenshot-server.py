@@ -22,6 +22,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=ROOT, **kwargs)
 
     def do_GET(self):
+        # 不带 /llm-api-ledger/ 前缀的页面路径 → 302 补前缀
+        # （否则 SSR 能返回内容，但前端 router 因 base 不匹配 hydration 后跳 404）
+        path_only = self.path.split('?')[0]
+        if not path_only.startswith(BASE_PREFIX) and '.' not in path_only.split('/')[-1] and path_only != '/':
+            self.send_response(302)
+            self.send_header('Location', BASE_PREFIX.rstrip('/') + path_only)
+            self.end_headers()
+            return
         # 去掉 /llm-api-ledger/ 前缀，转发给实际文件
         if self.path.startswith(BASE_PREFIX):
             self.path = self.path[len(BASE_PREFIX):]

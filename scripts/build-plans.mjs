@@ -776,26 +776,75 @@ for (const p of plans) {
   p.intel_count = items.length + vItems.length
 }
 
-// ── 模型性价比曲线：用量/价格比（编程场景缓存命中率折算有效价）──
-// 指标：每 1 元人民币（USD 按 fx 折算 CNY）能跑多少 tokens。有效价 = 0.073×输入 + 0.92×缓存命中 + 0.007×输出（programming_ratios_default 同源）
+// ── 性价比曲线：直接用榜单表格的「价格 × 用量」──
+// 每个点 = 套餐（或套餐内某个 @模型）的 月度用量 ÷ 包月原价（CNY 口径，USD 折算）。
+// 有 model_breakdown 的套餐按 @模型逐条拆；没有的用聚合值（挂 primary_model）。
+// 系列划分：sub=订阅套餐 / api=额度型（opencode-go，$ 额度跨模型消耗，口径不同单独成线）。
+// 排除：chatgpt 全系 + claude-code-pro 的 per-model 行是「等效美元拆分」虚数（表格内已有灰字说明），
+//       单模型折算量会超套餐总 cap 十几倍，进性价比曲线会误导（审核 2026-09-07 A1/A2）。
+// ChatGPT 全系 + Claude Code Pro 的 per-model 行是「等效美元拆分」口径（表格内有灰字说明）：
+// 不剔除，label 加「等效折算」后缀明示（审核 2026-09-07 A1/A2 折中：数据全量 + 口径标注）
+const VIRTUAL_SPLIT = new Set(['chatgpt-plus', 'chatgpt-pro-5x', 'chatgpt-pro-20x', 'chatgpt-go', 'chatgpt-business', 'claude-code-pro'])
 const modelValue = []
-for (const [vid, v] of Object.entries(vendors)) {
-  for (const [model, mp] of Object.entries(v.model_pricing || {})) {
-    if (mp.input == null || mp.output == null || mp.cached_input == null) continue
-    const isUsd = mp.currency === 'USD' || ['openai', 'anthropic'].includes(vid)
-    const fx = isUsd ? USD_TO_CNY : 1
-    const eff = (0.073 * mp.input + 0.92 * mp.cached_input + 0.007 * mp.output) * fx
-    if (!eff || eff <= 0) continue
-    modelValue.push({
-      vendor: vid,
-      vendor_display: v.vendor_display || vid,
-      model,
-      input: mp.input, cached_input: mp.cached_input, output: mp.output,
-      currency: isUsd ? 'USD' : 'CNY',
-      eff_cost_cny: Math.round(eff * 1000) / 1000,   // 折算有效价（¥/M tokens）
-      tokens_per_cny: Math.round((1 / eff) * 1e6) / 1e6,  // 每 1 元人民币可跑 tokens（万级，保留 6 位）
-      limited_until: mp.limited_until ? String(mp.limited_until instanceof Date ? mp.limited_until.toISOString().slice(0,10) : mp.limited_until).slice(0,10) : null,
-    })
+const rawPlanDocs = planFiles.map(f => yaml.load(readFileSync(join(root, 'data', 'plans', f), 'utf-8'))).filter(Boolean)
+for (const p of plans) {
+  const priceCny = p.pricing?.original_monthly_in_cny ?? (p.pricing?.is_usd ? null : p.pricing?.original_monthly)
+  if (!priceCny) continue
+  const series = p.plan_id === 'opencode-go' ? 'api' : 'sub'
+  const base = {
+    vendor: p.vendor, vendor_display: p.vendor_display, series,
+    plan_name: p.plan_name, plan_id: p.plan_id, price_cny: priceCny,
+  }
+  const mb = p.model_breakdown || []
+  if (mb.length) {
+    for (const m of mb) {
+      if (m.monthly_tokens == null) continue
+      // 虚影（临时加成场景，多可叠加，虚柱取最优）：
+      // ① usage 型：@模型行上未过期的 promo 注解（如夜间畅用×2，活动过期自动消失）
+      // ② price 型：有效邀请码折扣（如智谱/Z.AI/MiniMax 9 折 → 等效 tokens/元 ÷折扣）
+      const ghosts = []
+      for (const a of (m.annotations || [])) {
+        if (a.kind === 'promo' && a.value === 'night_x2') {
+          ghosts.push({ label: '夜间畅用×2', tokens_per_cny: Math.round((m.monthly_tokens * 2 / priceCny) / 1e4 * 100) / 100 })
+        }
+      }
+      const aff = p.affiliate
+      const affActive = aff && aff.discount && (!aff.expires || String(aff.expires).slice(0, 10) >= new Date().toISOString().slice(0, 10))
+      if (affActive) {
+        ghosts.push({ label: `用邀请码(${aff.discount * 10}折)`, tokens_per_cny: Math.round((m.monthly_tokens / (priceCny * aff.discount)) / 1e4 * 100) / 100 })
+      }
+      const best = ghosts.length ? Math.max(...ghosts.map(g => g.tokens_per_cny)) : null
+      modelValue.push({ ...base, model: m.model_id,
+        label: `${p.vendor_display} ${p.plan_name} @${m.model_id}${VIRTUAL_SPLIT.has(p.plan_id) ? '（等效折算）' : ''}`,
+        monthly_tokens: m.monthly_tokens,
+        tokens_per_cny: Math.round((m.monthly_tokens / priceCny) / 1e4 * 100) / 100,
+        ghosts,
+        ghost_tokens_per_cny: best,
+        annotations: m.annotations || [] })
+    }
+  } else if (p.tokens?.monthly != null) {
+    const aff = p.affiliate
+    const affActive = aff && aff.discount && (!aff.expires || String(aff.expires).slice(0, 10) >= new Date().toISOString().slice(0, 10))
+    const ghosts = affActive ? [{ label: `用邀请码(${aff.discount}折)`, tokens_per_cny: Math.round((p.tokens.monthly / (priceCny * aff.discount)) / 1e4 * 100) / 100 }] : []
+    const best = ghosts.length ? Math.max(...ghosts.map(g => g.tokens_per_cny)) : null
+    modelValue.push({ ...base, model: (p.primary_model || '').toLowerCase() || null,
+      label: `${p.vendor_display} ${p.plan_name} @${p.primary_model || '?'}${VIRTUAL_SPLIT.has(p.plan_id) ? '（等效折算）' : ''}`,
+      monthly_tokens: p.tokens.monthly,
+      tokens_per_cny: Math.round((p.tokens.monthly / priceCny) / 1e4 * 100) / 100,
+      ghosts,
+      ghost_tokens_per_cny: best,
+      annotations: [] })
+  } else {
+    // 兜底：原始 yml 的官方 measurement 里带 tokens_monthly 的（如腾讯 Token Plan 4 档，vendor_official/high）
+    const raw = rawPlanDocs.find(r => r.plan_id === p.plan_id)
+    const off = (raw?.measurements || []).find(m => m.tokens_monthly != null && m.credibility === 'high')
+    if (off) {
+      modelValue.push({ ...base, model: (p.primary_model || '').toLowerCase() || null,
+        label: `${p.vendor_display} ${p.plan_name} @${p.primary_model || '?'}${VIRTUAL_SPLIT.has(p.plan_id) ? '（等效折算）' : ''}`,
+        monthly_tokens: off.tokens_monthly,
+        tokens_per_cny: Math.round((off.tokens_monthly / priceCny) / 1e4 * 100) / 100,
+        annotations: [] })
+    }
   }
 }
 modelValue.sort((a, b) => b.tokens_per_cny - a.tokens_per_cny)
