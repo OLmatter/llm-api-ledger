@@ -170,7 +170,7 @@ function colorOf(vendor) {
         <span class="vc3-barzone">
           <i class="vc3-bar" :style="{ width: Math.max(3, valScale(valBase(d))) + 'px', background: colorOf(d.vendor) }"></i>
           <b class="vc3-val">{{ fmt(valBase(d)) }}</b>
-          <i v-if="mode === 'extreme' && d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > d.tokens_per_cny"
+          <i v-if="d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > d.tokens_per_cny"
             class="vc3-bar vc3-ext"
             :style="{ left: valScale(d.tokens_per_cny) + 'px', width: Math.max(2, valScale(d.ghost_tokens_per_cny) - valScale(d.tokens_per_cny)) + 'px' }"
             title="极限用量与基本用量的差距"></i>
