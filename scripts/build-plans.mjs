@@ -776,12 +776,38 @@ for (const p of plans) {
   p.intel_count = items.length + vItems.length
 }
 
+// ── 模型性价比曲线：用量/价格比（编程场景缓存命中率折算有效价）──
+// 指标：每 1 元人民币（USD 按 fx 折算 CNY）能跑多少 tokens。有效价 = 0.073×输入 + 0.92×缓存命中 + 0.007×输出（programming_ratios_default 同源）
+const modelValue = []
+for (const [vid, v] of Object.entries(vendors)) {
+  for (const [model, mp] of Object.entries(v.model_pricing || {})) {
+    if (mp.input == null || mp.output == null || mp.cached_input == null) continue
+    const isUsd = mp.currency === 'USD' || ['openai', 'anthropic'].includes(vid)
+    const fx = isUsd ? USD_TO_CNY : 1
+    const eff = (0.073 * mp.input + 0.92 * mp.cached_input + 0.007 * mp.output) * fx
+    if (!eff || eff <= 0) continue
+    modelValue.push({
+      vendor: vid,
+      vendor_display: v.vendor_display || vid,
+      model,
+      input: mp.input, cached_input: mp.cached_input, output: mp.output,
+      currency: isUsd ? 'USD' : 'CNY',
+      eff_cost_cny: Math.round(eff * 1000) / 1000,   // 折算有效价（¥/M tokens）
+      tokens_per_cny: Math.round((1 / eff) * 1e6) / 1e6,  // 每 1 元人民币可跑 tokens（万级，保留 6 位）
+      limited_until: mp.limited_until ? String(mp.limited_until instanceof Date ? mp.limited_until.toISOString().slice(0,10) : mp.limited_until).slice(0,10) : null,
+    })
+  }
+}
+modelValue.sort((a, b) => b.tokens_per_cny - a.tokens_per_cny)
+
 const out = {
   generated_at: new Date().toISOString(),
   plans_count: plans.length,
   vendors_count: Object.keys(vendors).length,
   credibility_label: credLabel,
   intel,
+  model_value: modelValue,
+  model_value: modelValue,
   plans,
 }
 
