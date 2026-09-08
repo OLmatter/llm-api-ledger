@@ -1,9 +1,13 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { useData, withBase } from 'vitepress'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useData } from 'vitepress'
 import plansData from '../plans.json'
 
 const { isDark } = useData()
+
+// 仅本页放宽内容宽度：挂在容器 class 上，离开页面时移除，避免 SPA 导航后样式泄漏
+onMounted(() => document.querySelector('.VPDoc')?.classList.add('vc3-wide'))
+onUnmounted(() => document.querySelector('.VPDoc')?.classList.remove('vc3-wide'))
 
 // ── 数据分组 ──
 const all = computed(() => plansData.model_value || [])
@@ -88,7 +92,7 @@ function gridLines() {
 const grid = computed(() => gridLines())
 
 const fmt = (v) => (v == null ? '—' : v >= 1 ? v.toLocaleString('zh-CN', { maximumFractionDigits: 0 }) : v.toFixed(2))
-const fmtB = (n) => (n == null ? '—' : n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : (n / 1e3).toFixed(0) + 'K')
+const fmtB = (n) => (n == null ? '—' : n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'K' : String(Math.round(n)))
 
 // 悬停行
 const hover = ref(-1)
@@ -108,7 +112,7 @@ function colorOf(vendor) {
     minimax:    { light: '#F0436E', dark: '#FF7089' },
     kimi:       { light: '#556575', dark: '#C9D1D9' },
     zhipu:      { light: '#3B82F6', dark: '#748FFC' },
-    tencent:    { light: '#7C3AED', dark: '#8B5CF6' },
+    tencent:    { light: '#65A30D', dark: '#A3E635' },
     volcengine: { light: '#06B6D4', dark: '#22D3EE' },
     zai:        { light: '#8B5CF6', dark: '#A78BFA' },
     deepseek:   { light: '#4D6BFE', dark: '#7C9AFF' },
@@ -203,6 +207,12 @@ function colorOf(vendor) {
 </template>
 
 <style scoped>
+/* 放宽本页内容宽度（class 由组件挂载/卸载）；完整选择器必须在 :global() 内，
+   否则 vue SFC 编译器会丢弃 :global() 之后的后代部分 */
+:global(.VPDoc.vc3-wide .container) { max-width: 100%; }
+:global(.VPDoc.vc3-wide .content-container) { max-width: 100% !important; }
+:global(.VPDoc.vc3-wide .vp-doc) { max-width: 100% !important; }
+:global(.VPDoc.vc3-wide .content) { max-width: 100%; }
 .vc3 { max-width: 1400px; font-size: 13px; }
 .vc3-desc { color: var(--vp-c-text-2); line-height: 1.7; }
 .vc3-desc b { color: var(--vp-c-text-1); }
@@ -229,13 +239,8 @@ function colorOf(vendor) {
 .vc3-chip.off { opacity: 0.35; text-decoration: line-through; }
 .vc3-scalehint { font-size: 11px; color: var(--vp-c-text-3); margin: 4px 0 2px 460px; }
 .vc3-chart { position: relative; margin: 8px 0 4px; }
-.vc3-axis { position: absolute; inset: 0; pointer-events: none; }
-.vc3-gridline { position: absolute; left: 0; height: 0; }
-.vc3-grid { display: block; height: 1px; background: var(--vp-c-divider); opacity: 0.6; }
-.vc3-gridlabel { position: absolute; right: 8px; top: -14px; font-size: 11px; color: var(--vp-c-text-3); font-style: normal; }
 .vc3-row { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 4px; }
 .vc3-row:hover { background: var(--vp-c-bg-soft); }
-.vc3-row.dim { opacity: 0.25; }
 .vc3-rank { color: var(--vp-c-text-3); min-width: 22px; text-align: right; font-size: 11px; }
 .vc3-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .vc3-name {
@@ -250,14 +255,12 @@ function colorOf(vendor) {
 }
 .vc3-val { margin-left: 8px; font-size: 12px; font-weight: 600; color: var(--vp-c-text-1); white-space: nowrap; }
 .vc3-caliber { margin-left: 8px; font-size: 11px; color: #d97706; opacity: 0.85; white-space: nowrap; }
-.vc3-vrow .vc3-bar { opacity: 0.45; }
 .vc3-virtual { opacity: 0.55; }
 .vc3-virtual .vc3-bar { opacity: 0.45; }
 .vc3-vtag {
   font-size: 10px; font-style: normal; color: #d97706;
   border: 1px solid #d97706; border-radius: 3px; padding: 0 3px; margin-left: 4px;
 }
-.vc3-sub { font-size: 14px; margin: 20px 0 8px; color: var(--vp-c-text-2); }
 .vc3-tip {
   position: sticky; bottom: 8px;
   background: var(--vp-c-bg); border: 1px solid var(--vp-c-divider); border-radius: 8px;

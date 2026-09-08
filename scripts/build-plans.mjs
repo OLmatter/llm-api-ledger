@@ -844,8 +844,7 @@ for (const p of plans) {
       monthly_source: p.tokens?.monthly_source || null,
       annotations: usageAnns,
       ghosts,
-      ghost_tokens_per_cny: best,
-      annotations: [] })
+      ghost_tokens_per_cny: best })
   } else {
     // 兜底：原始 yml 的官方 measurement 里带 tokens_monthly 的（如腾讯 Token Plan 4 档，vendor_official/high）
     const raw = rawPlanDocs.find(r => r.plan_id === p.plan_id)
