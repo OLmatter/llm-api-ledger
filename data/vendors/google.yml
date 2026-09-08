@@ -1,0 +1,69 @@
+# Google Gemini 厂商元数据（API 按量厂商；2026-09-09 新增）
+# 定价页为 JS 渲染，价格取自渲染后 DOM（Gemini API 价，非 Vertex AI）
+
+vendor_id: google
+vendor_display: Google
+vendor_display_en: Google DeepMind
+brand_color: "#4285F4"
+homepage: https://ai.google.dev
+docs: https://ai.google.dev/gemini-api/docs/pricing
+last_verified: 2026-09-09
+
+affiliate: null
+
+# Gemini 系列 API 按量定价 (USD per million tokens, 2026-09-09 官方页 dump-dom 实抓)
+# 思考 token 不单独计费（含在输出价内）；标准档（Batch 5 折 / Priority 约 1.8 倍）
+model_pricing:
+  gemini-3.8-flash:
+    input: 0.75
+    cached_input: 0.075
+    output: 3.75
+    currency: USD
+    captured_at: 2026-09-09
+    source: https://ai.google.dev/gemini-api/docs/pricing
+    credibility: high
+    limited_until: 2026-12-31
+    regular_input: 1.5
+    regular_output: 7.5
+    regular_cached_input: 0.15
+    note: |
+      introductory 定价（官方原文）：2026-12-31 前 $0.75/$3.75，2027-01-01 起恢复 $1.50/$7.50。
+      缓存存储 $0.50/M/hr。免费档：有。定时任务将于 2027-01-01 自动恢复原价。
+
+  gemini-3.1-pro-preview:
+    input: 2
+    cached_input: 0.2
+    output: 12
+    currency: USD
+    captured_at: 2026-09-09
+    source: https://ai.google.dev/gemini-api/docs/pricing
+    credibility: high
+    note: |
+      当前 Pro 旗舰（预览版，页面栏目「Gemini 3 Pro 预览版」）。
+      >200k 档：输入 $4 / 输出 $18 / 缓存读 $0.40。缓存存储 $4.50/M/hr。
+
+  gemini-3.5-flash:
+    input: 1.5
+    cached_input: 0.15
+    output: 9
+    currency: USD
+    captured_at: 2026-09-09
+    source: https://ai.google.dev/gemini-api/docs/pricing
+
+  gemini-2.5-pro:
+    input: 1.25
+    cached_input: 0.125
+    output: 10
+    currency: USD
+    captured_at: 2026-09-09
+    source: https://ai.google.dev/gemini-api/docs/pricing
+    note: "≥200k 档：输入 $2.50 / 输出 $15.00 / 缓存读 $0.25。"
+
+  gemini-2.5-flash:
+    input: 0.3
+    cached_input: 0.03
+    output: 2.5
+    currency: USD
+    captured_at: 2026-09-09
+    source: https://ai.google.dev/gemini-api/docs/pricing
+    note: 音频输入 $1.00/M。免费档：有。

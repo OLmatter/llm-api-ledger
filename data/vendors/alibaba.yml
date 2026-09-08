@@ -10,7 +10,7 @@ vendor_display_en: Alibaba Cloud Model Studio / Bailian
 brand_color: "#FF6A00"               # 阿里橙，待截图校准
 homepage: https://bailian.console.aliyun.com/
 docs: https://help.aliyun.com/zh/model-studio/
-last_verified: 2026-08-04
+last_verified: 2026-09-09
 
 # 邀请码：未发现 Coding Plan 专属推荐返现
 affiliate: null
@@ -66,25 +66,46 @@ shared_features:
 # 注：这是按量 API 定价，不是 Coding Plan 套餐抵扣
 # Coding Plan 套餐只按"模型调用次数"扣费，无法查看 token 消耗
 model_pricing:
-  qwen3.7-plus:
-    input: null                     # 官方未公布单次按量价
-    cached_input: null
-    output: null
-    source: https://help.aliyun.com/zh/model-studio/coding-plan
-    evidence_path: data/alibaba/official/2026-08-04_bailian_coding_plan_official.md
-    captured_at: 2026-08-04
+  # ── 2026-09-09 新增:Qwen3.8 系（官方 billing 页 dump-dom 实抓；缓存命中价官方未公布，仅百炼控制台可见）──
+  qwen3.8-max:
+    input: 12
+    cached_input: null              # 官方例外:qwen3.8 系命中价不公开，需登录百炼控制台查证
+    output: 36
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://help.aliyun.com/zh/model-studio/billing-for-model-studio
     note: |
-      Coding Plan 不公布按 model 拆分的 token 消耗单价。
-      控制台明示"额度消耗与 Token 消耗无关，只与模型调用次数有关"。
+      Qwen3.8 旗舰。0-1M 一档无阶梯。Batch 半价。
+
+  qwen3.8-flash:
+    input: 0.8
+    cached_input: null              # 同上例外
+    output: 2.7
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://help.aliyun.com/zh/model-studio/billing-for-model-studio
+    note: |
+      Qwen3.8 经济档。0-1M 一档无阶梯。
+
+  qwen3.7-plus:
+    input: 2                        # 0<Token≤256K 档（原价；限时 8 折中 1.6 元/M）
+    cached_input: 0.2               # 显式缓存命中 = 输入价 10%（官方 context-cache 规则）
+    output: 8                       # 非思考与思考同价；256K-1M 档 6/24
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://help.aliyun.com/zh/model-studio/billing-for-model-studio
+    note: |
+      2026-09-09 官方 billing 页 dump-dom 实抓。0-256K 档；256K-1M 档输入 6/输出 24。
+      限时 8 折（1.6/6.4）截止时间未公布。Coding Plan 套餐仍按调用次数计费，与按量价并行。
 
   qwen3.5-plus:
-    input: null
-    cached_input: null
-    output: null
-    source: https://help.aliyun.com/zh/model-studio/coding-plan
-    evidence_path: data/alibaba/official/2026-08-04_bailian_coding_plan_official.md
-    captured_at: 2026-08-04
-    note: "Coding Plan 不公布按 model 拆分的 token 消耗单价"
+    input: 0.8                      # 0<Token≤128K 档
+    cached_input: 0.08              # 显式缓存命中 = 输入价 10%
+    output: 4.8                     # 非思考与思考同价；128-256K 档 2/12；256K-1M 档 4/24
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://help.aliyun.com/zh/model-studio/billing-for-model-studio
+    note: 按量 API 价（百炼）。Coding Plan 套餐按调用次数计费，不按 token（见 data_status_note）。
 
 # 使用限制（铁律 18 零修改：以下只列 master-report 里已确认的官方事实）
 rate_multipliers: null              # Coding Plan 无高峰/非高峰倍率机制

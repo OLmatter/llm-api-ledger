@@ -8,7 +8,7 @@ vendor_display_en: Volcengine Ark
 brand_color: "#0b8aff"
 homepage: https://www.volcengine.com/product/ark
 docs: https://www.volcengine.com/docs/82379/1399008
-last_verified: 2026-07-21
+last_verified: 2026-09-09
 
 # 厂商通用邀请码（同厂商所有套餐通用）
 # 榜单铁律 5：邀请码不影响排序，没码的厂商照常上榜。
@@ -44,3 +44,51 @@ shared_features:
   clients_note: 额度跨工具共享
   rate_limit_tiers: [5h, weekly, monthly]
   rate_limit_note: 三级限流独立判断，月>周>5h 优先级，耗尽等待周期刷新不扣费
+
+
+# 豆包 Doubao-Seed 系列 API 按量定价 (元/百万 tokens, 2026-09-09 官方价目页 dump-dom 实抓)
+# 来源: volcengine.com/docs/82379/1099320（在线推理-常规档）；批量推理约 5 折、低延迟约 1.6 倍
+# doubao-seed-2.0-pro/lite 按输入长度 [0,32k]/(32,128k]/(128,256k] 三档，此处记 [0,32k] 档
+model_pricing:
+  doubao-seed-evolving:
+    input: 6
+    cached_input: 1.2
+    output: 30
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://www.volcengine.com/docs/82379/1099320
+    note: 最新旗舰（evolving，持续升级档）。
+
+  doubao-seed-2.1-pro:
+    input: 6
+    cached_input: 1.2
+    output: 30
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://www.volcengine.com/docs/82379/1099320
+
+  doubao-seed-2.1-turbo:
+    input: 3
+    cached_input: 0.6
+    output: 15
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://www.volcengine.com/docs/82379/1099320
+
+  doubao-seed-1.6:
+    input: 0.8                      # [0,32k] 档;32-128k 1.2;128-256k 2.4
+    cached_input: 0.16
+    output: 2                       # [0,32k] 且输出≤0.2k;>0.2k 为 8;其他档 16/24
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://www.volcengine.com/docs/82379/1099320
+    note: 输出价按输入/输出长度组合浮动，详见官方表。
+
+  doubao-seed-1.6-flash:
+    input: 0.15                     # [0,32k] 档;32-128k 0.3;128-256k 0.6
+    cached_input: 0.03
+    output: 1.5                     # [0,32k] 档;其他档 3/6
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://www.volcengine.com/docs/82379/1099320
+
