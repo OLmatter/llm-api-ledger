@@ -82,7 +82,7 @@ const yTicks = computed(() => {
       </span>
     </div>
 
-    <div class="vc2-ghost-note">柱顶虚线段 = 含临时加成（夜间畅用×2 / 用邀请码折扣）后的增量，悬停看各场景；活动结束或改价自动消失</div>
+    <div class="vc2-ghost-note">柱顶虚线段 = 本口径之上一路的加成/口径差距：极限模式为「夜间畅用×2」增量，实际模式为「保守→极限」的差距；活动结束或改价自动消失</div>
 
     <div class="vc2-tabs">
       <button :class="['vc2-tab', { active: active === 'sub' }]" @click="active = 'sub'; hover = -1">
@@ -110,9 +110,9 @@ const yTicks = computed(() => {
         <g v-for="(d, i) in rows" :key="d.plan_id + d.model">
           <!-- 柱顶堆叠段：临时加成场景（基准 → 含加成），斜纹半透明；活动过期自动消失 -->
           <rect
-            v-if="mode === 'extreme' && d.ghost_tokens_per_cny"
+            v-if="d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d)"
             :x="bx(i)" :y="by(d.ghost_tokens_per_cny)"
-            :width="barW" :height="Math.max(2, bH(d.ghost_tokens_per_cny) - bH(d.tokens_per_cny))"
+            :width="barW" :height="Math.max(2, bH(d.ghost_tokens_per_cny) - bH(valOf(d)))"
             :fill="colorOf(d.vendor)" fill-opacity="0.28"
             stroke="#ff6600" stroke-width="1.2" stroke-dasharray="4 3"
             :opacity="hover === -1 || hover === i ? 1 : 0.35"
@@ -127,9 +127,9 @@ const yTicks = computed(() => {
           />
           <text
             v-if="hover === i || i < 3"
-            :x="bx(i) + (mode === 'extreme' && d.ghost_tokens_per_cny ? barW + 1 : 0) + barW / 2" :y="by(mode === 'extreme' ? (d.ghost_tokens_per_cny || d.tokens_per_cny) : valOf(d)) - 6"
+            :x="bx(i) + (d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d) ? barW + 1 : 0) + barW / 2" :y="by(d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d) ? d.ghost_tokens_per_cny : valOf(d)) - 6"
             text-anchor="middle" class="vc2-barval"
-          >{{ fmt(mode === 'extreme' ? (d.ghost_tokens_per_cny || d.tokens_per_cny) : valOf(d)) }}</text>
+          >{{ fmt(d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d) ? d.ghost_tokens_per_cny : valOf(d)) }}</text>
           <text
             :x="bx(i) + barW / 2" :y="H - M.bottom + 14"
             text-anchor="end" class="vc2-xlab"
@@ -154,7 +154,9 @@ const yTicks = computed(() => {
         <div class="vc2-tip-model">{{ hoverData.label }}</div>
         <div class="vc2-tip-big">{{ fmt(mode === 'actual' ? (hoverData.conservative_tokens_per_cny ?? hoverData.tokens_per_cny) : hoverData.tokens_per_cny) }} <span>万 tokens / ¥1（包月·{{ mode === 'actual' ? '保守' : '极限' }}口径）</span></div>
         <div class="vc2-tip-meta">月用量 {{ fmtB(hoverData.monthly_tokens) }} tokens · 包月原价 ¥{{ hoverData.price_cny }}</div>
-        <div class="vc2-tip-base">原有（无加成）：≈ {{ fmt(hoverData.tokens_per_cny) }} 万/¥</div>
+        <div class="vc2-tip-base">
+          {{ mode === 'actual' ? '极限口径：' : '原有（无加成）：' }}≈ {{ fmt(mode === 'actual' ? hoverData.tokens_per_cny : hoverData.tokens_per_cny) }} 万/¥
+        </div>
         <div v-for="g in (hoverData.ghosts || [])" :key="'g-' + g.label" class="vc2-tip-boost">
           含{{ g.label }}：≈ {{ fmt(g.tokens_per_cny) }} 万/¥
         </div>
