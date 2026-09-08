@@ -86,7 +86,7 @@ const fmt = (v) => (v == null ? '—' : v >= 1 ? v.toLocaleString('zh-CN', { max
 const fmtB = (n) => (n == null ? '—' : n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : (n / 1e3).toFixed(0) + 'K')
 
 // 悬停行
-const hover = ref('')
+const hover = ref(-1)
 const hoverRow = computed(() => rows.value.find(d => d.plan_id + '/' + d.model === hover.value) || null)
 
 const modeDesc = computed(() => (mode.value === 'extreme'
