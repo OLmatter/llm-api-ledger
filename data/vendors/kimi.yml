@@ -83,3 +83,21 @@ k3_pricing:
     输出 token 暴涨，额度瞬间被吃光——这就是吞金兽。
     不同用户实测 token 数差 2 倍以上是计费结构决定的，不是测量误差。
   source: https://kimi.moonshot.cn （官网「模型推理定价」页，2026-07-23 复制核实）
+
+
+# Kimi K3 API 按量定价 (per million tokens, 2026-09-09 多源交叉核实)
+# 官方定价页 platform.kimi.com/docs/pricing/chat-k3（JS 渲染无法 dump，价格经多源交叉印证一致）
+model_pricing:
+  kimi-k3:
+    input: 20
+    cached_input: 2
+    output: 100
+    currency: CNY
+    captured_at: 2026-09-09
+    source: https://platform.kimi.com/docs/pricing/chat-k3
+    credibility: medium
+    note: |
+      K3（2.8 万亿参数开源多模态推理模型，1M 上下文）2026-07 发布。
+      输入未命中 ¥20 / 缓存命中 ¥2 / 输出 ¥100 每百万 tokens——输出价为国产高位（「轻奢」）。
+      编程场景缓存命中率 90%+，实际大部分输入按 ¥2 计。
+      等效美元约 $3 输入 / $15 输出（第三方 OpenRouter $2.50/$14 略低于官方）。

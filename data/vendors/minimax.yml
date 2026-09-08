@@ -54,3 +54,21 @@ shared_features:
 vendor_display: MiniMax
 vendor_display_en: MiniMax
 vendor_id: minimax
+
+
+# MiniMax M3 API 按量定价 (per million tokens, 2026-09-09 官方页 dump-dom 实抓)
+# 来源: platform.minimax.io/docs/guides/pricing-paygo（国际站，USD）
+# 官方标注「Permanent 50% off」＝永久五折；≤512k 与 >512k 上下文两档
+model_pricing:
+  minimax-m3:
+    input: 0.30
+    cached_input: 0.06
+    output: 1.20
+    currency: USD
+    captured_at: 2026-09-09
+    source: https://platform.minimax.io/docs/guides/pricing-paygo
+    note: |
+      ≤512k 上下文档（永久五折）。原价 $0.60/$2.40/缓存读 $0.12。
+      >512k 档：$0.60/$2.40/缓存读 $0.24（五折后）。
+      国内站（platform.minimaxi.com）人民币价：五折后 ¥2.1 输入 / ¥8.4 输出（原价 4.2/16.8）。
+      M3 为 1M 上下文原生多模态 Frontier Coding 模型，自动 Prompt Caching。
