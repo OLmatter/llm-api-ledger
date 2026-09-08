@@ -861,6 +861,49 @@ for (const p of plans) {
 }
 modelValue.sort((a, b) => b.tokens_per_cny - a.tokens_per_cny)
 
+// ── API 额度型补全：所有有官方按量价目的模型，按官方价折算「每 1 元 tokens」──
+// 编程场景折算：92% 缓存命中 + 7.3% 新输入 + 0.7% 输出（programming_ratios_default 同源）
+// 与表格渠道观测行（如 OpenCode Go）同图不同点：官方价 vs 渠道观测
+{
+  const tableApiModels = new Set(modelValue.filter(d => d.series === 'api').map(d => d.model))
+  const apiSeen = new Set()
+  for (const [vid, v] of Object.entries(vendors)) {
+    for (const [model, mp] of Object.entries(v.model_pricing || {})) {
+      if (mp.input == null || mp.output == null || mp.cached_input == null) continue
+      if (apiSeen.has(model) || tableApiModels.has(model)) continue
+      apiSeen.add(model)
+      const isUsd = mp.currency === 'USD' || ['openai', 'anthropic'].includes(vid)
+      const fx = isUsd ? USD_TO_CNY : 1
+      const eff = (0.073 * mp.input + 0.92 * mp.cached_input + 0.007 * mp.output) * fx
+      if (!eff || eff <= 0) continue
+      const vd = v.vendor_display || vid
+      const channels = new Set([vd])
+      for (const d of modelValue) if (d.model === model) (d.channels || d.channels === undefined) && null
+      modelValue.push({
+        vendor: vid,
+        vendor_display: vd,
+        series: 'api',
+        virtual: false,
+        model,
+        label: `${[...channels].join('/')} ${model}（官方按量）`,
+        plan_name: null,
+        plan_id: null,
+        monthly_tokens: null,
+        price_cny: null,
+        tokens_per_cny: Math.round((100 / eff) * 100) / 100,   // 万 tokens/元
+        input: mp.input, cached_input: mp.cached_input, output: mp.output,
+        currency: isUsd ? 'USD' : 'CNY',
+        eff_cost_cny: Math.round(eff * 1000) / 1000,
+        captured_at: mp.captured_at || null,
+        limited_until: mp.limited_until ? String(mp.limited_until instanceof Date ? mp.limited_until.toISOString().slice(0,10) : mp.limited_until).slice(0,10) : null,
+        annotations: [],
+        ghosts: [],
+        ghost_tokens_per_cny: null,
+      })
+    }
+  }
+}
+
 const out = {
   generated_at: new Date().toISOString(),
   plans_count: plans.length,

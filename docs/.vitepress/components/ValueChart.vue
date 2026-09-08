@@ -164,7 +164,7 @@ function colorOf(vendor) {
       >
         <span class="vc3-rank">{{ i + 1 }}</span>
         <span class="vc3-dot" :style="{ background: colorOf(d.vendor) }"></span>
-        <span class="vc3-name" :title="d.label">{{ d.vendor_display }} · {{ d.plan_name.replace(/ GLM Coding Plan /, ' ') }} · {{ d.model }}<em v-if="d.virtual" class="vc3-vtag">等效折算</em></span>
+        <span class="vc3-name" :title="d.label">{{ [d.vendor_display, d.plan_name, d.model].filter(Boolean).join(' · ').replace(/ GLM Coding Plan /, ' ') }}<em v-if="d.virtual" class="vc3-vtag">等效折算</em></span>
         <span class="vc3-barzone">
           <i class="vc3-bar" :style="{ width: Math.max(3, valScale(valOf(d))) + 'px', background: colorOf(d.vendor) }"></i>
           <i v-if="mode === 'extreme' && d.ghost_tokens_per_cny && d.ghost_tokens_per_cny > valOf(d)"
@@ -184,7 +184,8 @@ function colorOf(vendor) {
         {{ mode === 'standard' ? '标准用量' : '极限用量' }}：<b>{{ fmt(valOf(hoverRow)) }}</b> 万 tokens / ¥1
         <template v-if="mode === 'extreme' && hoverRow.conservative_tokens_per_cny">（标准口径 {{ fmt(hoverRow.conservative_tokens_per_cny) }}）</template>
       </div>
-      <div class="vc3-tip-line muted">月用量 {{ fmtB(hoverRow.monthly_tokens) }} tokens · 包月原价 ¥{{ hoverRow.price_cny }}</div>
+      <div class="vc3-tip-line muted" v-if="hoverRow.monthly_tokens != null">月用量 {{ fmtB(hoverRow.monthly_tokens) }} tokens · 包月原价 ¥{{ hoverRow.price_cny }}</div>
+      <div class="vc3-tip-line muted" v-else>官方按量价：输入 ¥{{ hoverRow.input }}/M · 缓存命中 ¥{{ hoverRow.cached_input }}/M · 输出 ¥{{ hoverRow.output }}/M{{ hoverRow.limited_until ? '（限时至 ' + hoverRow.limited_until + '）' : '' }}</div>
       <div v-for="a in (hoverRow.annotations || [])" :key="a.label" class="vc3-tip-line muted">{{ a.label }}：{{ a.tooltip }}</div>
     </div>
 
