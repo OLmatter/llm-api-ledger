@@ -1,12 +1,19 @@
 # ChatGPT Pro $200/月 Plan（20× Codex 基准）
 # 2026-07-30:基于用户分享的 ChatGPT 套餐实测 + Codex 倍率(Plus × 20)
+# 2026-09-12:OpenAI 停止新购 ChatGPT Pro $200/月档(Pro 20×),现有用户可继续续费 + 不影响当前配额。
 
 plan_id: chatgpt-pro-20x
 vendor: openai
 plan_name: ChatGPT Pro 20x
 plan_tier: pro-20x
-status: active
-last_verified: 2026-07-30
+status: active                  # 数据有效（仍可续费、套餐未下架）
+discontinued_new_signup: true  # 2026-09 OpenAI 停止新购,只允许现有用户续费
+discontinued_note: |
+  OpenAI 已停止 ChatGPT Pro $200/月(20×)新购入口。
+  现有订阅不受影响,可正常续费 + 保留 20× Codex 配额;
+  新用户入口走 Pro 5× ($100/月)。
+  数据本身仍有效,作为续费档保留供老用户参考。
+last_verified: 2026-09-12
 
 pricing:
   currency: USD

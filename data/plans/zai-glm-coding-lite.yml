@@ -1,12 +1,19 @@
 # Z.AI GLM Coding Plan Lite
 # 智谱海外版（USD 订阅）。限流数值 + tokens 口径与国内智谱 Lite 完全一致。
 # 厂商级信息见 data/vendors/zai.yml。
+# 2026-09 Z.AI 停止 v2 新购入口,现有用户可继续续费;新用户走 v3 (zai-glm-coding-lite-v3)。
 
 plan_id: zai-glm-coding-lite
 vendor: zai
 plan_name: GLM Coding Plan Lite (v2)
 plan_tier: lite
-status: active
+status: active                  # 数据有效（仍可续费、套餐未下架）
+discontinued_new_signup: true   # 2026-09 Z.AI 停止 v2 新购入口,只允许现有用户续费
+discontinued_note: |
+  Z.AI 已停止 GLM Coding Plan v2 新购入口。
+  现有订阅不受影响,可正常续费 + 保留对应额度配额;
+  新用户入口走 v3 (zai-glm-coding-lite-v3)。
+  数据本身仍有效,作为续费档保留供老用户参考。
 # 用量口径备注(统一 annotations 语法):探针实测反推(普通客户端 100% 口径),非官方「全非高峰」场景估算,与 v3 不可直接对比
 usage_annotations:
   - kind: scenario

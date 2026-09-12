@@ -427,7 +427,9 @@ function fmtTokensYi(n) {
 
             <!-- 套餐 -->
             <td class="plan-cell">
-              <div class="plan-name">{{ row.plan.plan_name }}<a v-if="row.plan.intel_count" class="intel-dot" :href="withBase('/intel#vendor-' + row.plan.vendor)" title="有社区情报，点击查看">💬</a></div>
+              <div class="plan-name">{{ row.plan.plan_name }}<a v-if="row.plan.intel_count" class="intel-dot" :href="withBase('/intel#vendor-' + row.plan.vendor)" title="有社区情报，点击查看">💬</a>
+                <span v-if="row.plan.discontinued_new_signup" class="discontinued-tag" :title="row.plan.discontinued_note || '厂商已停止新购,现有用户可继续续费'">停售·可续费</span>
+              </div>
               <div class="plan-meta">
                 <span v-if="row.plan.tier_multiplier != null" :class="['tier-mult', { 'is-base': row.plan.tier_multiplier === 1 }]" :title="`本档用量 = 同厂商最低档 × ${row.plan.tier_multiplier}（基于厂商官方产品定义）`">{{ row.plan.tier_multiplier === 1 ? '基础档' : '×' + row.plan.tier_multiplier }}</span>
                 <span class="tier-name">{{ row.plan.plan_tier }}</span>
@@ -775,6 +777,20 @@ thead tr:nth-child(2) th {
 }
 .intel-link:hover { text-decoration: underline; }
 .intel-dot { font-size: 11px; margin-left: 4px; text-decoration: none; }
+/* 停售·可续费档位徽标（厂商停止新购但允许续费，如 OpenAI ChatGPT Pro 20×） */
+.discontinued-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  color: #b45309;
+  background: rgba(217, 119, 6, 0.1);
+  border: 1px solid #d97706;
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+  cursor: help;
+}
 /* 用邀请码后用量（绿色 highlight） */
 .tok-row-credit {
   margin-top: 2px;

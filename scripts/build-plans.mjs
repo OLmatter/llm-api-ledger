@@ -398,6 +398,10 @@ const plans = planFiles.map(f => {
       return m != null ? (Number.isInteger(m) ? m : Math.round(m * 10) / 10) : null
     })(),
     status: p.status,
+    // 停售标记:厂商停止新购但允许续费的档位（如 OpenAI ChatGPT Pro 20× 2026-09 停止新购）
+    // 数据本身仍有效，作为续费档保留供老用户参考；前端用于显示「停售·可续费」徽标
+    discontinued_new_signup: p.discontinued_new_signup === true,
+    discontinued_note: p.discontinued_note || null,
     // 主力模型（榜单对比基准；plan 级字段优先于 vendor 级，详见 SKILL-and-SOP.md 铁律 13）
     primary_model: p.primary_model || v.shared_features?.primary_model || null,
 
