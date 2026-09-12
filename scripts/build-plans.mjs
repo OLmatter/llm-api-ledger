@@ -97,12 +97,14 @@ const ANNOTATION_DEFS = {
 
 // ── DeepSeek V4 按量等价换算 ──
 // 把套餐月费换算成「如果买 DS V4 非高峰期按量，能跑多少 tokens」
-// 用真实编程比例（non-cache input 9.4% / output 1.2% / cache read 89.4%）
-// DS V4 非高峰期定价（元/百万 tokens，来源 GCMP deepseek.json）
-// 两个版本：Flash（便宜）和 Pro（贵 3 倍）
+// 用真实编程比例（non-cache input 4.4% / output 0.6% / cache read 95%）
+// DS V4 非高峰期定价（元/百万 tokens，DS 国服 GCMP 价）
+// 区分：国际版（api-docs.deepseek.com EN）美元、谷价已更新到 V4.1（2026-09-10）；
+//       国服 GCMP 价人民币、暂无新版 V4.1 公告，本常量保留国服旧价作为国内用户视角。
+// 两个版本：Flash 和 Pro（Pro 在 cache / output 上比 Flash 贵 ~2 倍，input ~2.67×）
 const DS_V4_PRICES = {
-  flash: { input: 1.0, output: 2.0, cache_read: 0.02 },
-  pro:   { input: 3.0, output: 6.0, cache_read: 0.025 },
+  flash: { input: 1.5, output: 4.5, cache_read: 0.05 },
+  pro:   { input: 4.0, output: 9.0, cache_read: 0.10 },
 }
 // 真实编程比例（缓存命中按实测偏高场景 95%；input/output 按原比例分剩余 5%）
 const CODING_RATIO = { input: 0.044, output: 0.006, cache_read: 0.95 }
@@ -870,8 +872,12 @@ modelValue.sort((a, b) => b.tokens_per_cny - a.tokens_per_cny)
 {
   const tableApiModels = new Set(modelValue.filter(d => d.series === 'api').map(d => d.model))
   const apiSeen = new Set()
-  // 已被替代的老代际模型不上图（官方路由规则：5.2/5.1 → GLM-5.3，4.7/4.7-flashx → GLM-5.3-Flash）
-  const API_EXCLUDED_MODELS = new Set(['glm-4.7-flashx', 'glm-4.7', 'glm-5.2', 'glm-5.1'])
+  // 已被替代的老代际模型不上图（官方路由规则：GLM 5.2/5.1 → GLM-5.3、4.7/4.7-flashx → GLM-5.3-Flash；
+  // DS V4-flash / V4-flash-vision-exp / V4-pro 路由 → V4.1-Flash,2026-09-10/09-14 起按 Flash 计费）
+  const API_EXCLUDED_MODELS = new Set([
+    'glm-4.7-flashx', 'glm-4.7', 'glm-5.2', 'glm-5.1',
+    'deepseek-v4-flash', 'deepseek-v4-flash-vision-exp', 'deepseek-v4-pro',
+  ])
   for (const [vid, v] of Object.entries(vendors)) {
     for (const [model, mp] of Object.entries(v.model_pricing || {})) {
       if (mp.input == null || mp.output == null || mp.cached_input == null) continue

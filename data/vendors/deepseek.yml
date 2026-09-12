@@ -1,4 +1,4 @@
-# DeepSeek 厂商元数据（API 按量厂商；2026-09-09 新增，为榜单内 deepseek-v4-flash 提供官方价目基准）
+# DeepSeek 厂商元数据（API 按量厂商；2026-09-10 DeepSeek-V4.1-Flash 发布更新）
 # DeepSeek 无订阅制 Coding Plan，其模型经由 OpenCode Go 等三方渠道出现在榜单
 
 vendor_id: deepseek
@@ -7,34 +7,44 @@ vendor_display_en: DeepSeek
 brand_color: "#4D6BFE"
 homepage: https://www.deepseek.com
 docs: https://api-docs.deepseek.com
-last_verified: 2026-09-09
+last_verified: 2026-09-10
 
 affiliate: null
 
-# DeepSeek V4 系列 API 按量定价 (per million tokens, 2026-09-09 官方页 dump-dom 实抓)
-# 峰谷制：峰 = 工作日 01:00-04:00 & 06:00-10:00 UTC；谷 = 其余时段（谷价 = 峰价一半）
+# DeepSeek V4.1 系列 API 按量定价 (per million tokens, 2026-09-10 官方页 + news260910 公告实抓)
+# 2026-09-10 04:00 UTC 起：deepseek-flash → DeepSeek-V4.1-Flash；deepseek-v4-flash / -vision-exp 退役路由至 V4.1-Flash
+# 2026-09-14 04:00 UTC 起：deepseek-v4-pro 路由至 V4.1-Flash，按 Flash 价格计费，直至 V4.1-Pro 上线
+# 峰谷制：峰 = 周一至周五 UTC 01:00-04:00 & 06:00-10:00；谷 = 其余时段（谷价 = 峰价一半）
+# 默认显示谷价；OpenCode Go 等渠道为零加价直通（与官方谷价一致）
 model_pricing:
-  deepseek-v4-flash:
-    input: 0.22
-    cached_input: 0.007
-    output: 0.66
+  deepseek-flash:
+    input: 0.15
+    cached_input: 0.003
+    output: 0.60
     currency: USD
-    captured_at: 2026-09-09
-    source: https://api-docs.deepseek.com/quick_start/pricing
+    captured_at: 2026-09-10
+    source: https://api-docs.deepseek.com/news/news260910
     credibility: high
     note: |
-      谷价（默认显示）。峰价：输入未命中 $0.44 / 输出 $1.32 / 缓存命中 $0.014。
-      缓存命中谷 $0.007 / 峰 $0.014。峰时段 = 工作日 01:00-04:00 & 06:00-10:00 UTC。
-      与 OpenCode Go 渠道零加价声明一致（Go 页 $0.22/$0.007/$0.66 同价）。
+      DeepSeek-V4.1-Flash（552B MoE / 输入 8B 激活 / 输出 16B 激活 / 原生视觉理解）。
+      API 名 `deepseek-flash`，是 V4-flash / V4-flash-vision-exp 的继任者。
+      谷价（默认显示）。峰价：输入未命中 $0.30 / 输出 $1.20 / 缓存命中 $0.006（峰=谷×2）。
+      相比旧 V4-flash（$0.22/$0.007/$0.66）：输入降 32%、输出降 9%、缓存降 57%，整体更便宜。
+      峰时段 = 周一至周五 UTC 01:00-04:00 & 06:00-10:00。
 
   deepseek-v4-pro:
     input: 0.66
     cached_input: 0.022
     output: 1.98
     currency: USD
-    captured_at: 2026-09-09
+    captured_at: 2026-09-10
     source: https://api-docs.deepseek.com/quick_start/pricing
     credibility: high
+    disputed: true
+    dispute_note: |
+      2026-09-14 04:00 UTC 起所有请求将路由至 V4.1-Flash，按 Flash 价格（$0.15/$0.003/$0.60）计费，直至 V4.1-Pro 上线。
+      即 V4-Pro 还剩 ~4 天有效窗口。订阅方应在此之前切到 deepseek-flash API 名或等 V4.1-Pro。
     note: |
       谷价（默认显示）。峰价：输入未命中 $1.32 / 输出 $3.96 / 缓存命中 $0.044。
-      非思考模式 only。
+      非思考模式 only。V4-Pro-0813（2026-08-13 上线）版本。
+      $15 档（OpenCode Go）可用 4× 乘数，等 Flash 上线后取消。
